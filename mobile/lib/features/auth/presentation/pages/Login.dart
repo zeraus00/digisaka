@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constant/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/components/app_button.dart';
-import 'HomeScreen.dart';
+import 'Main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,8 +43,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
+    // FIX: go to MainShell (which contains Home + the nav bar),
+    // not HomeScreen directly.
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const MainShell()),
     );
   }
 

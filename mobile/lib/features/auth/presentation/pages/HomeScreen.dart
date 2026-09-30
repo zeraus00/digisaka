@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import 'leaf_scan.dart';
-import 'profile.dart';
 import 'notification.dart';
-import 'History.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  /// Asks the MainShell to switch tabs (1 = History, 2 = Scan).
+  final ValueChanged<int>? onTabChange;
+
+  const HomeScreen({super.key, this.onTabChange});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
-  int _selectedTab = 0;
-
-
   final String _userName = 'Juan';
   final String _location = 'Sitio Malabo, Balayan, Batangas';
 
@@ -24,17 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
-  void _goToLeafScan() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const LeafScanScreen()),
-    );
-  }
-
-  void _goToProfile() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-    );
-  }
+  void _goToLeafScan() => widget.onTabChange?.call(2);
 
   void _goToNotifications() {
     Navigator.of(context).push(
@@ -42,11 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _goToHistory() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HistoryScreen()),
-    );
-  }
+  void _goToHistory() => widget.onTabChange?.call(1);
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -394,92 +375,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 11.5, color: AppColors.textGrey, height: 1.3),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Bottom navigation bar with a raised circular Scan button in the middle.
-  Widget _buildBottomNav() {
-    return BottomAppBar(
-      color: AppColors.primaryGreen,
-      height: 70,
-      padding: EdgeInsets.zero,
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
-          _buildNavItem(
-            icon: Icons.description_outlined,
-            label: 'History',
-            index: 1,
-            onTap: _goToHistory,
-          ),
-          _buildScanNavItem(),
-          _buildNavItem(
-            icon: Icons.person_outline,
-            label: 'Profile',
-            index: 3,
-            onTap: _goToProfile,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-    VoidCallback? onTap,
-  }) {
-    final bool isSelected = _selectedTab == index;
-    final Color color = isSelected ? AppColors.accentYellow : AppColors.white;
-
-    return InkWell(
-      // If a custom onTap was given (like navigating to Profile), use that.
-      // Otherwise just switch the highlighted tab, like Home and History do.
-      onTap: onTap ?? () => setState(() => _selectedTab = index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(color: color, fontSize: 11)),
-        ],
-      ),
-    );
-  }
-
-  /// The circular "Scan" button that pops up above the nav bar.
-  Widget _buildScanNavItem() {
-    final bool isSelected = _selectedTab == 2;
-
-    return InkWell(
-      onTap: _goToLeafScan,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 46,
-            width: 46,
-            decoration: BoxDecoration(
-              color: AppColors.primaryGreen,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.white, width: 3),
-            ),
-            child: const Icon(Icons.center_focus_strong, color: AppColors.white, size: 22),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Scan',
-            style: TextStyle(
-              color: isSelected ? AppColors.accentYellow : AppColors.white,
-              fontSize: 11,
-            ),
           ),
         ],
       ),

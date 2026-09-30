@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/components/app_button.dart';
-import 'profile.dart';
-import 'History.dart';
 
 class LeafScanScreen extends StatefulWidget {
   const LeafScanScreen({super.key});
@@ -15,7 +13,6 @@ class LeafScanScreen extends StatefulWidget {
 
 class _LeafScanScreenState extends State<LeafScanScreen> {
   final ImagePicker _picker = ImagePicker();
-
 
   final List<File> _selectedLeaves = [];
 
@@ -90,7 +87,6 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -398,96 +394,6 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
       onPressed: _handleAssessAllLeaves,
       backgroundColor: buttonColor,
       textColor: AppColors.white,
-    );
-  }
-
-  /// Bottom navigation bar matching Home and Profile, with Scan highlighted
-  /// since that's the page currently open.
-  Widget _buildBottomNav() {
-    return BottomAppBar(
-      color: AppColors.primaryGreen,
-      height: 70,
-      padding: EdgeInsets.zero,
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(
-            icon: Icons.home,
-            label: 'Home',
-            isActive: false,
-            // Jump straight back to the first screen (Home).
-            onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
-          ),
-          _buildNavItem(
-            icon: Icons.description_outlined,
-            label: 'History',
-            isActive: false,
-            onTap: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const HistoryScreen()),
-              );
-            },
-          ),
-          _buildScanNavItem(),
-          _buildNavItem(
-            icon: Icons.person_outline,
-            label: 'Profile',
-            isActive: false,
-            onTap: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const ProfileScreen()),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    final Color color = isActive ? AppColors.accentYellow : AppColors.white;
-
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(color: color, fontSize: 11)),
-        ],
-      ),
-    );
-  }
-
-  /// The circular "Scan" button — highlighted yellow since we're already here.
-  Widget _buildScanNavItem() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          height: 46,
-          width: 46,
-          decoration: BoxDecoration(
-            color: AppColors.primaryGreen,
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.white, width: 3),
-          ),
-          child: const Icon(Icons.center_focus_strong, color: AppColors.white, size: 22),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Scan',
-          style: TextStyle(color: AppColors.accentYellow, fontSize: 11),
-        ),
-      ],
     );
   }
 }
