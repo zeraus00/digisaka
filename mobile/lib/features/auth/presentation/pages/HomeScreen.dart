@@ -3,6 +3,7 @@ import '../../../../core/theme/app_colors.dart';
 import 'leaf_scan.dart';
 import 'profile.dart';
 import 'notification.dart';
+import 'History.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,10 +13,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Which bottom nav tab is currently selected. 2 = Scan (the center one).
+
   int _selectedTab = 0;
 
-  // TODO: Replace with the real logged-in user's name later.
+
   final String _userName = 'Juan';
   final String _location = 'Sitio Malabo, Balayan, Batangas';
 
@@ -38,6 +39,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void _goToNotifications() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+    );
+  }
+
+  void _goToHistory() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HistoryScreen()),
     );
   }
 
@@ -275,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: _buildActionButton(
             icon: Icons.description_outlined,
             label: 'BULK HISTORY',
-            onTap: () => _showMessage('Bulk History tapped'),
+            onTap: _goToHistory,
           ),
         ),
       ],
@@ -331,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         GestureDetector(
-          onTap: () => _showMessage('View Bulks tapped'),
+          onTap: _goToHistory,
           child: const Text(
             'View Bulks →',
             style: TextStyle(
@@ -405,7 +412,12 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
-          _buildNavItem(icon: Icons.description_outlined, label: 'History', index: 1),
+          _buildNavItem(
+            icon: Icons.description_outlined,
+            label: 'History',
+            index: 1,
+            onTap: _goToHistory,
+          ),
           _buildScanNavItem(),
           _buildNavItem(
             icon: Icons.person_outline,

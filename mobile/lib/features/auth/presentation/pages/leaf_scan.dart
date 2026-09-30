@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/components/app_button.dart';
 import 'profile.dart';
+import 'History.dart';
 
 class LeafScanScreen extends StatefulWidget {
   const LeafScanScreen({super.key});
@@ -416,14 +417,18 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
             icon: Icons.home,
             label: 'Home',
             isActive: false,
-            // Home is already underneath this page on the stack, so just go back.
-            onTap: () => Navigator.of(context).pop(),
+            // Jump straight back to the first screen (Home).
+            onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
           ),
           _buildNavItem(
             icon: Icons.description_outlined,
             label: 'History',
             isActive: false,
-            onTap: () => _showMessage('History tapped'),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const HistoryScreen()),
+              );
+            },
           ),
           _buildScanNavItem(),
           _buildNavItem(
@@ -431,7 +436,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
             label: 'Profile',
             isActive: false,
             onTap: () {
-              Navigator.of(context).push(
+              Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const ProfileScreen()),
               );
             },

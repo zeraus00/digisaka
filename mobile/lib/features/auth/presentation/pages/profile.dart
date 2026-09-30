@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'notification.dart';
+import 'leaf_scan.dart';
+import 'Login.dart';
+import 'History.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -10,7 +13,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
+  // TODO: Replace these with real user data later.
   final String _initials = 'JD';
   final String _fullName = 'Juan Dela Cruz';
   final String _farmLocation = 'Sitio Malabo Banana Farm · Balayan, Batangas';
@@ -88,6 +91,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: 'Help & Support',
                 onTap: () => _showMessage('Help & Support tapped'),
               ),
+              const SizedBox(height: 24),
+
+              _buildLogoutButton(),
               const SizedBox(height: 20),
             ],
           ),
@@ -285,6 +291,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Red-ish "Log Out" row, styled differently from normal settings items
+  /// so it's clearly not just another preference.
+  Widget _buildLogoutButton() {
+    return Material(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: _confirmLogout,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.logout, color: Colors.red, size: 20),
+              ),
+              const SizedBox(width: 14),
+              const Text(
+                'Log Out',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Asks "are you sure?" before actually logging out, so a stray tap
+  /// doesn't kick the user out by accident.
+  Future<void> _confirmLogout() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Log Out'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    // Clears the whole navigation stack so the user can't press back
+    // into the app after logging out.
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   /// Bottom navigation bar matching Home and Leaf Scan, with Profile active.
   Widget _buildBottomNav() {
     return BottomAppBar(
@@ -296,14 +372,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(icon: Icons.home, label: 'Home', isActive: false, onTap: () {
-            Navigator.of(context).pop();
-          }),
+          _buildNavItem(
+            icon: Icons.home,
+            label: 'Home',
+            isActive: false,
+            // Jump straight back to the first screen (Home).
+            onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
+          ),
           _buildNavItem(
             icon: Icons.description_outlined,
             label: 'History',
             isActive: false,
-            onTap: () => _showMessage('History tapped'),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const HistoryScreen()),
+              );
+            },
           ),
           _buildScanNavItem(),
           _buildNavItem(
@@ -341,7 +425,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// The circular "Scan" button that pops up above the nav bar.
   Widget _buildScanNavItem() {
     return InkWell(
-      onTap: () => _showMessage('Scan tapped'),
+      onTap: () {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LeafScanScreen()),
+        );
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
