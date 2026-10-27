@@ -10,7 +10,7 @@ import { useFarmStore } from '../stores/farm.js';
 import { useCycleStore } from '../stores/cycle.js';
 import { groupLeaves } from '../helpers/groups.js';
 import { previousWeek, nextWeek, isoWeekOf, weekStart, weekEnd } from '../helpers/week.js';
-import { outcomeReasonText } from '../helpers/messages.js';
+import { outcomeReasonText, REFERRAL_TEXT } from '../helpers/messages.js';
 import { todayIso, fromIso } from '../helpers/today.js';
 import { samplesEnabled, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
@@ -219,7 +219,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
         </div>
         <div v-if="groups.unvalidated.length" class="group">
           <b>Unvalidated / Review Required <small>({{ groups.unvalidated.length }})</small></b>
-          <ul class="results"><li v-for="l in groups.unvalidated" :key="l.id"><img :src="preview(l)" :alt="`Leaf ${scan.leaves.indexOf(l) + 1}`">Leaf {{ scan.leaves.indexOf(l) + 1 }} — {{ outcomeLabel(l.outcome) }}</li></ul>
+          <ul class="results"><li v-for="l in groups.unvalidated" :key="l.id"><img :src="preview(l)" :alt="`Leaf ${scan.leaves.indexOf(l) + 1}`">Leaf {{ scan.leaves.indexOf(l) + 1 }} — {{ outcomeLabel(l.outcome) }}<template v-if="l.outcome === 'referral'">: {{ REFERRAL_TEXT }}</template></li></ul>
         </div>
         <p class="hint">This is an AI-assisted assessment and not a confirmed diagnosis. Results should be verified by an agricultural specialist before treatment decisions.</p>
       </section>

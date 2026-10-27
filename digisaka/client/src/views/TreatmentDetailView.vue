@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
 import { useSelectionStore } from '../stores/selection.js';
 import { outcomeReasonText } from '../helpers/messages.js';
+import { orderAlerts, causeLabel, approveState, ACK_MEANING, LEVEL_ICON } from '../helpers/alerts.js';
 import { todayIso } from '../helpers/today.js';
 
 const route = useRoute(), store = useSelectionStore();
@@ -16,7 +17,9 @@ const sel = computed(() => store.selection);
 const period = computed(() => sel.value?.approval_period);
 // The selectable units are the products an application can be recorded for.
 const products = computed(() => (sel.value?.units ?? []).filter((u) => u.selectable !== false));
-const alerts = computed(() => store.preview?.alerts ?? []);
+const alerts = computed(() => orderAlerts(store.preview?.alerts ?? []));
+const unitOf = (a) => a.unit_id ?? store.required.find((r) => r.id === a.id)?.unit_id;
+const unitName = (a) => sel.value?.units.find((u) => u.unit_id === unitOf(a));
 const requiredIds = computed(() => store.required.map((a) => a.id));
 
 const STATUS = { draft: 'Awaiting your decision', approved: 'Approved', rejected: 'Rejected', superseded: 'Replaced by a newer selection', ended: 'Approval period ended' };
@@ -35,7 +38,8 @@ onMounted(load);
 watch([lineId, week], load);
 onBeforeUnmount(() => store.run++);
 const allAcked = computed(() => requiredIds.value.every((id) => acked.value.includes(id)));
-const canApprove = computed(() => sel.value?.approvable && allAcked.value && !store.busy);
+const gate = computed(() => approveState({ approvable: sel.value?.approvable, blockers: sel.value?.blockers, required: requiredIds.value, acked: acked.value }));
+const canApprove = computed(() => gate.value.ok && !store.busy);
 async function done(work) { await work; if (!store.error) { note.value = ''; acked.value = []; } }
 const approve = () => done(store.approve(acked.value, note.value));
 const reject = () => done(store.reject(note.value));
@@ -58,17 +62,25 @@ const productName = (id) => products.value.find((u) => u.unit_id === id)?.produc
         <h3>Products</h3>
         <p class="meta">{{ period.start ? `Approval period ${period.start} to ${period.end} (${period.days} days)` : 'Not approved yet — no approval period.' }}</p>
         <ul class="units">
-          <li v-for="u in sel.units" :key="u.unit_id">
+          <li v-for="u in sel.units" :id="`unit-${u.unit_id}`" :key="u.unit_id">
             <b>{{ u.product }}</b> <small>{{ u.moa }}<template v-if="u.excluded_from_schedule"> · left out of the schedule</template><template v-if="u.selectable === false"> · not selectable</template></small>
+            <ul v-if="u.checks?.length" class="checks"><li v-for="c in u.checks" :key="c.check">{{ c.check }}: {{ c.result }}<template v-if="c.detail"> ({{ c.detail }})</template></li></ul>
           </li>
         </ul>
-        <div v-for="b in sel.blockers" :key="b.text" class="alert error">{{ b.text }}</div>
         <div v-for="a in alerts" :key="a.id ?? a.text" class="alert" :class="a.level">
-          {{ a.text }}
+          <span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}
+          <span v-if="a.new_since_approval" class="badge">New since approval</span>
+          <details v-if="a.kind === 'cannot_check' || unitName(a)" class="why">
+            <summary>Why this matters</summary>
+            <p v-if="unitName(a)">Product: <a :href="`#unit-${unitOf(a)}`">{{ unitName(a).product }}</a><template v-if="unitName(a).sample_fact"> (sample data)</template></p>
+            <p v-if="a.kind === 'cannot_check'">{{ causeLabel(a.cause) }} {{ ACK_MEANING }}</p>
+            <p v-if="store.payload.kg_build">Checked against known sources build {{ store.payload.kg_build.abox_digest }}.</p>
+          </details>
           <label v-if="a.id && requiredIds.includes(a.id) && ['draft', 'approved'].includes(store.status)">
             <input v-model="acked" type="checkbox" :value="a.id" :disabled="store.busy" /> I acknowledge this
           </label>
         </div>
+        <p v-if="store.status === 'draft' && !gate.ok" class="why-off">{{ gate.reason }}</p>
         <template v-if="store.status === 'draft' || store.status === 'approved'">
           <textarea v-model="note" rows="2" placeholder="Note (optional)" aria-label="Decision note"></textarea>
           <div class="btns">
@@ -130,6 +142,11 @@ const productName = (id) => products.value.find((u) => u.unit_id === id)?.produc
 .alert { margin-top: 8px; padding: 10px 12px; border-radius: 12px; font-size: 14px; background: #E3F2F0; }
 .alert.warning { background: #FCE7C8; } .alert.error { background: #FBE4E2; }
 .alert label { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; font-weight: 700; }
+.icon { margin-right: 6px; }
+.badge { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #1F7C74; color: #fff; font: 800 12px var(--font-display); }
+.why { margin-top: 6px; font-size: 13px; } .why summary { cursor: pointer; font-weight: 700; } .why p { margin-top: 4px; }
+.why-off { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--danger); }
+.units .checks { margin: 4px 0 0 16px; font-size: 13px; }
 .apps { margin: 8px 0 0 18px; color: var(--ink-soft); font-size: 14px; }
 .row { display: flex; gap: 8px; margin-top: 10px; } .row select, .row input { flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 12px; font: 600 14px var(--font-body); }
 </style>

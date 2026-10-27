@@ -37,3 +37,6 @@ const OUTCOME_REASONS = {
   gate_e_rejected: 'The selection was rejected.',
 };
 export const outcomeReasonText = (code) => (code ? OUTCOME_REASONS[code] ?? code : '');
+
+// Shown for a leaf whose QA outcome is `referral`; `conflict` and `not_verified` stay internal.
+export const REFERRAL_TEXT = 'The known sources do not yet support a confident answer for this leaf; refer to an expert.';
