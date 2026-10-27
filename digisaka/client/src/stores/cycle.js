@@ -10,7 +10,7 @@ const e = encodeURIComponent;
 
 const PHASE_OF_OUTCOME = { human_review_required: 'review', continue_monitoring: 'monitoring' };
 
-// Closes a line-week and follows its cycle. phase: idle, closing, running, proposal, monitoring, review, failed, timeout, error.
+// Closes a line-week and follows its cycle. phase: idle, closing, running, selection, monitoring, review, failed, timeout, error.
 export const useCycleStore = defineStore('cycle', {
   state: () => ({ phase: 'idle', cycle: null, error: '', busy: false, run: 0 }),
   actions: {
@@ -57,7 +57,7 @@ export const useCycleStore = defineStore('cycle', {
           if (run !== this.run) return;
           const c = this.cycle;
           if (c.status === 'failed') { this.phase = 'failed'; return; }
-          if (c.status !== 'running') { this.phase = PHASE_OF_OUTCOME[c.outcome] ?? 'proposal'; return; }
+          if (c.status !== 'running') { this.phase = PHASE_OF_OUTCOME[c.outcome] ?? 'selection'; return; }
           this.phase = 'running';
           if (i === POLL_LIMIT - 1) break;
           await wait(POLL_MS);

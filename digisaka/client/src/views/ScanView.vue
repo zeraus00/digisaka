@@ -234,9 +234,9 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
           <h2>Working out a treatment...</h2>
           <p class="hint">This usually takes under a minute.</p>
         </template>
-        <template v-else-if="cycle.phase === 'proposal'">
-          <h2>A treatment proposal is ready</h2>
-          <RouterLink class="btn primary" :to="`/treatment/${encodeURIComponent(scan.line)}/${encodeURIComponent(scan.week)}`">Open proposal</RouterLink>
+        <template v-else-if="cycle.phase === 'selection'">
+          <h2>A treatment selection is ready</h2>
+          <RouterLink class="btn primary" :to="`/treatment/${encodeURIComponent(scan.line)}/${encodeURIComponent(scan.week)}`">Open selection</RouterLink>
         </template>
         <template v-else-if="cycle.phase === 'monitoring'">
           <h2>No treatment needed yet</h2>
@@ -258,7 +258,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
           <button class="primary" @click="cycle.resume()">Check again</button>
         </template>
       </section>
-      <EvidenceCharts v-if="['proposal', 'monitoring', 'review'].includes(cycle.phase)" :cycle-id="cycle.cycle?.cycle_id ?? ''" />
+      <EvidenceCharts v-if="['selection', 'monitoring', 'review'].includes(cycle.phase)" :cycle-id="cycle.cycle?.cycle_id ?? ''" />
       <div class="nav"><button :disabled="cycle.phase !== 'idle'" @click="step = 2">Back</button><button v-if="cycle.phase !== 'closing' && cycle.phase !== 'running'" @click="startOver">New scan</button></div>
     </template>
   </div>

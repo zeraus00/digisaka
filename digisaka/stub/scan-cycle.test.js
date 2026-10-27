@@ -66,7 +66,7 @@ test('closing before a verified scan is week_not_verified; a scan awaiting confi
   assert.equal((await close('L04')).status, 409);
 });
 
-test('L04 closes to a running cycle that becomes a proposal visible in the line status', async () => {
+test('L04 closes to a running cycle that becomes a selection visible in the line status', async () => {
   await verify('L04');
   const started = await close('L04');
   assert.equal(started.status, 202);
@@ -75,9 +75,9 @@ test('L04 closes to a running cycle that becomes a proposal visible in the line 
   t += 2999;
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'running');
   t += 1;
-  assert.deepEqual(await call('GET', `${B}/cycles/${id}`).then((r) => [r.body.status, r.body.outcome]), ['done', 'proposal']);
+  assert.deepEqual(await call('GET', `${B}/cycles/${id}`).then((r) => [r.body.status, r.body.outcome]), ['done', 'awaiting_decision']);
   const status = (await call('GET', `${B}/lines/L04`)).body;
-  assert.equal(status.proposals.at(-1).cycle_id, id);
+  assert.equal(status.selections.at(-1).origin_cycle_id, id);
   assert.equal(status.latest_cycle.week, WEEK);
   assert.equal(status.leaves_scanned, 10);
 });
@@ -129,6 +129,6 @@ test('state survives until reset, which restores the seed', async () => {
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'done');
   await fetch(`${base}/__stub/reset`, { method: 'POST' });
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.error, 'unknown_cycle');
-  assert.equal((await call('GET', `${B}/lines/L04`)).body.proposals.length, 0);
+  assert.equal((await call('GET', `${B}/lines/L04`)).body.selections.length, 0);
   assert.equal((await close('L04')).body.error, 'week_not_verified');
 });

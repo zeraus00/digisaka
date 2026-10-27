@@ -25,21 +25,3 @@ export function isValidWeek(value) {
   const last = Math.ceil(((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7);
   return week >= 1 && week <= last;
 }
-
-// Monday of the ISO week after `week`, and two days on: the window a new proposal offers.
-export function nextWindow(week) {
-  const [y, w] = [Number(week.slice(0, 4)), Number(week.slice(6))];
-  const jan4 = new Date(Date.UTC(y, 0, 4));
-  const monday = new Date(jan4.getTime() + (w * 7 - ((jan4.getUTCDay() || 7) - 1)) * 86400000);
-  const iso = (d) => d.toISOString().slice(0, 10);
-  return { start: iso(monday), end: iso(new Date(monday.getTime() + 2 * 86400000)) };
-}
-
-
-// The ISO week key of the week after `week`.
-export function nextWeekKey(week) {
-  const monday = new Date(`${nextWindow(week).start}T00:00:00Z`);
-  const thursday = new Date(monday.getTime() + 3 * 86400000);
-  const year = thursday.getUTCFullYear();
-  return `${year}-W${String(Math.ceil(((thursday - Date.UTC(year, 0, 1)) / 86400000 + 1) / 7)).padStart(2, '0')}`;
-}

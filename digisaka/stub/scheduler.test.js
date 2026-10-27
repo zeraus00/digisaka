@@ -32,12 +32,12 @@ test('lists the six seed lines', async () => {
 
 test('line status carries the scenario for each seed line', async () => {
   const status = async (id) => (await get(`/lines/${id}`)).json();
-  assert.deepEqual(await status('L01'), { line_id: 'L01', proposals: [], applications: [], latest_cycle: null, human_review_required: false, weeks_assessed: 0, leaves_scanned: 0 });
+  assert.deepEqual(await status('L01'), { line_id: 'L01', selections: [], applications: [], latest_cycle: null, human_review_required: false, weeks_assessed: 0, leaves_scanned: 0 });
   const l2 = await status('L02');
-  assert.equal(l2.proposals[0].status, 'applied');
-  assert.equal(l2.applications[0].proposal_id, l2.proposals[0].proposal_id);
-  assert.equal((await status('L03')).proposals[0].status, 'proposed');
-  assert.equal((await status('L04')).proposals.length, 0);
+  assert.equal(l2.selections[0].status, 'approved');
+  assert.equal(l2.applications[0].selection_id, l2.selections[0].selection_id);
+  assert.equal((await status('L03')).selections[0].status, 'draft');
+  assert.equal((await status('L04')).selections.length, 0);
   const l5 = await status('L05');
   assert.equal(l5.human_review_required, true);
   assert.equal(l5.latest_cycle.week, '2026-W24');
@@ -74,13 +74,13 @@ test('evidence has weeks, disease and rainfall; a cycle without it is unknown_ev
   assert.equal((await none.json()).error, 'unknown_evidence');
 });
 
-test('seed consistency: every proposal and application points at a real cycle and proposal, and compared weeks have data', () => {
+test('seed consistency: every selection and application points at a real cycle and selection, and compared weeks have data', () => {
   const { lines } = createSeedStore().data;
   for (const [id, l] of Object.entries(lines)) {
     const cycleIds = new Set(l.cycles.map((c) => c.cycle_id));
-    const proposalIds = new Set(l.proposals.map((p) => p.proposal_id));
-    for (const p of l.proposals) assert.ok(cycleIds.has(p.cycle_id), `${id} ${p.proposal_id} has no cycle`);
-    for (const a of l.applications) assert.ok(proposalIds.has(a.proposal_id), `${id} application has no proposal`);
+    const selectionIds = new Set(l.selections.map((x) => x.selection_id));
+    for (const x of l.selections) assert.ok(cycleIds.has(x.origin_cycle_id), `${id} ${x.selection_id} has no cycle`);
+    for (const a of l.applications) assert.ok(selectionIds.has(a.selection_id), `${id} application has no selection`);
     const weeks = new Set(l.weeks.map((w) => w.week));
     for (const c of l.cycles) {
       assert.ok(weeks.has(c.week), `${id} ${c.cycle_id} week has no data`);

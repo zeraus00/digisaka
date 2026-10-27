@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { useStub } from './harness.js';
 import { useAuthStore } from '../stores/auth.js';
-import { useLinesStore, dashboardSummary, proposalRows } from '../stores/lines.js';
+import { useLinesStore, dashboardSummary, selectionRows } from '../stores/lines.js';
 import { useLineHistoryStore } from '../stores/lineHistory.js';
 import { useEvidenceStore } from '../stores/evidence.js';
 import { diseaseCaption, rainfallCaption } from '../helpers/evidence.js';
@@ -15,9 +15,9 @@ describe('lines store against the stub', () => {
     await s.load();
     expect(s.error).toBe('');
     expect(s.statuses.map((l) => l.line_id)).toEqual(['L01', 'L02', 'L03', 'L04', 'L05', 'L06']);
-    expect(s.withProposals.map((l) => l.line_id)).toEqual(['L02', 'L03', 'L05']);
+    expect(s.withSelections.map((l) => l.line_id)).toEqual(['L02', 'L03', 'L05']);
     expect(dashboardSummary(s.statuses)).toMatchObject({ lines: 6, awaitingDecision: 2, humanReview: 1 });
-    expect(proposalRows(s.byId('L02'))[0].appliedOn).toBe('2026-06-04');
+    expect(selectionRows(s.byId('L02'))[0].appliedOn).toEqual(['2026-06-02']);
   });
   it('shows the Practitioner message when a Technical User is signed in', async () => {
     const auth = useAuthStore();

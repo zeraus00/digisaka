@@ -3,18 +3,18 @@ import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import SkeletonList from '../components/SkeletonList.vue';
-import { useLinesStore, proposalRows } from '../stores/lines.js';
+import { useLinesStore, selectionRows } from '../stores/lines.js';
 
 const router = useRouter(), lines = useLinesStore();
 onMounted(() => lines.load());
-const STATUS = { proposed: 'Awaiting decision', approved: 'Approved', rejected: 'Rejected', applied: 'Applied' };
+const STATUS = { draft: 'Awaiting decision', approved: 'Approved', rejected: 'Rejected', superseded: 'Replaced', ended: 'Ended' };
 const cycleText = (l) => (l.human_review_required ? 'Human review required' : l.latest_cycle ? `Last cycle ${l.latest_cycle.week}: ${l.latest_cycle.status}` : 'No cycles yet');
 const open = (l, p) => router.push(`/treatment/${encodeURIComponent(l.line_id)}/${encodeURIComponent(p.week)}`);
 </script>
 
 <template>
   <div class="page">
-    <PageHeader title="Diagnosis History" subtitle="Each line's recent weeks, treatment proposals and recorded applications." />
+    <PageHeader title="Diagnosis History" subtitle="Each line's recent weeks, treatment selections and recorded applications." />
     <SkeletonList v-if="lines.loading && !lines.statuses.length" />
     <p v-else-if="lines.error" class="error">{{ lines.error }}</p>
     <p v-else-if="lines.loaded && !lines.statuses.length" class="empty">No lines are available.</p>
@@ -28,16 +28,16 @@ const open = (l, p) => router.push(`/treatment/${encodeURIComponent(l.line_id)}/
         </span>
         <button class="trash" type="button" disabled aria-label="Delete (not available yet)" title="Not available yet">🗑</button>
       </div>
-      <ul v-if="l.proposals.length" class="weeks">
-        <li v-for="p in proposalRows(l)" :key="p.proposal_id">
+      <ul v-if="l.selections.length" class="weeks">
+        <li v-for="p in selectionRows(l)" :key="p.selection_id">
           <button type="button" @click="open(l, p)">
             <b>{{ p.week }}</b><span>{{ STATUS[p.status] ?? p.status }}</span>
-            <span class="soft">{{ p.window_start }} to {{ p.window_end }}</span>
-            <span v-if="p.appliedOn" class="teal">Applied {{ p.appliedOn }}</span>
+            <span class="soft">{{ p.approval_period.start ? `${p.approval_period.start} to ${p.approval_period.end}` : 'Not approved yet' }}</span>
+            <span v-if="p.appliedOn.length" class="teal">Applied {{ p.appliedOn.at(-1) }}</span>
           </button>
         </li>
       </ul>
-      <p v-else-if="!l.error" class="soft none">No proposals yet.</p>
+      <p v-else-if="!l.error" class="soft none">No selections yet.</p>
     </div>
   </div>
 </template>

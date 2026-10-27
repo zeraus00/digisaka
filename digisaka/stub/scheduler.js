@@ -1,6 +1,6 @@
 // Stand-in for the scheduler API under /api/v1/scheduler: lines, history, evidence, scans and cycles.
-import { BASE, fail, ok, authed, isValidWeek, nextWindow } from './common.js';
-import { proposalRoutes, summaryOf } from './proposals.js';
+import { BASE, fail, ok, authed, isValidWeek } from './common.js';
+import { selectionRoutes, summaryOf, newDraft } from './selections.js';
 
 // The canned answer for an image is chosen by its name; anything unrecognised is a stage 2 leaf.
 const SCENARIOS = ['healthy', 'not_leaf', 'referral', 'rescan', 'unavailable'];
@@ -9,7 +9,7 @@ const CHECKLIST = ['Dark streaks on the leaf underside', 'Yellow halo around the
 
 // What closing a week ends in, decided by the line. L06 fails on its first run only.
 const PLANS = {
-  L04: { outcome: 'proposal' },
+  L04: { outcome: 'awaiting_decision' },
   L05: { outcome: 'human_review_required', reason: 'missing_feed_value' },
   L06: { outcome: 'continue_monitoring', reason: 'disease_not_worsening', failFirst: true },
 };
@@ -46,10 +46,7 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
     Object.assign(run, { status: 'done', outcome: run.plan.outcome, outcome_reason: run.plan.reason ?? null, failure_reason: null });
     l.cycles.push({ cycle_id: run.cycle_id, week: run.week, status: 'done', outcome: run.outcome, outcome_reason: run.outcome_reason, evidence: null });
     l.leaves += Object.values(store.data.diagnoses).filter((d) => d.line_id === run.line_id && d.week === run.week && d.verified).length;
-    if (run.outcome === 'proposal') {
-      const { start, end } = nextWindow(run.week);
-      l.proposals.push({ proposal_id: `p-${run.line_id}-${run.week.slice(6)}`, cycle_id: run.cycle_id, option_id: 'opt-protectant', status: 'proposed', week: run.week, window_start: start, window_end: end });
-    }
+    if (run.outcome === 'awaiting_decision') l.selections.push(newDraft(run.line_id, run.cycle_id, run.week));
     return run;
   };
   const settleAll = () => Object.values(store.data.runs).forEach(settle);
@@ -68,7 +65,7 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         const latest = newest(l.cycles);
         return ok({
           line_id: params.id,
-          proposals: l.proposals.map((p) => summaryOf(store.data, l, p)),
+          selections: l.selections.map(summaryOf),
           applications: l.applications,
           latest_cycle: latest && { cycle_id: latest.cycle_id, week: latest.week, status: latest.status, outcome: latest.outcome, outcome_reason: latest.outcome_reason },
           human_review_required: latest?.outcome === 'human_review_required',
@@ -177,6 +174,6 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         return { status: 202, body: runView(run) };
       }),
     },
-    ...proposalRoutes(store, { settleAll }),
+    ...selectionRoutes(store, { settleAll, now }),
   ];
 }

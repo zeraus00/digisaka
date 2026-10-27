@@ -12,7 +12,7 @@ const name = computed(() => { const w = auth.email.split('@')[0].split(/[._-]/)[
 const greeting = computed(() => `WELCOME BACK${name.value ? ', ' + name.value.toUpperCase() : ''}`);
 const date = computed(() => today().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }));
 const sum = computed(() => dashboardSummary(lines.statuses));
-const STATUS = { proposed: 'Awaiting decision', approved: 'Approved', rejected: 'Rejected', applied: 'Applied' };
+const STATUS = { draft: 'Awaiting decision', approved: 'Approved', rejected: 'Rejected', superseded: 'Replaced', ended: 'Ended' };
 
 async function refresh() { spin.value = true; await lines.load(); setTimeout(() => (spin.value = false), 500); }
 onMounted(() => lines.load());
@@ -25,7 +25,7 @@ const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${en
       <div class="hero-copy">
         <p class="eyebrow">{{ greeting }}</p>
         <h1>Welcome back to <em>Digisaka</em></h1>
-        <p class="lead">Monitor banana crop health and review Black Sigatoka scans, proposals and treatments across your lines.</p>
+        <p class="lead">Monitor banana crop health and review Black Sigatoka scans, selections and treatments across your lines.</p>
       </div>
       <div class="hero-side">
         <div class="date">{{ date }}</div>
@@ -40,7 +40,7 @@ const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${en
       </button>
       <button class="action" type="button" @click="router.push('/history')">
         <span class="tile teal"><Icon name="history" /></span>
-        <span class="txt"><b>Diagnosis History</b><small>Review each line's weeks and proposals</small></span><i>›</i>
+        <span class="txt"><b>Diagnosis History</b><small>Review each line's weeks and selections</small></span><i>›</i>
       </button>
       <button class="action" type="button" @click="router.push('/schedule')">
         <span class="tile yellow">🗓️</span>
@@ -60,14 +60,14 @@ const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${en
     </section>
 
     <section>
-      <div class="section-head"><h2>Recent proposals</h2></div>
+      <div class="section-head"><h2>Recent selections</h2></div>
       <div v-if="lines.loaded && !sum.recent.length" class="empty">
-        No proposals yet. Scan a line and close its week to see one here.
+        No selections yet. Scan a line and close its week to see one here.
         <button type="button" @click="router.push('/scan')">Start a scan</button>
       </div>
       <button v-for="r in sum.recent" :key="r.lineId + r.week" class="recent" type="button" @click="open(r)">
         <span class="grow"><b>Line {{ r.lineId }}</b><small>{{ r.week }}</small></span>
-        <span class="badge" :class="r.status === 'proposed' ? 'warn' : 'ok'">{{ STATUS[r.status] ?? r.status }}</span>
+        <span class="badge" :class="r.status === 'draft' ? 'warn' : 'ok'">{{ STATUS[r.status] ?? r.status }}</span>
       </button>
     </section>
   </div>
