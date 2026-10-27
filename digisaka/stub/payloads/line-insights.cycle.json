@@ -1,0 +1,238 @@
+{
+  "line_id": "L03",
+  "week": "2026-W24",
+  "window_weeks": 8,
+  "functional_leaves_threshold": 8.0,
+  "series": [
+    {
+      "week": "2026-W17",
+      "yli": null,
+      "yls": null,
+      "functional_leaves": null,
+      "leaves_at_shooting": null,
+      "rainfall_mm": null
+    },
+    {
+      "week": "2026-W18",
+      "yli": null,
+      "yls": null,
+      "functional_leaves": null,
+      "leaves_at_shooting": null,
+      "rainfall_mm": null
+    },
+    {
+      "week": "2026-W19",
+      "yli": 6,
+      "yls": 10,
+      "functional_leaves": 8,
+      "leaves_at_shooting": 12,
+      "rainfall_mm": 8
+    },
+    {
+      "week": "2026-W20",
+      "yli": 5,
+      "yls": 9,
+      "functional_leaves": 8,
+      "leaves_at_shooting": 12,
+      "rainfall_mm": 15
+    },
+    {
+      "week": "2026-W21",
+      "yli": 5,
+      "yls": 8,
+      "functional_leaves": 7,
+      "leaves_at_shooting": 12,
+      "rainfall_mm": 20
+    },
+    {
+      "week": "2026-W22",
+      "yli": 4,
+      "yls": 7,
+      "functional_leaves": 7,
+      "leaves_at_shooting": 11,
+      "rainfall_mm": 32
+    },
+    {
+      "week": "2026-W23",
+      "yli": 4,
+      "yls": 6,
+      "functional_leaves": 6,
+      "leaves_at_shooting": 11,
+      "rainfall_mm": 40
+    },
+    {
+      "week": "2026-W24",
+      "yli": 3,
+      "yls": 5,
+      "functional_leaves": 6,
+      "leaves_at_shooting": 11,
+      "rainfall_mm": 44
+    }
+  ],
+  "readings": [
+    {
+      "rule": "R1 Disease trend",
+      "finding": "Disease is progressing",
+      "text": "YLS leaf 8 to leaf 6 over 3 weeks; YLI leaf 5 to leaf 3. A lower number means a younger leaf.",
+      "source": "Sample source A",
+      "sample_fact": true
+    },
+    {
+      "rule": "R3 Functional leaves",
+      "finding": "Few functional leaves",
+      "text": "Functional leaves 6, below the 8-leaf threshold.",
+      "source": null,
+      "sample_fact": false
+    }
+  ],
+  "risk": {
+    "status": "assessed",
+    "finding": "Favourable to infection",
+    "result": "fired",
+    "conditions": [
+      {
+        "label": "Rain over 0 mm in the last 2 weeks",
+        "result": "met",
+        "input": [
+          84.0
+        ]
+      },
+      {
+        "label": "Young leaves affected",
+        "result": "met",
+        "input": [
+          5.0,
+          3.0
+        ]
+      },
+      {
+        "label": "Shooting count at least 8",
+        "result": "cannot_check",
+        "input": [
+          null
+        ]
+      }
+    ]
+  },
+  "rain_outlook": {
+    "status": "ok",
+    "rain_above_mm": 0.0,
+    "days": [
+      {
+        "date": "2026-06-08",
+        "status": "rain",
+        "precipitation_mm": 12.4,
+        "temperature_c": 24.1,
+        "wind_kmh": 9.0
+      },
+      {
+        "date": "2026-06-09",
+        "status": "rain",
+        "precipitation_mm": 3.1,
+        "temperature_c": 25.0,
+        "wind_kmh": 11.5
+      },
+      {
+        "date": "2026-06-10",
+        "status": "dry",
+        "precipitation_mm": 0.0,
+        "temperature_c": 26.2,
+        "wind_kmh": 8.0
+      },
+      {
+        "date": "2026-06-11",
+        "status": "not_reported",
+        "precipitation_mm": null,
+        "temperature_c": 25.5,
+        "wind_kmh": 7.0
+      },
+      {
+        "date": "2026-06-12",
+        "status": "dry",
+        "precipitation_mm": 0.0,
+        "temperature_c": 26.0,
+        "wind_kmh": 6.5
+      }
+    ]
+  },
+  "history": [
+    {
+      "applied_on": "2026-05-12",
+      "product_id": "u-chlorothalonil",
+      "product": "Chlorothalonil",
+      "mode_of_action": "Multi-site contact (M)",
+      "source": "Sample source B",
+      "response": "not_poor"
+    },
+    {
+      "applied_on": "2026-05-26",
+      "product_id": "u-pyrimethanil",
+      "product": "Pyrimethanil",
+      "mode_of_action": "Anilinopyrimidine (9)",
+      "source": "Sample source B",
+      "response": "poor"
+    },
+    {
+      "applied_on": "2026-06-02",
+      "product_id": "u-chlorothalonil",
+      "product": "Chlorothalonil",
+      "mode_of_action": "Multi-site contact (M)",
+      "source": "Sample source B",
+      "response": "not_yet_reassessed"
+    }
+  ],
+  "history_coverage": "Application history covers only applications recorded in the scheduler since 2026-06-02, so earlier applications are not counted.",
+  "resistance_alerts": [
+    {
+      "kind": "discouraged",
+      "group": "M",
+      "count": 2,
+      "range_min": 2.0,
+      "range_max": 4.0,
+      "period": "crop cycle",
+      "source": "Sample source B",
+      "alternatives": [
+        "9"
+      ],
+      "text": "M: 2 recorded applications, at the discouraged level of its cap per crop cycle."
+    }
+  ],
+  "actions": {
+    "status": "assessed",
+    "kinds": [
+      {
+        "kind": "preventive",
+        "active": true,
+        "options": [
+          "Chlorothalonil application"
+        ]
+      },
+      {
+        "kind": "systemic_fungicide",
+        "active": true,
+        "options": [
+          "Pyrimethanil application"
+        ]
+      },
+      {
+        "kind": "contact_fungicide",
+        "active": true,
+        "options": [
+          "Chlorothalonil application"
+        ]
+      },
+      {
+        "kind": "mechanical",
+        "active": false,
+        "options": []
+      },
+      {
+        "kind": "monitoring",
+        "active": true,
+        "options": [
+          "Weekly monitoring"
+        ]
+      }
+    ]
+  }
+}

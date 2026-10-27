@@ -1,6 +1,7 @@
-// Stand-in for the scheduler API under /api/v1/scheduler: lines, history, evidence, scans and cycles.
+// Stand-in for the scheduler API under /api/v1/scheduler: lines, history, insights, evidence, scans and cycles.
 import { BASE, fail, ok, authed, isValidWeek } from './common.js';
 import { selectionRoutes, summaryOf, newDraft } from './selections.js';
+import { insightsRoutes } from './insights.js';
 
 // The canned answer for an image is chosen by its name; anything unrecognised is a stage 2 leaf.
 const SCENARIOS = ['healthy', 'not_leaf', 'referral', 'rescan', 'unavailable'];
@@ -175,5 +176,6 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
       }),
     },
     ...selectionRoutes(store, { settleAll, now }),
+    ...insightsRoutes(store, { settleAll }),
   ];
 }

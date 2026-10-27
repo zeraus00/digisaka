@@ -1,0 +1,161 @@
+{
+  "line_id": "L04",
+  "week": "2026-W24",
+  "window_weeks": 8,
+  "functional_leaves_threshold": 8.0,
+  "series": [
+    {
+      "week": "2026-W17",
+      "yli": null,
+      "yls": null,
+      "functional_leaves": null,
+      "leaves_at_shooting": null,
+      "rainfall_mm": null
+    },
+    {
+      "week": "2026-W18",
+      "yli": null,
+      "yls": null,
+      "functional_leaves": null,
+      "leaves_at_shooting": null,
+      "rainfall_mm": null
+    },
+    {
+      "week": "2026-W19",
+      "yli": null,
+      "yls": null,
+      "functional_leaves": null,
+      "leaves_at_shooting": null,
+      "rainfall_mm": null
+    },
+    {
+      "week": "2026-W20",
+      "yli": 5,
+      "yls": 9,
+      "functional_leaves": 8,
+      "leaves_at_shooting": 12,
+      "rainfall_mm": 18
+    },
+    {
+      "week": "2026-W21",
+      "yli": 6,
+      "yls": 9,
+      "functional_leaves": 8,
+      "leaves_at_shooting": 12,
+      "rainfall_mm": 22
+    },
+    {
+      "week": "2026-W22",
+      "yli": null,
+      "yls": 8,
+      "functional_leaves": 7,
+      "leaves_at_shooting": 11,
+      "rainfall_mm": 30
+    },
+    {
+      "week": "2026-W23",
+      "yli": 5,
+      "yls": 8,
+      "functional_leaves": 7,
+      "leaves_at_shooting": 11,
+      "rainfall_mm": 26
+    },
+    {
+      "week": "2026-W24",
+      "yli": null,
+      "yls": null,
+      "functional_leaves": null,
+      "leaves_at_shooting": null,
+      "rainfall_mm": 12
+    }
+  ],
+  "readings": [
+    {
+      "rule": "R1 Disease trend",
+      "finding": "Disease is progressing",
+      "text": "YLS leaf 9 to leaf 8 over 3 weeks. A lower number means a younger leaf.",
+      "source": null,
+      "sample_fact": true
+    }
+  ],
+  "risk": {
+    "status": "not_yet_assessed",
+    "finding": null,
+    "result": null,
+    "conditions": []
+  },
+  "rain_outlook": {
+    "status": "weather_not_yet_checked",
+    "rain_above_mm": 0.0,
+    "days": [
+      {
+        "date": "2026-06-08",
+        "status": "weather_not_yet_checked",
+        "precipitation_mm": null,
+        "temperature_c": null,
+        "wind_kmh": null
+      },
+      {
+        "date": "2026-06-09",
+        "status": "weather_not_yet_checked",
+        "precipitation_mm": null,
+        "temperature_c": null,
+        "wind_kmh": null
+      },
+      {
+        "date": "2026-06-10",
+        "status": "weather_not_yet_checked",
+        "precipitation_mm": null,
+        "temperature_c": null,
+        "wind_kmh": null
+      },
+      {
+        "date": "2026-06-11",
+        "status": "weather_not_yet_checked",
+        "precipitation_mm": null,
+        "temperature_c": null,
+        "wind_kmh": null
+      },
+      {
+        "date": "2026-06-12",
+        "status": "weather_not_yet_checked",
+        "precipitation_mm": null,
+        "temperature_c": null,
+        "wind_kmh": null
+      }
+    ]
+  },
+  "history": [],
+  "history_coverage": null,
+  "resistance_alerts": [],
+  "actions": {
+    "status": "not_yet_assessed",
+    "kinds": [
+      {
+        "kind": "preventive",
+        "active": false,
+        "options": []
+      },
+      {
+        "kind": "systemic_fungicide",
+        "active": false,
+        "options": []
+      },
+      {
+        "kind": "contact_fungicide",
+        "active": false,
+        "options": []
+      },
+      {
+        "kind": "mechanical",
+        "active": false,
+        "options": []
+      },
+      {
+        "kind": "monitoring",
+        "active": false,
+        "options": []
+      }
+    ]
+  }
+}
