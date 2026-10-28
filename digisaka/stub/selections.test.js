@@ -99,3 +99,27 @@ test('a unit id of the form Option|Product is recorded by its product, as the sc
   assert.ok(ids.length > 0);
   assert.ok(ids.every((id) => !id.includes('|')));
 });
+
+test('the dev date is read, set and reset with the scheduler\'s bodies', async () => {
+  assert.deepEqual((await call('GET', '/dev/today')).body, { today: '2026-06-08', default: '2026-06-08', pinned: false });
+  const set = await call('PUT', '/dev/today', { today: '2026-06-15' });
+  assert.deepEqual([set.status, set.body], [200, { today: '2026-06-15', default: '2026-06-08', pinned: true }]);
+  assert.deepEqual((await call('DELETE', '/dev/today')).body, { today: '2026-06-08', default: '2026-06-08', pinned: false });
+});
+
+test('a bad dev date is 400 validation_error and the token is needed', async () => {
+  for (const body of [{ today: 'June 8' }, { today: '2026-13-40' }, {}]) {
+    const bad = await call('PUT', '/dev/today', body);
+    assert.deepEqual([bad.status, bad.body.error], [400, 'validation_error']);
+  }
+  const res = await fetch(base + B + '/dev/today');
+  assert.equal(res.status, 401);
+});
+
+test('the set date moves the stub\'s future check and the approval period start', async () => {
+  assert.equal((await apply('sel-L02-23', 'u-pyrimethanil', '2026-06-12')).body.error, 'validation_error');
+  await call('PUT', '/dev/today', { today: '2026-06-15' });
+  assert.equal((await apply('sel-L02-23', 'u-pyrimethanil', '2026-06-12')).status, 201);
+  const approved = await post('sel-L03-24', 'approval', { acknowledged: [ACK] });
+  assert.equal(approved.body.approval_period.start, '2026-06-15');
+});

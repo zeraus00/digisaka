@@ -33,6 +33,10 @@ export const summaryOf = (sel) => ({ selection_id: sel.selection_id, origin_cycl
 export const newDraft = (lineId, cycleId, week) => ({ selection_id: `sel-${lineId}-${week.slice(6)}`, origin_cycle_id: cycleId, origin_week: week, status: 'draft', payload: 'draft', periods: [], decided_by: null, decided_at: null, note: null });
 
 export function selectionRoutes(store, { settleAll, now = Date.now }) {
+  // The date the stub treats as today: the dev date when one is set, else TODAY (the scheduler's DevClock).
+  const today = () => store.data.devToday ?? TODAY;
+  const todayView = () => ok({ today: today(), default: TODAY, pinned: store.data.devToday != null });
+  const validDay = (v) => typeof v === 'string' && DATE.test(v) && !Number.isNaN(Date.parse(v)) && new Date(v).toISOString().startsWith(v);
   const all = () => { settleAll(); return Object.entries(store.data.lines).flatMap(([lineId, line]) => line.selections.map((sel) => ({ lineId, line, sel }))); };
   const find = (id) => all().find((x) => x.sel.selection_id === id);
   const unknown = (id) => fail(404, 'unknown_selection', `No selection ${id}`);
@@ -56,10 +60,20 @@ export function selectionRoutes(store, { settleAll, now = Date.now }) {
   const note = (body) => (typeof body?.note === 'string' && body.note.trim() ? body.note.trim() : null);
   const decided = (sel) => ok({ selection_id: sel.selection_id, status: sel.status, decided_by: sel.decided_by, decided_at: sel.decided_at, note: sel.note, approval_period: periodView(sel) });
   const addPeriod = (sel, acknowledged) => {
-    sel.periods.push({ approval_period_id: `ap-${sel.selection_id.slice(4)}-${sel.periods.length + 1}`, start: TODAY, end: addDays(TODAY, 30), acknowledged });
+    sel.periods.push({ approval_period_id: `ap-${sel.selection_id.slice(4)}-${sel.periods.length + 1}`, start: today(), end: addDays(today(), 30), acknowledged });
   };
 
   return [
+    { method: 'GET', path: `${BASE}/dev/today`, handle: authed(() => todayView()) },
+    {
+      method: 'PUT', path: `${BASE}/dev/today`,
+      handle: authed(({ body }) => {
+        if (!validDay(body?.today)) return fail(400, 'validation_error', 'today: must be YYYY-MM-DD');
+        store.data.devToday = body.today;
+        return todayView();
+      }),
+    },
+    { method: 'DELETE', path: `${BASE}/dev/today`, handle: authed(() => { delete store.data.devToday; return todayView(); }) },
     {
       method: 'GET', path: `${BASE}/cycles/:id/selection`,
       handle: authed(({ params }) => {
@@ -119,7 +133,7 @@ export function selectionRoutes(store, { settleAll, now = Date.now }) {
         if (!hit) return unknown(params.id);
         const { sel, line } = hit;
         if (!DATE.test(body?.applied_on ?? '') || typeof body?.product_id !== 'string') return fail(400, 'validation_error', 'product_id and applied_on (YYYY-MM-DD) are required');
-        if (body.applied_on > TODAY) return fail(400, 'validation_error', 'applied_on must not be in the future');
+        if (body.applied_on > today()) return fail(400, 'validation_error', 'applied_on must not be in the future');
         if (!sel.periods.some((p) => p.start <= body.applied_on && body.applied_on <= p.end)) return fail(409, 'no_active_selection', 'No Approval Period of the selection covers that date');
         if (!productsOf(sel).includes(body.product_id)) return fail(409, 'product_not_in_selection', `${body.product_id} is not a unit of the selection`);
         if (line.applications.some((a) => a.selection_id === sel.selection_id && a.product_id === body.product_id && a.applied_on === body.applied_on)) return fail(409, 'application_already_recorded', 'The application was already recorded');
