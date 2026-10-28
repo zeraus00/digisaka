@@ -16,6 +16,11 @@ export const useCycleStore = defineStore('cycle', {
   actions: {
     reset() { this.run++; Object.assign(this, { phase: 'idle', cycle: null, error: '', busy: false }); },
     stop() { this.run++; },
+    // Keep only a cycle that belongs to the line-week on screen; a close in flight is left alone.
+    follow(line, week) {
+      if (this.busy || (this.cycle?.line_id === line && this.cycle?.week === week)) return;
+      this.reset();
+    },
     async close(line, week, wait = sleep) {
       if (this.busy) return;
       this.run++; const run = this.run;

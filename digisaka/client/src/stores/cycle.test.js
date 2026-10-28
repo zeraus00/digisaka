@@ -76,6 +76,28 @@ describe('close', () => {
   });
 });
 
+describe('follow', () => {
+  it('clears a finished cycle that belongs to another line-week', () => {
+    const s = useCycleStore();
+    Object.assign(s, { phase: 'selection', cycle: done({ line_id: 'L05', week: '2026-W24' }) });
+    s.follow('L06', '2026-W24');
+    expect(s.phase).toBe('idle');
+    expect(s.cycle).toBeNull();
+  });
+  it('keeps the cycle of the line-week being scanned', () => {
+    const s = useCycleStore();
+    Object.assign(s, { phase: 'selection', cycle: done({ line_id: 'L06', week: '2026-W24' }) });
+    s.follow('L06', '2026-W24');
+    expect(s.phase).toBe('selection');
+  });
+  it('leaves a close in flight alone', () => {
+    const s = useCycleStore();
+    Object.assign(s, { phase: 'closing', busy: true });
+    s.follow('L06', '2026-W24');
+    expect(s.phase).toBe('closing');
+  });
+});
+
 describe('failed cycle and retry', () => {
   it('shows failed with the reason, and retry runs a new cycle to its end', async () => {
     fetchMock.mockResolvedValueOnce(json(200, cyc({ status: 'failed', failure_reason: 'boom' })))

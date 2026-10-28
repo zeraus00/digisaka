@@ -32,7 +32,7 @@ onMounted(async () => {
   if (!scan.line && farm.lines.length) scan.select(farm.lines[0], scan.week);
 });
 // Runs before onMounted picks the first line (a no-op until a line is set), then on every line or week change.
-watch(() => [scan.line, scan.week], () => addDefaultSamples(scan), { immediate: true });
+watch(() => [scan.line, scan.week], () => { cycle.follow(scan.line, scan.week); addDefaultSamples(scan); }, { immediate: true });
 onBeforeUnmount(() => { cycle.stop(); for (const u of previews.values()) URL.revokeObjectURL(u); });
 
 const preview = (leaf) => {
@@ -236,7 +236,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
         </template>
         <template v-else-if="cycle.phase === 'selection'">
           <h2>A treatment selection is ready</h2>
-          <RouterLink class="btn primary" :to="`/treatment/${encodeURIComponent(scan.line)}/${encodeURIComponent(scan.week)}`">Open selection</RouterLink>
+          <RouterLink class="btn primary" :to="`/treatment/${encodeURIComponent(cycle.cycle?.line_id ?? scan.line)}/${encodeURIComponent(cycle.cycle?.week ?? scan.week)}`">Open selection</RouterLink>
         </template>
         <template v-else-if="cycle.phase === 'monitoring'">
           <h2>No treatment needed yet</h2>
