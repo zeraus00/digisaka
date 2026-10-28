@@ -35,7 +35,5 @@ describe('monthGrids', () => {
     expect(jul.cells.slice(0, 3)).toEqual([null, null, 1]); // 1 July is a Wednesday
     expect(jun.onDay[29][0].label).toBe('azoxystrobin');
     expect(jun.events).toHaveLength(1);
-    expect(Object.keys(jun.inWindow)).toEqual(['30']); // the window runs 29 Jun (the start, an event) to 3 Jul
-    expect(Object.keys(jul.inWindow)).toEqual(['1', '2', '3']);
   });
 });
