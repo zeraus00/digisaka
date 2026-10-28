@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { checkLabel, humanDetail, unitGroup, GROUP_LABEL, titleCase, sentenceCase, stripChecks, RESULT_LABEL } from '../helpers/checks.js';
+import { checkLabel, humanDetail, unitGroup, GROUP_LABEL, titleCase, sentenceCase, explainMoa, stripChecks, RESULT_LABEL } from '../helpers/checks.js';
 
 const props = defineProps({ unit: { type: Object, required: true } });
 const KIND = { carrier: 'Add', property: 'Needs', excluded: 'Do not mix with' };
@@ -10,8 +10,9 @@ const all = computed(() => (props.unit.checks ?? []).map((c) => ({ ...c, label: 
 const passed = computed(() => all.value.filter((c) => c.result === 'pass').length);
 const meta = computed(() => {
   const u = props.unit;
+  const multisite = u.multisite ?? u.resistance?.multisite;
   const frac = u.frac ?? u.details?.frac_code ?? u.moa;
-  return [frac && `FRAC ${frac}`, u.multisite != null && (u.multisite ? 'Multi-site' : 'Single-site'), ...(u.details?.plant_mobility ?? []).map(sentenceCase)].filter(Boolean).join(' · ');
+  return [frac && `FRAC ${frac}${u.details?.chemical_group ? ` (${u.details.chemical_group})` : ''}`, multisite != null && (multisite ? 'Multi-site' : 'Single-site'), ...(u.details?.plant_mobility ?? []).map(sentenceCase)].filter(Boolean).join(' · ');
 });
 </script>
 
@@ -19,7 +20,7 @@ const meta = computed(() => {
   <article class="pcard" :class="group">
     <div class="top"><h4>{{ titleCase(unit.product) }}</h4><span class="pill" :class="group">{{ GROUP_LABEL[group] }}</span></div>
     <p v-if="meta" class="sub">{{ meta }}</p>
-    <ul v-if="unit.conditions?.length" class="conds"><li v-for="c in unit.conditions" :key="c.kind + c.label">{{ KIND[c.kind] ?? c.kind }}: {{ c.label }}</li></ul>
+    <ul v-if="unit.conditions?.length" class="conds"><li v-for="c in unit.conditions" :key="c.kind + c.label">{{ KIND[c.kind] ?? c.kind }}: {{ explainMoa(c.label) }}</li></ul>
     <div v-for="s in strips" :key="s.check" class="strip" :class="s.result">
       <b>{{ s.label }}:</b> {{ s.text ?? RESULT_LABEL[s.result] }}<small v-if="s.source" class="src">Source: {{ s.source }}</small>
     </div>

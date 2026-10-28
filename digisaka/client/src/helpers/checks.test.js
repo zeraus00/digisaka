@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { humanDetail, unitGroup, stripChecks, titleCase, sentenceCase } from './checks.js';
+import { humanDetail, unitGroup, stripChecks, titleCase, sentenceCase, explainMoa } from './checks.js';
 
 describe('humanDetail', () => {
   it('splits the group cap into a count, a range and a source', () => {
@@ -47,4 +47,12 @@ describe('casing', () => {
     expect(titleCase('paviso 13WP')).toBe('Paviso 13WP');
   });
   it('sentence-cases a phrase', () => expect(sentenceCase('systemic')).toBe('Systemic'));
+});
+
+describe('explainMoa', () => {
+  it('adds the meaning of M and leaves other groups alone', () => {
+    expect(explainMoa('Mode of action M')).toBe('Mode of action M (multi-site)');
+    expect(explainMoa('Mode of action B1')).toBe('Mode of action B1');
+    expect(humanDetail('mixture', 'not checked by the scheduler (carrier: Straight mineral oil; property: Mode of action M)').text).toContain('Needs: Mode of action M (multi-site).');
+  });
 });

@@ -6,6 +6,9 @@ export const CHECK_LABEL = {
 };
 export const checkLabel = (check) => CHECK_LABEL[check] ?? check.replace(/_/g, ' ');
 
+// The payload's `multisite` flag is what the group code M means; other letters stay bare until a cited source gives their meaning.
+export const explainMoa = (s) => (s ?? '').replace(/\bMode of action M\b/g, 'Mode of action M (multi-site)');
+
 const PER = { 'crop cycle': 'per crop cycle', 'calendar year': 'per calendar year' };
 const READERS = {
   group_cap(d) {
@@ -33,7 +36,7 @@ const READERS = {
     const KIND = { carrier: 'Add', property: 'Needs' };
     const parts = m[1].split('; ').map((p) => p.match(/^(carrier|property): (.+)$/));
     if (parts.some((p) => !p)) return null;
-    return { text: `The scheduler does not check this, so check it yourself. ${parts.map((p) => `${KIND[p[1]]}: ${p[2]}.`).join(' ')}` };
+    return { text: `The scheduler does not check this, so check it yourself. ${parts.map((p) => `${KIND[p[1]]}: ${explainMoa(p[2])}.`).join(' ')}` };
   },
   resistance_risk(d) {
     const parts = d.split(', ');
