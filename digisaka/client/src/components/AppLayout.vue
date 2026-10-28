@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
+import { useDevClockStore } from '../stores/devClock.js';
 import Icon from './Icon.vue';
 import { useAccountMenu } from './useAccountMenu.js';
 
@@ -15,6 +16,8 @@ const MENU = [
   { to: '/history', label: 'Diagnosis History', icon: 'history' },
   { to: '/schedule', label: 'Treatment Schedule', icon: 'calendar' },
 ];
+
+onMounted(() => useDevClockStore().load());
 
 const { menuOpen, narrow, account, avatar, toggleMenu, closeMenu } = useAccountMenu(route);
 function signOut() { closeMenu(); auth.signOut(); router.push('/login'); }

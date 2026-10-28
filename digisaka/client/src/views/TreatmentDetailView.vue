@@ -6,7 +6,7 @@ import EvidenceCharts from '../components/EvidenceCharts.vue';
 import { useSelectionStore, productOf } from '../stores/selection.js';
 import { outcomeReasonText } from '../helpers/messages.js';
 import { orderAlerts, causeLabel, approveState, ACK_MEANING, LEVEL_ICON } from '../helpers/alerts.js';
-import { todayIso } from '../helpers/today.js';
+import { todayIso, keepIfEdited } from '../helpers/today.js';
 
 const route = useRoute(), store = useSelectionStore();
 const lineId = computed(() => String(route.params.lineId));
@@ -45,6 +45,7 @@ async function done(work) { await work; if (!store.error) { note.value = ''; ack
 const approve = () => done(store.approve(acked.value, note.value));
 const reject = () => done(store.reject(note.value));
 const renew = () => done(store.renew(acked.value, note.value));
+watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value, old, next); });
 const record = () => store.apply(productId.value, appliedOn.value);
 const productName = (id) => products.value.find((u) => productOf(u.unit_id) === id)?.product ?? id;
 </script>

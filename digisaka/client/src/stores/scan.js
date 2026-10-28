@@ -28,6 +28,10 @@ export const useScanStore = defineStore('scan', {
   },
   actions: {
     // Changing the line or week starts a fresh set: sessions belong to one line-week.
+    // A new default date moves the week only for a scan that has not started and still sits on the old default.
+    followToday(oldWeek, newWeek) {
+      if (!this.leaves.length && this.week === oldWeek) this.week = newWeek;
+    },
     select(line, week) {
       if (line === this.line && week === this.week) return;
       this.line = line; this.week = week; this.leaves = []; this.notice = ''; this.log = [];

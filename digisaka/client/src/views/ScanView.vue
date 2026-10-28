@@ -11,17 +11,21 @@ import { useCycleStore } from '../stores/cycle.js';
 import { groupLeaves } from '../helpers/groups.js';
 import { previousWeek, nextWeek, isoWeekOf, weekStart, weekEnd } from '../helpers/week.js';
 import { outcomeReasonText, REFERRAL_TEXT } from '../helpers/messages.js';
-import { todayIso, fromIso } from '../helpers/today.js';
+import { todayIso, fromIso, keepIfEdited } from '../helpers/today.js';
 import { samplesEnabled, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
 const scan = useScanStore(), farm = useFarmStore(), cycle = useCycleStore();
 const step = ref(1); // 1 Select Leaves, 2 Bulk Assess, 3 Results
 const STEPS = ['Select Leaves', 'Bulk Assess', 'Results'];
 const AGENT_STEPS = ['Leaf Images Collected', 'Black Sigatoka Validation', 'Individual Stage Assessment', 'Stage Groups Organized', 'Human Verification', 'Treatment Recommendation', 'Schedule Review'];
-const maxDate = todayIso();                 // scans can't be added to a future week
-const dateInput = ref(maxDate);
+const maxDate = computed(() => todayIso()); // scans can't be added to a future week
+const dateInput = ref(maxDate.value);
+watch(maxDate, (next, old) => {
+  dateInput.value = keepIfEdited(dateInput.value, old, next);
+  scan.followToday(isoWeekOf(fromIso(old)), isoWeekOf(fromIso(next)));
+});
 const weekRange = computed(() => (scan.weekOk ? `${weekStart(scan.week)} to ${weekEnd(scan.week)}` : ''));
-const atLatest = computed(() => scan.week >= isoWeekOf(fromIso(maxDate)));
+const atLatest = computed(() => scan.week >= isoWeekOf(fromIso(maxDate.value)));
 const gallery = ref(null), camera = ref(null), rescanInput = ref(null), logBox = ref(null);
 const rescanId = ref(null);
 const stubSamples = samplesEnabled(); // only true on the stub stack (docker-compose.stub.yml)
@@ -44,7 +48,7 @@ const setDate = () => { if (dateInput.value) scan.select(scan.line, isoWeekOf(fr
 const stepWeek = (fn) => {
   const w = fn(scan.week);
   const start = weekStart(w);
-  dateInput.value = start > maxDate ? maxDate : start;
+  dateInput.value = start > maxDate.value ? maxDate.value : start;
   scan.select(scan.line, w);
 };
 const picked = (e) => { scan.addFiles([...e.target.files]); e.target.value = ''; };
