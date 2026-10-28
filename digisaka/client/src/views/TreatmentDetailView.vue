@@ -3,6 +3,7 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
+import ScheduleCalendar from '../components/ScheduleCalendar.vue';
 import { useSelectionStore, productOf } from '../stores/selection.js';
 import { outcomeReasonText } from '../helpers/messages.js';
 import { orderAlerts, causeLabel, approveState, ACK_MEANING, LEVEL_ICON } from '../helpers/alerts.js';
@@ -109,6 +110,8 @@ const productName = (id) => products.value.find((u) => productOf(u.unit_id) === 
         </div>
         <div class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy" @click="record">Record application</button></div>
       </section>
+
+      <ScheduleCalendar :days="store.preview?.days ?? []" :applications="store.applications" />
 
       <EvidenceCharts :cycle-id="store.cycle?.cycle_id ?? ''" />
     </template>
