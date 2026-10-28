@@ -15,8 +15,9 @@ const week = computed(() => String(route.params.week));
 const sel = computed(() => store.selection);
 
 const period = computed(() => sel.value?.approval_period);
-// The selectable units are the products an application can be recorded for.
-const products = computed(() => (sel.value?.units ?? []).filter((u) => u.selectable !== false));
+// The units in the Selection are the products an application can be recorded for.
+const products = computed(() => (sel.value?.units ?? []).filter((u) => u.selectable !== false && !u.excluded_from_schedule));
+const KIND = { carrier: 'Add', property: 'Needs', excluded: 'Do not mix with' };
 const alerts = computed(() => orderAlerts(store.preview?.alerts ?? []));
 const unitOf = (a) => a.unit_id ?? store.required.find((r) => r.id === a.id)?.unit_id;
 const unitName = (a) => sel.value?.units.find((u) => u.unit_id === unitOf(a));
@@ -63,7 +64,8 @@ const productName = (id) => products.value.find((u) => u.unit_id === id)?.produc
         <p class="meta">{{ period.start ? `Approval period ${period.start} to ${period.end} (${period.days} days)` : 'Not approved yet — no approval period.' }}</p>
         <ul class="units">
           <li v-for="u in sel.units" :id="`unit-${u.unit_id}`" :key="u.unit_id">
-            <b>{{ u.product }}</b> <small>{{ u.moa }}<template v-if="u.excluded_from_schedule"> · left out of the schedule</template><template v-if="u.selectable === false"> · not selectable</template></small>
+            <b>{{ u.product }}</b> <small>{{ u.moa }}<template v-if="u.selectable === false"> · not selectable</template><template v-else-if="u.excluded_from_schedule"> · not in this Selection</template></small>
+            <ul v-if="u.conditions?.length" class="conditions"><li v-for="c in u.conditions" :key="c.kind + c.label">{{ KIND[c.kind] ?? c.kind }}: {{ c.label }}</li></ul>
             <ul v-if="u.checks?.length" class="checks"><li v-for="c in u.checks" :key="c.check">{{ c.check }}: {{ c.result }}<template v-if="c.detail"> ({{ c.detail }})</template></li></ul>
           </li>
         </ul>

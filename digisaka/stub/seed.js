@@ -64,7 +64,9 @@ const seed = () => ({
     L06: {
       weeks: [wk('2026-W21', 9, 6, 20), wk('2026-W22', 9, 6, 22), wk('2026-W23', 9, 5, 25)],
       cycles: [{ cycle_id: 'c-L06-23', week: '2026-W23', status: 'done', outcome: 'continue_monitoring', outcome_reason: 'disease_not_worsening', evidence: null }],
-      selections: [], applications: [], leaves: 6,
+      // A fresh-line draft recorded from the scheduler (payload `real`): only Cannot-Check Alerts to acknowledge.
+      selections: [{ selection_id: 'sel-L06-23', origin_cycle_id: 'c-L06-23', origin_week: '2026-W23', status: 'draft', payload: 'real', periods: [], decided_by: null, decided_at: null, note: null }],
+      applications: [], leaves: 6,
     },
   },
 });

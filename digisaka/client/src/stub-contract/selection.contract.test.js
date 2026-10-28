@@ -106,4 +106,31 @@ describe('selection store against the stub', () => {
     await s.apply('u-spiroxamine', '2026-06-05');
     expect(s.error).toBe('No approval period of this selection covers that date.');
   });
+
+  it('reads the recorded real payload: a fresh draft with only acknowledgements, approvable once given', async () => {
+    const s = useSelectionStore();
+    await s.load('L06', '2026-W23');
+    expect(s).toMatchObject({ phase: 'ready', status: 'draft' });
+    expect(s.selection).toMatchObject({ blockers: [] });
+    expect(s.required.length).toBeGreaterThan(0);
+    expect(s.required.every((a) => a.kind === 'cannot_check')).toBe(true);
+    await s.approve([]);
+    expect(s.error).toBe('Acknowledge every listed check before approving.');
+    await s.approve(s.required.map((a) => a.id));
+    expect(s).toMatchObject({ status: 'approved', error: '' });
+  });
+
+  it('serves the unpicked units of the real payload but refuses to record against one', async () => {
+    const s = useSelectionStore();
+    await s.load('L06', '2026-W23');
+    const unpicked = s.selection.units.filter((u) => u.excluded_from_schedule && u.selectable !== false);
+    const picked = s.selection.units.find((u) => !u.excluded_from_schedule);
+    expect(unpicked.length).toBeGreaterThan(0);
+    expect(s.selection.units.some((u) => u.conditions?.length)).toBe(true);
+    await s.approve(s.required.map((a) => a.id));
+    await s.apply(unpicked[0].unit_id, '2026-06-08');
+    expect(s.error).toBe('That product is not part of this selection.');
+    await s.apply(picked.unit_id, '2026-06-08');
+    expect(s.error).toBe('');
+  });
 });

@@ -7,11 +7,12 @@ import { BASE, fail, ok, authed } from './common.js';
 // The 0004 clean and stressed payloads, shifted 20 weeks earlier so their dates meet the app's demo today
 // (see client/src/helpers/today.js). `draft` is the stressed one with nothing blocking: it only needs an acknowledgement.
 const load = (name) => JSON.parse(readFileSync(new URL(`./payloads/selection-preview.${name}.json`, import.meta.url), 'utf8'));
-const clean = load('clean'), stressed = load('stressed');
+// `real` is recorded from a fresh-line run of the scheduler (its tests/scheduler/fixtures copy); it changes only when re-recorded.
+const clean = load('clean'), stressed = load('stressed'), real = load('real');
 const draft = structuredClone(stressed);
 Object.assign(draft.selection, { approvable: true, blockers: [] });
 draft.preview.alerts = draft.preview.alerts.filter((a) => a.kind !== 'cap_exceeded');
-const PAYLOADS = { clean, stressed, draft };
+const PAYLOADS = { clean, stressed, draft, real };
 
 export const TODAY = '2026-06-08';
 const DAY = 86400000;
@@ -19,8 +20,8 @@ const addDays = (iso, n) => new Date(Date.parse(iso) + n * DAY).toISOString().sl
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const PRACTITIONER = 'stub-practitioner';
 
-// A product here is the unit id of the payload; a unit the sequencer cannot select is not offered.
-export const productsOf = (sel) => PAYLOADS[sel.payload].selection.units.filter((u) => u.selectable !== false).map((u) => u.unit_id);
+// A product here is the unit id of the payload; a unit the sequencer cannot select, or left out of the Selection, is not offered.
+export const productsOf = (sel) => PAYLOADS[sel.payload].selection.units.filter((u) => u.selectable !== false && !u.excluded_from_schedule).map((u) => u.unit_id);
 const lastPeriod = (sel) => sel.periods.at(-1);
 const periodView = (sel) => ({ approval_period_id: lastPeriod(sel)?.approval_period_id ?? null, start: lastPeriod(sel)?.start ?? null, end: lastPeriod(sel)?.end ?? null, days: 30 });
 const ackIds = (p) => [...p.selection.acknowledgements_required.map((a) => a.id), ...p.preview.alerts.filter((a) => a.id).map((a) => a.id)];
