@@ -4,6 +4,7 @@ import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useDevClockStore } from '../stores/devClock.js';
 import Icon from './Icon.vue';
+import DevDateBar from './DevDateBar.vue';
 import { useAccountMenu } from './useAccountMenu.js';
 
 const scroller = ref(null);
@@ -68,6 +69,7 @@ function signOut() { closeMenu(); auth.signOut(); router.push('/login'); }
         </RouterView>
       </main>
     </div>
+    <DevDateBar />
   </div>
 </template>
 
