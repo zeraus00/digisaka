@@ -25,7 +25,9 @@ export const ACK_MEANING = 'Acknowledging means you will check this yourself bef
 
 // Approve is off while the selection is not approvable or a Cannot-Check box is unticked; `reason` says why.
 export function approveState({ approvable, blockers = [], required = [], acked = [] }) {
-  if (!approvable) return { ok: false, reason: blockers.length ? `Approve is off: ${blockers.map((b) => b.text).join(' ')}` : 'Approve is off: this selection cannot be approved.' };
+  if (blockers.length) return { ok: false, reason: `Approve is off: ${blockers.map((b) => b.text).join(' ')}` };
+  // The scheduler's `approvable` is false while acknowledgements are pending, so it only decides when none are.
+  if (!approvable && !required.length) return { ok: false, reason: 'Approve is off: this selection cannot be approved.' };
   if (!required.every((id) => acked.includes(id))) return { ok: false, reason: 'Acknowledge every Cannot-Check item to approve.' };
   return { ok: true, reason: '' };
 }

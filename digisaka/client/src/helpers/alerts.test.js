@@ -31,6 +31,13 @@ describe('approveState', () => {
     expect(approveState({ approvable: true, required, acked: ['a'] }).ok).toBe(false);
     expect(approveState({ approvable: true, required, acked: ['b', 'a'] })).toEqual({ ok: true, reason: '' });
   });
+  it('a draft with no errors and unticked boxes is not approvable yet, so ticking them enables approve', () => {
+    expect(approveState({ approvable: false, required, acked: ['a'] }).reason).toBe('Acknowledge every Cannot-Check item to approve.');
+    expect(approveState({ approvable: false, required, acked: required }).ok).toBe(true);
+  });
+  it('approvable false with nothing to acknowledge keeps approve off', () => {
+    expect(approveState({ approvable: false, required: [] }).ok).toBe(false);
+  });
   it('an error keeps approve off, with the reason, even when everything is acknowledged', () => {
     const s = approveState({ approvable: false, blockers: [{ text: 'D1 over cap.' }], required, acked: required });
     expect(s.ok).toBe(false);
