@@ -4,6 +4,8 @@ import { messageFor } from '../helpers/messages.js';
 
 const base = '/api/v1/scheduler';
 const e = encodeURIComponent;
+// A unit id is `Option|Product`; the scheduler records and checks the product alone.
+export const productOf = (unitId) => unitId.split('|').pop();
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 // Codes that mean another tab or an earlier request got there first: show the real state again.
 const STALE = ['selection_not_draft', 'selection_not_renewable', 'application_already_recorded'];
@@ -72,7 +74,7 @@ export const useSelectionStore = defineStore('selection', {
       return this._act(async () => {
         if (!productId) throw Object.assign(new Error('product'), { code: 'validation_error' });
         if (!DATE.test(appliedOn ?? '')) throw Object.assign(new Error('date'), { code: 'invalid_date' });
-        await api.post(`${base}/selections/${e(this.selection.selection_id)}/applications`, { product_id: productId, applied_on: appliedOn });
+        await api.post(`${base}/selections/${e(this.selection.selection_id)}/applications`, { product_id: productOf(productId), applied_on: appliedOn });
       });
     },
   },

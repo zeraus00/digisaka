@@ -20,8 +20,8 @@ const addDays = (iso, n) => new Date(Date.parse(iso) + n * DAY).toISOString().sl
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const PRACTITIONER = 'stub-practitioner';
 
-// A product here is the unit id of the payload; a unit the sequencer cannot select, or left out of the Selection, is not offered.
-export const productsOf = (sel) => PAYLOADS[sel.payload].selection.units.filter((u) => u.selectable !== false && !u.excluded_from_schedule).map((u) => u.unit_id);
+// A product here is the part of a unit id after `Option|`, as the scheduler records it; a unit the sequencer cannot select, or left out of the Selection, is not offered.
+export const productsOf = (sel) => PAYLOADS[sel.payload].selection.units.filter((u) => u.selectable !== false && !u.excluded_from_schedule).map((u) => u.unit_id.split('|').pop());
 const lastPeriod = (sel) => sel.periods.at(-1);
 const periodView = (sel) => ({ approval_period_id: lastPeriod(sel)?.approval_period_id ?? null, start: lastPeriod(sel)?.start ?? null, end: lastPeriod(sel)?.end ?? null, days: 30 });
 const ackIds = (p) => [...p.selection.acknowledgements_required.map((a) => a.id), ...p.preview.alerts.filter((a) => a.id).map((a) => a.id)];

@@ -2,6 +2,7 @@ import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createStub } from './server.js';
 import { SAMPLE_USERS, issueToken } from './supabase.js';
+import { productsOf } from './selections.js';
 
 const B = '/api/v1/scheduler';
 const farmer = { Authorization: `Bearer ${issueToken(SAMPLE_USERS[0])}`, 'Content-Type': 'application/json' };
@@ -91,4 +92,10 @@ test('a selection made by closing a week can be read and approved', async () => 
   const sel = (await read('c-L04-24')).selection;
   assert.deepEqual([sel.selection_id, sel.status], ['sel-L04-24', 'draft']);
   assert.equal((await post(sel.selection_id, 'approval', { acknowledged: [ACK] })).status, 200);
+});
+
+test('a unit id of the form Option|Product is recorded by its product, as the scheduler does', () => {
+  const ids = productsOf({ payload: 'real' });
+  assert.ok(ids.length > 0);
+  assert.ok(ids.every((id) => !id.includes('|')));
 });

@@ -138,6 +138,12 @@ describe('apply', () => {
     expect(postBody()).toEqual({ product_id: 'u-a', applied_on: '2026-06-11' });
     expect(s.applications).toEqual([app]);
   });
+  it('sends the product of an Option|Product unit id, which is what the scheduler records', async () => {
+    const s = await approved();
+    routes({ 'POST /selections/s1/applications': json(201, {}), 'GET /lines/L04': json(200, lineStatus()), 'GET /cycles/c1/selection': json(200, sel('approved')), 'GET /cycles/c1': json(200, cyc()) });
+    await s.apply('http://x#PracMorpholineApplication|http://x#FungicideFenpropimorph', '2026-06-11');
+    expect(postBody()).toEqual({ product_id: 'http://x#FungicideFenpropimorph', applied_on: '2026-06-11' });
+  });
   it('refuses a malformed date without calling the scheduler', async () => {
     const s = await approved();
     fetchMock.mockClear();
