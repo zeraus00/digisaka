@@ -124,7 +124,7 @@ describe('renew', () => {
     const s = await loaded();
     routes({ 'POST /selections/s1/renewal': json(409, { error: 'selection_not_renewable' }), 'GET /lines/L04': json(200, lineStatus()), 'GET /cycles/c1/selection': json(200, sel()), 'GET /cycles/c1': json(200, cyc()) });
     await s.renew([]);
-    expect(s.error).toBe('Only an approved selection can be renewed.');
+    expect(s.error).toBe('This selection cannot be renewed: it must be approved, and it can be renewed only once for each start date.');
   });
 });
 

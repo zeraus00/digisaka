@@ -75,7 +75,7 @@ describe('selection store against the stub', () => {
     expect(s.selection.approval_period.approval_period_id).toBe('ap-L02-23-2');
     await s.load('L03', WEEK);
     await s.renew([]);
-    expect(s.error).toBe('Only an approved selection can be renewed.');
+    expect(s.error).toBe('This selection cannot be renewed: it must be approved, and it can be renewed only once for each start date.');
   });
 
   it('records an application inside the period and lists it', async () => {

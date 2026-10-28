@@ -8,7 +8,7 @@ const MESSAGES = {
   unknown_session: 'That scan does not belong to this line-week.',
   week_not_verified: 'Finish at least one scan, including its symptom confirmation, before closing the week.',
   selection_not_draft: 'This selection was already decided.',
-  selection_not_renewable: 'Only an approved selection can be renewed.',
+  selection_not_renewable: 'This selection cannot be renewed: it must be approved, and it can be renewed only once for each start date.',
   selection_not_approvable: 'A blocking alert has to be resolved before this selection can be approved.',
   acknowledgements_required: 'Acknowledge every listed check before approving.',
   no_active_selection: 'No approval period of this selection covers that date.',
