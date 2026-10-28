@@ -3,9 +3,11 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
+import ProductCard from '../components/ProductCard.vue';
 import ScheduleCalendar from '../components/ScheduleCalendar.vue';
 import { useSelectionStore, productOf } from '../stores/selection.js';
 import { outcomeReasonText } from '../helpers/messages.js';
+import { unitGroup } from '../helpers/checks.js';
 import { orderAlerts, causeLabel, approveState, ACK_MEANING, LEVEL_ICON } from '../helpers/alerts.js';
 import { todayIso, keepIfEdited } from '../helpers/today.js';
 
@@ -18,7 +20,9 @@ const sel = computed(() => store.selection);
 const period = computed(() => sel.value?.approval_period);
 // The units in the Selection are the products an application can be recorded for.
 const products = computed(() => (sel.value?.units ?? []).filter((u) => u.selectable !== false && !u.excluded_from_schedule));
-const KIND = { carrier: 'Add', property: 'Needs', excluded: 'Do not mix with' };
+const byGroup = (g) => (sel.value?.units ?? []).filter((u) => unitGroup(u) === g);
+const shown = computed(() => [...byGroup('recommended'), ...byGroup('eligible')]);
+const excluded = computed(() => byGroup('excluded'));
 const alerts = computed(() => orderAlerts(store.preview?.alerts ?? []));
 const unitOf = (a) => a.unit_id ?? store.required.find((r) => r.id === a.id)?.unit_id;
 const unitName = (a) => sel.value?.units.find((u) => u.unit_id === unitOf(a));
@@ -64,13 +68,17 @@ const productName = (id) => products.value.find((u) => productOf(u.unit_id) === 
       <section class="prop-card">
         <h3>Products</h3>
         <p class="meta">{{ period.start ? `Approval period ${period.start} to ${period.end} (${period.days} days)` : 'Not approved yet — no approval period.' }}</p>
+        <p class="meta counts">{{ byGroup('recommended').length }} recommended · {{ byGroup('eligible').length }} eligible · {{ excluded.length }} excluded</p>
         <ul class="units">
-          <li v-for="u in sel.units" :id="`unit-${u.unit_id}`" :key="u.unit_id">
-            <b>{{ u.product }}</b> <small>{{ u.moa }}<template v-if="u.selectable === false"> · not selectable</template><template v-else-if="u.excluded_from_schedule"> · not in this Selection</template></small>
-            <ul v-if="u.conditions?.length" class="conditions"><li v-for="c in u.conditions" :key="c.kind + c.label">{{ KIND[c.kind] ?? c.kind }}: {{ c.label }}</li></ul>
-            <ul v-if="u.checks?.length" class="checks"><li v-for="c in u.checks" :key="c.check">{{ c.check }}: {{ c.result }}<template v-if="c.detail"> ({{ c.detail }})</template></li></ul>
-          </li>
+          <li v-for="u in shown" :id="`unit-${u.unit_id}`" :key="u.unit_id"><ProductCard :unit="u" /></li>
         </ul>
+        <details v-if="excluded.length" class="excl">
+          <summary><b>{{ excluded.length }} excluded</b> · Show why</summary>
+          <ul class="units">
+            <li v-for="u in excluded" :id="`unit-${u.unit_id}`" :key="u.unit_id"><ProductCard :unit="u" /></li>
+          </ul>
+        </details>
+        <p class="meta soon">Recommended products are the schedule's pick. Choosing among the eligible ones yourself is planned, not available yet.</p>
         <div v-for="a in alerts" :key="a.id ?? a.text" class="alert" :class="a.level">
           <span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}
           <span v-if="a.new_since_approval" class="badge">New since approval</span>
@@ -142,9 +150,11 @@ const productName = (id) => products.value.find((u) => productOf(u.unit_id) === 
 .mark { margin-top: 10px; padding: 10px 16px; border: 0; border-radius: 12px; background: var(--forest); color: #fff; font: 800 14px var(--font-display); }
 .mark:disabled { opacity: .45; }
 .datefield { width: 100%; padding: 12px; margin-bottom: 14px; border: 1px solid var(--line); border-radius: 12px; font: 600 15px var(--font-body); }
-.prop-card .units { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-.units li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; }
-.units small, .meta small { color: var(--ink-soft); }
+.prop-card .units { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.units li { scroll-margin-top: 12px; }
+.excl { margin-top: 12px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 18px; background: #F4F4F4; } .excl summary { cursor: pointer; color: var(--forest); }
+.soon { margin-top: 10px; font-size: 13px; }
+.meta small { color: var(--ink-soft); }
 .alert { margin-top: 8px; padding: 10px 12px; border-radius: 12px; font-size: 14px; background: #E3F2F0; }
 .alert.warning { background: #FCE7C8; } .alert.error { background: #FBE4E2; }
 .alert label { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; font-weight: 700; }
@@ -152,7 +162,6 @@ const productName = (id) => products.value.find((u) => productOf(u.unit_id) === 
 .badge { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #1F7C74; color: #fff; font: 800 12px var(--font-display); }
 .why { margin-top: 6px; font-size: 13px; } .why summary { cursor: pointer; font-weight: 700; } .why p { margin-top: 4px; }
 .why-off { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--danger); }
-.units .checks { margin: 4px 0 0 16px; font-size: 13px; }
 .apps { margin: 8px 0 0 18px; color: var(--ink-soft); font-size: 14px; }
 .row { display: flex; gap: 8px; margin-top: 10px; } .row select, .row input { flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 12px; font: 600 14px var(--font-body); }
 </style>
