@@ -33,9 +33,11 @@ const applied = computed(() => `${events.value.filter((e) => e.done).length} / $
           <span v-else-if="m.onDay[c]" class="cell ev" :class="[KIND[m.onDay[c][0].kind].cls, { today: c === todayDay, done: m.onDay[c].some((e) => e.done) }]">
             <b>{{ c }}</b><i>{{ m.onDay[c].some((e) => e.done) ? '✓' : m.onDay[c].map((e) => KIND[e.kind].icon).join('') }}</i>
           </span>
+          <span v-else-if="m.inWindow[c]" class="cell win" :class="{ today: c === todayDay, done: m.inWindow[c].done }" :title="`${m.inWindow[c].label}: apply by ${m.inWindow[c].end}`">{{ c }}</span>
           <span v-else class="cell" :class="{ today: c === todayDay }">{{ c }}</span>
         </template>
       </div>
+      <p class="key"><span class="sw gold"></span>Recommended date <span class="sw win"></span>Rest of the window <span class="sw plum"></span>Assessment</p>
     </section>
     <section class="prop-card tl">
       <header><h3>Timeline</h3><span class="count">{{ applied }}</span></header>
@@ -65,6 +67,9 @@ const applied = computed(() => `${events.value.filter((e) => e.done).length} / $
 .cell { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 46px; border-radius: 10px; font-size: 13px; color: var(--ink-soft); }
 .cell.ev { font-weight: 800; color: var(--ink); } .cell.ev i { font-style: normal; font-size: 14px; }
 .cell.gold { background: #FCE7C8; } .cell.plum { background: #EADCF0; } .cell.done { background: #D5E9DB; }
+.cell.win { background: #FDF3E1; } .cell.win.done { background: #EAF4EC; }
+.key { margin-top: 10px; font-size: 12.5px; color: var(--ink-soft); } .sw { display: inline-block; width: 12px; height: 12px; margin: 0 4px 0 8px; border-radius: 3px; vertical-align: -1px; } .key .sw:first-child { margin-left: 0; }
+.sw.gold { background: #FCE7C8; } .sw.win { background: #FDF3E1; border: 1px solid #FCE7C8; } .sw.plum { background: #EADCF0; }
 .cell.today { outline: 2px solid var(--forest); }
 .tl header { display: flex; justify-content: space-between; align-items: center; } .count { font-size: 13px; color: var(--ink-soft); }
 .tl ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
