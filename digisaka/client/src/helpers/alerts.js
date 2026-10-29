@@ -31,3 +31,16 @@ export function approveState({ approvable, blockers = [], required = [], acked =
   if (!required.every((id) => acked.includes(id))) return { ok: false, reason: 'Acknowledge every Cannot-Check item to approve.' };
   return { ok: true, reason: '' };
 }
+
+// Alerts with the same words about several products read as one entry listing those products,
+// so the cap alert for mancozeb and propineb is not shown twice.
+export function groupAlerts(alerts, unitOf = () => null) {
+  const groups = new Map();
+  for (const a of alerts) {
+    const key = [a.level, a.kind, a.cause, a.text, !!a.new_since_approval].join('|');
+    if (!groups.has(key)) groups.set(key, { alert: a, units: [] });
+    const unit = unitOf(a);
+    if (unit && !groups.get(key).units.some((u) => u.unit_id === unit.unit_id)) groups.get(key).units.push(unit);
+  }
+  return [...groups.values()];
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { orderAlerts, causeLabel, approveState } from './alerts.js';
+import { orderAlerts, causeLabel, approveState, groupAlerts } from './alerts.js';
 
 const al = (kind, level) => ({ kind, level, text: `${kind}-${level}` });
 
@@ -42,5 +42,14 @@ describe('approveState', () => {
     const s = approveState({ approvable: false, blockers: [{ text: 'D1 over cap.' }], required, acked: required });
     expect(s.ok).toBe(false);
     expect(s.reason).toContain('D1 over cap.');
+  });
+});
+
+describe('groupAlerts', () => {
+  const cap = (id, unit_id) => ({ id, unit_id, level: 'warning', kind: 'cap', text: 'M: 2 recorded + 1 planned = 3: approaching the cap.' });
+  const units = { 'u-a': { unit_id: 'u-a', product: 'mancozeb' }, 'u-b': { unit_id: 'u-b', product: 'propineb' } };
+  it('joins alerts with the same words into one entry listing each product once', () => {
+    const g = groupAlerts([cap('1', 'u-a'), cap('2', 'u-b'), cap('3', 'u-a'), { ...cap('4', 'u-a'), text: 'other' }], (a) => units[a.unit_id]);
+    expect(g.map((x) => [x.alert.text.slice(0, 2), x.units.map((u) => u.product)])).toEqual([['M:', ['mancozeb', 'propineb']], ['ot', ['mancozeb']]]);
   });
 });

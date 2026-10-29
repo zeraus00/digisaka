@@ -9,7 +9,7 @@ import ScheduleCalendar from '../components/ScheduleCalendar.vue';
 import { useSelectionStore, productOf } from '../stores/selection.js';
 import { outcomeReasonText } from '../helpers/messages.js';
 import { unitGroup } from '../helpers/checks.js';
-import { orderAlerts, approveState, LEVEL_ICON } from '../helpers/alerts.js';
+import { orderAlerts, approveState, groupAlerts, LEVEL_ICON } from '../helpers/alerts.js';
 import { todayIso, keepIfEdited } from '../helpers/today.js';
 
 const route = useRoute(), store = useSelectionStore();
@@ -26,7 +26,7 @@ const shown = computed(() => [...byGroup('recommended'), ...byGroup('eligible')]
 const excluded = computed(() => byGroup('excluded'));
 const alerts = computed(() => orderAlerts(store.preview?.alerts ?? []));
 const ackAlerts = computed(() => alerts.value.filter((a) => a.id && requiredIds.value.includes(a.id)));
-const otherAlerts = computed(() => alerts.value.filter((a) => !ackAlerts.value.includes(a)));
+const otherAlerts = computed(() => groupAlerts(alerts.value.filter((a) => !ackAlerts.value.includes(a)), unitName));
 const unitOf = (a) => a.unit_id ?? store.required.find((r) => r.id === a.id)?.unit_id;
 const unitName = (a) => sel.value?.units.find((u) => u.unit_id === unitOf(a));
 const requiredIds = computed(() => store.required.map((a) => a.id));
@@ -109,10 +109,10 @@ const lastApplied = computed(() => {
         <section v-if="otherAlerts.length" class="ack notes">
           <h4>Other alerts <small>No acknowledgement needed</small></h4>
           <ul>
-            <li v-for="a in otherAlerts" :key="a.id ?? a.text" :class="a.level">
-              <span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}
-              <span v-if="a.new_since_approval" class="badge">New since approval</span>
-              <AlertWhy :alert="a" :unit="unitName(a)" :unit-id="unitOf(a)" :build="store.payload.kg_build" />
+            <li v-for="g in otherAlerts" :key="g.alert.id ?? g.alert.text" :class="g.alert.level">
+              <span class="icon" aria-hidden="true">{{ LEVEL_ICON[g.alert.level] }}</span>{{ g.alert.text }}
+              <span v-if="g.alert.new_since_approval" class="badge">New since approval</span>
+              <AlertWhy :alert="g.alert" :units="g.units" :build="store.payload.kg_build" />
             </li>
           </ul>
         </section>
