@@ -100,6 +100,18 @@ describe('selection store against the stub', () => {
     expect(s.applications).toHaveLength(1);
   });
 
+  it('asks to confirm a record that shares a date with another, then stores the warning', async () => {
+    const s = useSelectionStore();
+    await s.load('L02', '2026-W23');
+    await s.apply('u-pyrimethanil', '2026-06-02');
+    expect(s.offSchedule.warnings.map((w) => w.code)).toEqual(['same_day']);
+    expect(s.applications).toHaveLength(1);
+    await s.confirmOffSchedule();
+    expect(s.offSchedule).toBeNull();
+    expect(s.applications.map((a) => a.product_id)).toContain('u-pyrimethanil');
+    expect(s.applications.at(-1).acknowledged_warnings.map((w) => w.code)).toEqual(['same_day']);
+  });
+
   it('a draft has no approval period, so nothing can be recorded against it', async () => {
     const s = useSelectionStore();
     await s.load('L03', WEEK);

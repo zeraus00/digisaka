@@ -130,7 +130,15 @@ const lastApplied = computed(() => store.history[store.history.length - 1] ?? nu
           <select v-model="productId" aria-label="Product applied"><option value="" disabled>Product</option><option v-for="u in products" :key="u.unit_id" :value="u.unit_id">{{ u.product }}</option></select>
           <input v-model="appliedOn" type="date" :max="todayIso()" aria-label="Date applied" />
         </div>
-        <div class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy" @click="record">Record application</button></div>
+        <div v-if="store.offSchedule" class="off-schedule" role="alert">
+          <p>This application is off the schedule:</p>
+          <ul><li v-for="w in store.offSchedule.warnings" :key="w.code">{{ w.text }}</li></ul>
+          <div class="btns">
+            <button type="button" :disabled="store.busy" @click="store.confirmOffSchedule()">Record anyway</button>
+            <button type="button" class="ghost" :disabled="store.busy" @click="store.cancelOffSchedule()">Cancel</button>
+          </div>
+        </div>
+        <div v-else class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy" @click="record">Record application</button></div>
       </section>
 
       <ScheduleCalendar :days="store.preview?.days ?? []" :applications="store.history" :name-of="productName" />
@@ -157,6 +165,7 @@ const lastApplied = computed(() => store.history[store.history.length - 1] ?? nu
 .prop-card ul { margin: 8px 0 0 18px; color: var(--ink-soft); font-size: 14px; }
 .prop-card textarea { width: 100%; margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font: 500 14px var(--font-body); resize: vertical; }
 .prop-card .btns { margin-top: 12px; }
+.off-schedule { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--warn-tint); color: var(--warn); } .off-schedule p { margin: 0 0 6px; font-weight: 700; } .off-schedule ul { margin: 0 0 6px; padding-left: 18px; }
 .btns .danger { background: #fff; color: var(--danger); border: 1.5px solid var(--danger); }
 .noted { margin-top: 10px; font-size: 14px; color: var(--ink-soft); }
 .banner.bad { background: #FBE4E2; color: #A62A20; } .banner.bad .tick { background: #D8352A; }

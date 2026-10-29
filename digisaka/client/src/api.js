@@ -3,7 +3,7 @@
 const failure = (data, status, fallback) => {
   const e = data.error;
   if (e && typeof e === 'object') return Object.assign(new Error(e.message || fallback), { status, code: e.code });
-  return Object.assign(new Error(data.detail || e || fallback), { status, code: e });
+  return Object.assign(new Error(data.detail || e || fallback), { status, code: e, ...(data.warnings ? { warnings: data.warnings } : {}) });
 };
 
 let onUnauthorized = () => {};

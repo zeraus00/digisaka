@@ -150,6 +150,27 @@ describe('apply', () => {
     await s.apply('http://x#PracMorpholineApplication|http://x#FungicideFenpropimorph', '2026-06-11');
     expect(postBody()).toEqual({ product_id: 'http://x#FungicideFenpropimorph', applied_on: '2026-06-11' });
   });
+  it('holds an off-schedule answer for confirmation, then re-sends it confirmed', async () => {
+    const s = await approved();
+    const warnings = [{ code: 'same_day', text: 'Another application of this line is recorded on that date.' }];
+    routes({ 'POST /selections/s1/applications': json(409, { error: 'application_off_schedule', detail: 'confirm', warnings }), 'GET /lines/L04': json(200, lineStatus()), 'GET /cycles/c1/selection': json(200, sel('approved')), 'GET /cycles/c1': json(200, cyc()) });
+    await s.apply('u-a', '2026-06-11');
+    expect(s.offSchedule).toEqual({ productId: 'u-a', appliedOn: '2026-06-11', warnings });
+    expect(s.error).toBe('');
+    routes({ 'POST /selections/s1/applications': json(201, {}), 'GET /lines/L04': json(200, lineStatus()), 'GET /cycles/c1/selection': json(200, sel('approved')), 'GET /cycles/c1': json(200, cyc()) });
+    fetchMock.mockClear();
+    await s.confirmOffSchedule();
+    expect(postBody()).toEqual({ product_id: 'u-a', applied_on: '2026-06-11', confirmed_off_schedule: true });
+    expect(s.offSchedule).toBeNull();
+  });
+  it('cancelling leaves nothing pending and sends nothing', async () => {
+    const s = await approved();
+    s.offSchedule = { productId: 'u-a', appliedOn: '2026-06-11', warnings: [] };
+    fetchMock.mockClear();
+    s.cancelOffSchedule();
+    expect(s.offSchedule).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
   it('refuses a malformed date without calling the scheduler', async () => {
     const s = await approved();
     fetchMock.mockClear();

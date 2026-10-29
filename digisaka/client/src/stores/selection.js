@@ -13,7 +13,7 @@ const STALE = ['selection_not_draft', 'selection_not_renewable', 'application_al
 // One line-week's Selection for the treatment detail screen.
 // phase: idle, loading, ready, notfound, error. status: draft, approved, rejected, superseded, ended.
 export const useSelectionStore = defineStore('selection', {
-  state: () => ({ phase: 'idle', lineId: '', week: '', payload: null, cycle: null, applications: [], history: [], weeks: {}, error: '', busy: false, run: 0 }),
+  state: () => ({ phase: 'idle', lineId: '', week: '', payload: null, cycle: null, applications: [], history: [], weeks: {}, error: '', busy: false, run: 0, offSchedule: null }),
   getters: {
     selection: (s) => s.payload?.selection ?? null,
     preview: (s) => s.payload?.preview ?? null,
@@ -36,7 +36,7 @@ export const useSelectionStore = defineStore('selection', {
     },
     async load(lineId, week) {
       this.run++; const run = this.run;
-      Object.assign(this, { phase: 'loading', lineId, week, payload: null, cycle: null, applications: [], history: [], weeks: {}, error: '', busy: false });
+      Object.assign(this, { phase: 'loading', lineId, week, payload: null, cycle: null, applications: [], history: [], weeks: {}, error: '', busy: false, offSchedule: null });
       try {
         const line = await api.get(`${base}/lines/${e(lineId)}`);
         const ls = (line.selections ?? []).filter((x) => x.origin_week === week).pop();
@@ -72,12 +72,21 @@ export const useSelectionStore = defineStore('selection', {
     renew(acknowledged, note) {
       return this._act(() => api.post(`${base}/selections/${e(this.selection.selection_id)}/renewal`, this._body(note, acknowledged ?? [])));
     },
-    apply(productId, appliedOn) {
+    // An off-schedule answer is not an error: the warnings wait in `offSchedule` until the user confirms or cancels.
+    apply(productId, appliedOn, confirmed = false) {
+      this.offSchedule = null;
       return this._act(async () => {
         if (!productId) throw Object.assign(new Error('product'), { code: 'validation_error' });
         if (!DATE.test(appliedOn ?? '')) throw Object.assign(new Error('date'), { code: 'invalid_date' });
-        await api.post(`${base}/selections/${e(this.selection.selection_id)}/applications`, { product_id: productOf(productId), applied_on: appliedOn });
+        try {
+          await api.post(`${base}/selections/${e(this.selection.selection_id)}/applications`, { product_id: productOf(productId), applied_on: appliedOn, ...(confirmed ? { confirmed_off_schedule: true } : {}) });
+        } catch (err) {
+          if (err.code !== 'application_off_schedule') throw err;
+          this.offSchedule = { productId, appliedOn, warnings: err.warnings ?? [] };
+        }
       });
     },
+    confirmOffSchedule() { const p = this.offSchedule; return p ? this.apply(p.productId, p.appliedOn, true) : undefined; },
+    cancelOffSchedule() { this.offSchedule = null; },
   },
 });

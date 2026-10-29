@@ -69,7 +69,7 @@ test('renewal adds a period only to an approved selection', async () => {
 test('applications: inside the period, a unit of the selection, not in the future, not twice', async () => {
   const ok = await apply('sel-L02-23', 'u-pyrimethanil', '2026-06-05');
   assert.equal(ok.status, 201);
-  assert.deepEqual(Object.keys(ok.body), ['application_id', 'selection_id', 'product_id', 'applied_on', 'recorded_by', 'recorded_at']);
+  assert.deepEqual(Object.keys(ok.body), ['application_id', 'selection_id', 'product_id', 'applied_on', 'recorded_by', 'recorded_at', 'acknowledged_warnings']);
   assert.deepEqual((await call('GET', '/lines/L02')).body.applications.map((a) => a.applied_on), ['2026-06-02', '2026-06-05']);
   assert.equal((await apply('sel-L02-23', 'u-pyrimethanil', '2026-06-05')).body.error, 'application_already_recorded');
   assert.equal((await apply('sel-L02-23', 'u-pyrimethanil', '2026-04-01')).body.error, 'no_active_selection');

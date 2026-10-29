@@ -137,7 +137,10 @@ export function selectionRoutes(store, { settleAll, now = Date.now }) {
         if (!sel.periods.some((p) => p.start <= body.applied_on && body.applied_on <= p.end)) return fail(409, 'no_active_selection', 'No Approval Period of the selection covers that date');
         if (!productsOf(sel).includes(body.product_id)) return fail(409, 'product_not_in_selection', `${body.product_id} is not a unit of the selection`);
         if (line.applications.some((a) => a.selection_id === sel.selection_id && a.product_id === body.product_id && a.applied_on === body.applied_on)) return fail(409, 'application_already_recorded', 'The application was already recorded');
-        const application = { application_id: `app-${store.data.nextId++}`, selection_id: sel.selection_id, product_id: body.product_id, applied_on: body.applied_on, recorded_by: PRACTITIONER, recorded_at: new Date(now()).toISOString() };
+        // The scheduler checks the frozen schedule too; the stand-in only knows the same-day case.
+        const warnings = line.applications.some((a) => a.applied_on === body.applied_on) ? [{ code: 'same_day', text: 'Another application of this line is recorded on that date.' }] : [];
+        if (warnings.length && body.confirmed_off_schedule !== true) return { status: 409, body: { error: 'application_off_schedule', detail: 'the application is off the schedule; confirm to record it anyway', warnings } };
+        const application = { application_id: `app-${store.data.nextId++}`, selection_id: sel.selection_id, product_id: body.product_id, applied_on: body.applied_on, recorded_by: PRACTITIONER, recorded_at: new Date(now()).toISOString(), acknowledged_warnings: warnings };
         line.applications.push(application);
         return { status: 201, body: application };
       }),
