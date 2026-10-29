@@ -68,6 +68,8 @@ test('evidence has weeks, disease and rainfall; a cycle without it is unknown_ev
   assert.equal(ev.cycle_id, 'c-L03-24');
   assert.deepEqual(ev.weeks.at(-1), { week: '2026-W24', yls: 5, yli: 3, rainfall_mm: 44 });
   assert.equal(ev.disease.worsening, true);
+  assert.equal(ev.disease.falling, true);
+  assert.deepEqual(ev.disease.level, { yls: 5, below: 8, critical_below: 6, verdict: 'critical' });
   assert.equal(ev.rainfall.recent_total_mm, 84);
   const none = await get('/cycles/c-L05-24/evidence');
   assert.equal(none.status, 404);

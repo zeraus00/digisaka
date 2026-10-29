@@ -4,6 +4,14 @@ const weekWord = (n) => WORD[n] ?? `${n} weeks`;
 
 export const verdictText = (v) => (v === true ? 'yes' : v === false ? 'no' : 'not enough data');
 
+// The level chip: where this week's YLS sits against the rules' thresholds, with the number it was compared to.
+export function levelText({ verdict, below, critical_below: critical } = {}) {
+  if (verdict === 'critical') return critical == null ? 'critical' : `critical, below ${critical}`;
+  if (verdict === 'below') return below == null ? 'below the threshold' : `below ${below}`;
+  if (verdict === 'not_below') return below == null ? 'not below the threshold' : `not below ${below}`;
+  return 'not enough data';
+}
+
 const valueOf = (weeks, week, key) => weeks.find((w) => w.week === week)?.[key];
 
 export function diseaseCaption({ weeks, disease: d }) {

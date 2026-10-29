@@ -29,7 +29,7 @@ export const messageFor = (err) => MESSAGES[err?.code] || (err?.status === 0 ? '
 
 // Plain wording for the scheduler's `outcome_reason` codes; an unknown code is shown as recorded.
 const OUTCOME_REASONS = {
-  disease_not_worsening: 'The disease is not getting worse.',
+  disease_not_worsening: 'YLS is not below 8 and not falling.',
   disease_not_computable: 'There is not enough scan history to tell whether the disease is getting worse.',
   rainfall_not_favourable: 'Rainfall is not favourable for the disease.',
   rainfall_not_computable: 'Rainfall could not be assessed.',

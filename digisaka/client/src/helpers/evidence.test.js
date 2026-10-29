@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diseaseCaption, rainfallCaption, verdictText, missingWeeks, linePath, niceMax, visibleWeeks } from './evidence.js';
+import { diseaseCaption, rainfallCaption, verdictText, levelText, missingWeeks, linePath, niceMax, visibleWeeks } from './evidence.js';
 
 const weeks = [
   { week: '2026-W22', yls: 7, yli: 4, rainfall_mm: 10 },
@@ -74,5 +74,22 @@ describe('visibleWeeks', () => {
   });
   it('shows everything when there are three weeks or fewer', () => {
     expect(visibleWeeks(ev()).map((w) => w.week)).toEqual(['2026-W22', '2026-W23', '2026-W24']);
+  });
+});
+
+describe('levelText', () => {
+  const level = { yls: 5, below: 8, critical_below: 6 };
+  it('names the critical threshold', () => expect(levelText({ ...level, verdict: 'critical' })).toBe('critical, below 6'));
+  it('names the threshold for below and not below', () => {
+    expect(levelText({ ...level, verdict: 'below' })).toBe('below 8');
+    expect(levelText({ ...level, verdict: 'not_below' })).toBe('not below 8');
+  });
+  it('reads a missing threshold or verdict without a number', () => {
+    expect(levelText({ yls: 5, below: null, critical_below: null, verdict: 'below' })).toBe('below the threshold');
+    expect(levelText({ ...level, verdict: 'not_computable' })).toBe('not enough data');
+  });
+  it('reads a not-computable trend as unknown, not no', () => {
+    expect(verdictText('not_computable')).toBe('not enough data');
+    expect(verdictText(false)).toBe('no');
   });
 });
