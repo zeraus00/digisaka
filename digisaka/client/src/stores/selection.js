@@ -13,7 +13,7 @@ const STALE = ['selection_not_draft', 'selection_not_renewable', 'application_al
 // One line-week's Selection for the treatment detail screen.
 // phase: idle, loading, ready, notfound, error. status: draft, approved, rejected, superseded, ended.
 export const useSelectionStore = defineStore('selection', {
-  state: () => ({ phase: 'idle', lineId: '', week: '', payload: null, cycle: null, applications: [], history: [], weeks: {}, error: '', busy: false, run: 0, offSchedule: null }),
+  state: () => ({ phase: 'idle', lineId: '', week: '', payload: null, cycle: null, applications: [], history: [], weeks: {}, cycles: [], error: '', busy: false, run: 0, offSchedule: null }),
   getters: {
     selection: (s) => s.payload?.selection ?? null,
     preview: (s) => s.payload?.preview ?? null,
@@ -32,7 +32,7 @@ export const useSelectionStore = defineStore('selection', {
       ]);
       const all = [...(line.applications ?? [])].sort((a, b) => a.applied_on.localeCompare(b.applied_on));
       const weeks = Object.fromEntries((line.selections ?? []).map((x) => [x.selection_id, x.origin_week]));
-      return { payload, cycle, applications: all.filter((a) => a.selection_id === selectionId), history: all, weeks };
+      return { payload, cycle, applications: all.filter((a) => a.selection_id === selectionId), history: all, weeks, cycles: line.cycles ?? [] };
     },
     async load(lineId, week) {
       this.run++; const run = this.run;

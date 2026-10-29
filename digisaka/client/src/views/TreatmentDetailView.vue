@@ -60,6 +60,7 @@ const record = () => store.apply(productId.value, appliedOn.value);
 // A product in an earlier week's Selection may not be a unit now: fall back to the name in its id.
 const productName = (id) => (sel.value?.units ?? []).find((u) => productOf(u.unit_id) === id)?.product ?? id.split('#').pop().replace(/^Fungicide/, '');
 // Every product applied on the latest recorded date, not just the last row.
+const assessedWeeks = computed(() => store.cycles.filter((c) => c.status === 'done').map((c) => c.week));
 const lastApplied = computed(() => {
   const day = store.history.reduce((m, h) => (h.applied_on > m ? h.applied_on : m), '');
   const rows = store.history.filter((h) => h.applied_on === day);
@@ -146,7 +147,7 @@ const lastApplied = computed(() => {
         <div v-else class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy" @click="record">Record application</button></div>
       </section>
 
-      <ScheduleCalendar :days="store.preview?.days ?? []" :applications="store.history" :name-of="productName" />
+      <ScheduleCalendar :days="store.preview?.days ?? []" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" />
 
       <EvidenceCharts :cycle-id="store.cycle?.cycle_id ?? ''" />
     </template>

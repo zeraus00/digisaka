@@ -3,8 +3,8 @@ import { computed, ref, watch } from 'vue';
 import { scheduleEvents, monthGrids } from '../helpers/schedule.js';
 import { todayIso } from '../helpers/today.js';
 
-const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] }, nameOf: { type: Function, default: (id) => id } });
-const events = computed(() => scheduleEvents(props.days, props.applications, props.nameOf));
+const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] }, nameOf: { type: Function, default: (id) => id }, assessedWeeks: { type: Array, default: () => [] } });
+const events = computed(() => scheduleEvents(props.days, props.applications, props.nameOf, props.assessedWeeks));
 const months = computed(() => monthGrids(events.value));
 // The month shown opens on today's month when the schedule has it, else the first.
 const at = ref(0);

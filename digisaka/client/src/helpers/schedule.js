@@ -3,10 +3,19 @@ import { productOf } from '../stores/selection.js';
 
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+// The ISO week label ('2026-W23') of a date, as the scheduler names a line-week.
+export function isoWeek(iso) {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const year = d.getUTCFullYear();
+  return `${year}-W${String(Math.ceil(((d - Date.UTC(year, 0, 1)) / 86400000 + 1) / 7)).padStart(2, '0')}`;
+}
+
 // The Selection preview's days as calendar events: an application (with its timing window) and/or a
 // weekly assessment per day. An application is done when one is recorded for its product inside its window.
+// A weekly assessment is done once the line has a finished cycle for its week (`assessedWeeks`).
 // A recorded application that no planned window covers (an earlier week's spray) is its own `applied` event.
-export function scheduleEvents(days, applications = [], nameOf = (id) => id) {
+export function scheduleEvents(days, applications = [], nameOf = (id) => id, assessedWeeks = []) {
   const planned = (days ?? []).flatMap((d) => {
     const out = [];
     const app = d.application;
@@ -15,7 +24,7 @@ export function scheduleEvents(days, applications = [], nameOf = (id) => id) {
       const done = applications.some((a) => a.product_id === productOf(app.unit_id) && a.applied_on >= start && a.applied_on <= end);
       out.push({ date: d.date, kind: 'application', label: app.product, moa: app.moa, start, end, done, productId: productOf(app.unit_id) });
     }
-    if (d.monitoring) out.push({ date: d.date, kind: 'monitoring', label: d.monitoring.label, after: d.reassessment?.of ?? null, done: false });
+    if (d.monitoring) out.push({ date: d.date, kind: 'monitoring', label: d.monitoring.label, after: d.reassessment?.of ?? null, done: assessedWeeks.includes(isoWeek(d.date)) });
     return out;
   });
   const covered = (a) => planned.some((e) => e.kind === 'application' && a.product_id === e.productId && a.applied_on >= e.start && a.applied_on <= e.end);

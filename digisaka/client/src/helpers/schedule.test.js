@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scheduleEvents, monthGrids } from './schedule.js';
+import { scheduleEvents, monthGrids, isoWeek } from './schedule.js';
 import { productOf } from '../stores/selection.js';
 
 const unit = 'http://x#Type|http://x#FungicideAzoxystrobin';
@@ -16,6 +16,13 @@ describe('scheduleEvents', () => {
       ['2026-07-06', 'monitoring', 'Weekly assessment', false],
     ]);
     expect(ev[1].after).toBe('planned 2026-06-29 azoxystrobin');
+  });
+  it('marks a weekly assessment done once the line has a finished cycle for its week', () => {
+    const done = (weeks) => scheduleEvents(days, [], undefined, weeks).find((e) => e.kind === 'monitoring').done;
+    expect([done([]), done(['2026-W27']), done(['2026-W28'])]).toEqual([false, false, true]);
+  });
+  it('names the ISO week of a date as the scheduler does', () => {
+    expect([isoWeek('2026-06-03'), isoWeek('2026-07-06'), isoWeek('2026-01-01'), isoWeek('2026-12-31')]).toEqual(['2026-W23', '2026-W28', '2026-W01', '2026-W53']);
   });
   it('marks an application done only for its product inside its window', () => {
     const rec = (applied_on, product_id) => scheduleEvents(days, [{ product_id, applied_on }])[0].done;
