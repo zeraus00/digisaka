@@ -93,5 +93,6 @@ describe('cycle store against the stub', () => {
     const lines = useLinesStore();
     await lines.load();
     expect(lines.byId('L04').selections.map((x) => x.origin_week)).toEqual(['2026-W24']);
+    expect(lines.byId('L04').cycles.find((x) => x.week === '2026-W24')).toMatchObject({ continued: false, selection_id: expect.any(String) });
   });
 });

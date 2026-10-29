@@ -9,6 +9,7 @@ const period = (start = null) => ({ approval_period_id: start ? 'ap1' : null, st
 const lineStatus = (over = {}) => ({
   line_id: 'L04',
   selections: [{ selection_id: 's1', origin_cycle_id: 'c1', origin_week: '2026-W24', status: 'draft', products: ['u-a'], approval_period: period(), reselection_required: false }],
+  cycles: [{ cycle_id: 'c1', week: '2026-W24', status: 'done', outcome: 'awaiting_decision', outcome_reason: null, selection_id: 's1', continued: false }],
   applications: [], ...over,
 });
 const ACK = { id: 'cc-a', unit_id: 'u-a', kind: 'cannot_check', text: 'No rainfast period.' };
@@ -58,6 +59,15 @@ describe('load', () => {
     const s = useSelectionStore();
     await s.load('L04', '2026-W20');
     expect(s.phase).toBe('notfound');
+  });
+  it('a continued week loads its own cycle and the Selection it kept', async () => {
+    const line = lineStatus({ cycles: [{ cycle_id: 'c2', week: '2026-W25', status: 'done', outcome: 'approved', outcome_reason: 'selection_continued', selection_id: 's1', continued: true }, ...lineStatus().cycles] });
+    routes({ 'GET /lines/L04': json(200, line), 'GET /cycles/c2/selection': json(200, sel('approved')), 'GET /cycles/c2': json(200, cyc({ cycle_id: 'c2', week: '2026-W25' })) });
+    const s = useSelectionStore();
+    await s.load('L04', '2026-W25');
+    expect(s.phase).toBe('ready');
+    expect(s.status).toBe('approved');
+    expect(calls()).toContain('GET /cycles/c2/selection');
   });
   it('a migrated cycle (unknown_selection) is not found', async () => {
     const s = await loaded({ 'GET /cycles/c1/selection': json(404, { error: 'unknown_selection', detail: 'migrated from a proposal; no preview' }) });

@@ -3,11 +3,11 @@ import { onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import SkeletonList from '../components/SkeletonList.vue';
-import { useLinesStore, selectionRows } from '../stores/lines.js';
+import { useLinesStore, weekRows } from '../stores/lines.js';
 
 const route = useRoute(), router = useRouter(), lines = useLinesStore();
 const line = computed(() => lines.byId(String(route.params.lineId)));
-const rows = computed(() => (line.value ? selectionRows(line.value) : []));
+const rows = computed(() => (line.value ? weekRows(line.value) : []));
 const STATUS = { draft: 'Awaiting decision', approved: 'Approved', rejected: 'Rejected', superseded: 'Replaced', ended: 'Ended' };
 onMounted(() => { if (!lines.loaded) lines.load(); });
 const open = (p) => router.push(`/treatment/${encodeURIComponent(String(route.params.lineId))}/${encodeURIComponent(p.week)}`);
@@ -15,16 +15,16 @@ const open = (p) => router.push(`/treatment/${encodeURIComponent(String(route.pa
 
 <template>
   <div class="page">
-    <PageHeader :title="`Line ${route.params.lineId}`" subtitle="One treatment selection per week." />
+    <PageHeader :title="`Line ${route.params.lineId}`" subtitle="Each week and the treatment selection it follows." />
     <SkeletonList v-if="lines.loading && !line" />
     <p v-else-if="lines.error" class="error">{{ lines.error }}</p>
     <p v-else-if="lines.loaded && !line" class="empty">This line's schedule couldn't be found.</p>
     <p v-else-if="line && !rows.length" class="empty">No selections for this line yet.</p>
     <template v-else-if="line">
       <p class="hint">Choose a week to see its treatment.</p>
-      <button v-for="p in rows" :key="p.selection_id" class="card" type="button" @click="open(p)">
+      <button v-for="p in rows" :key="p.cycle_id" class="card" type="button" @click="open(p)">
         <span class="thumb">🗓</span>
-        <span class="body"><span class="name">{{ p.week }}</span><span class="sub">{{ p.approval_period.start ? `${p.approval_period.start} to ${p.approval_period.end}` : 'Not approved yet' }}</span></span>
+        <span class="body"><span class="name">{{ p.week }}</span><span class="sub"><template v-if="p.continued">Continued the {{ p.fromWeek }} selection · </template>{{ p.approval_period.start ? `${p.approval_period.start} to ${p.approval_period.end}` : 'Not approved yet' }}</span></span>
         <span class="count">{{ STATUS[p.status] ?? p.status }}</span>
         <span class="chev">›</span>
       </button>

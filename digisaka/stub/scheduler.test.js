@@ -32,7 +32,7 @@ test('lists the seven seed lines', async () => {
 
 test('line status carries the scenario for each seed line', async () => {
   const status = async (id) => (await get(`/lines/${id}`)).json();
-  assert.deepEqual(await status('L01'), { line_id: 'L01', selections: [], applications: [], latest_cycle: null, human_review_required: false, weeks_assessed: 0, leaves_scanned: 0 });
+  assert.deepEqual(await status('L01'), { line_id: 'L01', selections: [], cycles: [], applications: [], latest_cycle: null, human_review_required: false, weeks_assessed: 0, leaves_scanned: 0 });
   const l2 = await status('L02');
   assert.equal(l2.selections[0].status, 'approved');
   assert.equal(l2.applications[0].selection_id, l2.selections[0].selection_id);

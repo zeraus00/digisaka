@@ -39,9 +39,10 @@ export const useSelectionStore = defineStore('selection', {
       Object.assign(this, { phase: 'loading', lineId, week, payload: null, cycle: null, applications: [], history: [], weeks: {}, error: '', busy: false, offSchedule: null });
       try {
         const line = await api.get(`${base}/lines/${e(lineId)}`);
-        const ls = (line.selections ?? []).filter((x) => x.origin_week === week).pop();
+        // Newest cycle of the week that used a Selection: a continued week names the Selection it kept.
+        const ls = (line.cycles ?? []).find((x) => x.week === week && x.selection_id);
         if (!ls) { if (run === this.run) this.phase = 'notfound'; return; }
-        const got = await this._fetch(lineId, ls.origin_cycle_id, ls.selection_id);
+        const got = await this._fetch(lineId, ls.cycle_id, ls.selection_id);
         if (run !== this.run) return;
         Object.assign(this, { ...got, phase: 'ready' });
       } catch (err) {

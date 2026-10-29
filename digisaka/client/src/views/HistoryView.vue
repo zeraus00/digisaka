@@ -3,7 +3,7 @@ import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import SkeletonList from '../components/SkeletonList.vue';
-import { useLinesStore, selectionRows } from '../stores/lines.js';
+import { useLinesStore, weekRows } from '../stores/lines.js';
 
 const router = useRouter(), lines = useLinesStore();
 onMounted(() => lines.load());
@@ -29,9 +29,9 @@ const open = (l, p) => router.push(`/treatment/${encodeURIComponent(l.line_id)}/
         <button class="trash" type="button" disabled aria-label="Delete (not available yet)" title="Not available yet">🗑</button>
       </div>
       <ul v-if="l.selections.length" class="weeks">
-        <li v-for="p in selectionRows(l)" :key="p.selection_id">
+        <li v-for="p in weekRows(l)" :key="p.cycle_id">
           <button type="button" @click="open(l, p)">
-            <b>{{ p.week }}</b><span>{{ STATUS[p.status] ?? p.status }}</span>
+            <b>{{ p.week }}</b><span>{{ STATUS[p.status] ?? p.status }}</span><span v-if="p.continued" class="soft">Continued the {{ p.fromWeek }} selection</span>
             <span class="soft">{{ p.approval_period.start ? `${p.approval_period.start} to ${p.approval_period.end}` : 'Not approved yet' }}</span>
             <span v-if="p.appliedOn.length" class="teal">Applied {{ p.appliedOn.at(-1) }}</span>
           </button>

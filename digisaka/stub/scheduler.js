@@ -70,6 +70,11 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         return ok({
           line_id: params.id,
           selections: l.selections.map(summaryOf),
+          // Newest first, like the scheduler; the stub has no continued weeks, so a cycle's selection is the one it began.
+          cycles: [...l.cycles].sort((a, b) => b.week.localeCompare(a.week)).map((c) => ({
+            cycle_id: c.cycle_id, week: c.week, status: c.status, outcome: c.outcome, outcome_reason: c.outcome_reason,
+            selection_id: l.selections.find((s) => s.origin_cycle_id === c.cycle_id)?.selection_id ?? null, continued: false,
+          })),
           applications: l.applications,
           latest_cycle: latest && { cycle_id: latest.cycle_id, week: latest.week, status: latest.status, outcome: latest.outcome, outcome_reason: latest.outcome_reason },
           human_review_required: latest?.outcome === 'human_review_required',

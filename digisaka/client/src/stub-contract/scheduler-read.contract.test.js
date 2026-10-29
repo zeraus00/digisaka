@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { useStub } from './harness.js';
 import { useAuthStore } from '../stores/auth.js';
-import { useLinesStore, dashboardSummary, selectionRows } from '../stores/lines.js';
+import { useLinesStore, dashboardSummary, weekRows } from '../stores/lines.js';
 import { useLineHistoryStore } from '../stores/lineHistory.js';
 import { useEvidenceStore } from '../stores/evidence.js';
 import { diseaseCaption, rainfallCaption } from '../helpers/evidence.js';
@@ -17,7 +17,7 @@ describe('lines store against the stub', () => {
     expect(s.statuses.map((l) => l.line_id)).toEqual(['L01', 'L02', 'L03', 'L04', 'L05', 'L06', 'L07']);
     expect(s.withSelections.map((l) => l.line_id)).toEqual(['L02', 'L03', 'L05', 'L06']);
     expect(dashboardSummary(s.statuses)).toMatchObject({ lines: 7, awaitingDecision: 3, humanReview: 1 });
-    expect(selectionRows(s.byId('L02'))[0].appliedOn).toEqual(['2026-06-02']);
+    expect(weekRows(s.byId('L02'))[0].appliedOn).toEqual(['2026-06-02']);
   });
   it('shows the Practitioner message when a Technical User is signed in', async () => {
     const auth = useAuthStore();

@@ -27,22 +27,27 @@ export const useLinesStore = defineStore('lines', {
   },
 });
 
-// Selections newest origin week first, each with the dates its applications were recorded.
-export function selectionRows(line) {
-  return [...(line.selections ?? [])]
-    .sort((a, b) => b.origin_week.localeCompare(a.origin_week))
-    .map((x) => ({ ...x, week: x.origin_week, appliedOn: (line.applications ?? []).filter((a) => a.selection_id === x.selection_id).map((a) => a.applied_on).sort() }));
+// The weeks that used a Selection, newest first: a new draft, or a continued week naming the Selection it kept.
+export function weekRows(line) {
+  const sels = Object.fromEntries((line.selections ?? []).map((x) => [x.selection_id, x]));
+  return (line.cycles ?? []).filter((c) => c.selection_id && sels[c.selection_id]).map((c) => {
+    const sel = sels[c.selection_id];
+    return {
+      ...sel, cycle_id: c.cycle_id, week: c.week, continued: c.continued, fromWeek: sel.origin_week,
+      appliedOn: (line.applications ?? []).filter((a) => a.selection_id === c.selection_id).map((a) => a.applied_on).sort(),
+    };
+  });
 }
 
 // Totals and the newest selections across all lines, for the dashboard.
 export function dashboardSummary(statuses) {
   const sum = (key) => statuses.reduce((n, l) => n + (l[key] ?? 0), 0);
-  const rows = statuses.flatMap((l) => (l.selections ?? []).map((x) => ({ lineId: l.line_id, week: x.origin_week, status: x.status })));
+  const rows = statuses.flatMap((l) => weekRows(l).map((x) => ({ lineId: l.line_id, week: x.week, status: x.status })));
   return {
     lines: statuses.length,
     weeksAssessed: sum('weeks_assessed'),
     leavesScanned: sum('leaves_scanned'),
-    awaitingDecision: rows.filter((r) => r.status === 'draft').length,
+    awaitingDecision: statuses.reduce((n, l) => n + (l.selections ?? []).filter((x) => x.status === 'draft').length, 0),
     humanReview: statuses.filter((l) => l.human_review_required).length,
     recent: rows.sort((a, b) => b.week.localeCompare(a.week) || a.lineId.localeCompare(b.lineId)).slice(0, 5),
   };

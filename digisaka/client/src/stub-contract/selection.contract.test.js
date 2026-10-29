@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { useStub } from './harness.js';
 import { useSelectionStore } from '../stores/selection.js';
-import { useLinesStore, selectionRows } from '../stores/lines.js';
+import { useLinesStore, weekRows } from '../stores/lines.js';
 
 useStub();
 const WEEK = '2026-W24';
@@ -44,7 +44,7 @@ describe('selection store against the stub', () => {
     expect(s.cycle.outcome).toBe('approved');
     const lines = useLinesStore();
     await lines.load();
-    expect(selectionRows(lines.byId('L03'))[0]).toMatchObject({ status: 'approved', appliedOn: [] });
+    expect(weekRows(lines.byId('L03'))[0]).toMatchObject({ status: 'approved', appliedOn: [] });
   });
 
   it('refuses approval without the acknowledgement, and of a selection with a blocker', async () => {
