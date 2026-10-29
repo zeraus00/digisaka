@@ -124,19 +124,13 @@ const lastApplied = computed(() => store.history[store.history.length - 1] ?? nu
         <p v-else-if="sel.note" class="noted">Note: {{ sel.note }}</p>
       </section>
 
-      <section v-if="store.status === 'approved' || store.history.length" class="prop-card">
+      <section v-if="store.status === 'approved'" class="prop-card">
         <h3>Applications</h3>
-        <ul v-if="store.history.length" class="apps">
-          <li v-for="a in store.history" :key="a.application_id">{{ productName(a.product_id) }} on {{ a.applied_on }}<small v-if="store.weeks[a.selection_id]"> · week {{ store.weeks[a.selection_id] }}</small></li>
-        </ul>
-        <p v-else class="meta">None recorded yet.</p>
-        <template v-if="store.status === 'approved'">
         <div class="row">
           <select v-model="productId" aria-label="Product applied"><option value="" disabled>Product</option><option v-for="u in products" :key="u.unit_id" :value="u.unit_id">{{ u.product }}</option></select>
           <input v-model="appliedOn" type="date" :max="todayIso()" aria-label="Date applied" />
         </div>
         <div class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy" @click="record">Record application</button></div>
-        </template>
       </section>
 
       <ScheduleCalendar :days="store.preview?.days ?? []" :applications="store.history" :name-of="productName" />
