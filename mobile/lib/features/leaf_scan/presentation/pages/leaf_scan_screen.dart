@@ -1,8 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:digisaka/shared/utils/image_stamper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/components/app_bar_widget.dart';
 import '../../../../shared/components/app_button.dart';
@@ -10,27 +7,14 @@ import '../../../../shared/widgets/assessment_stepper.dart';
 import 'package:digisaka/features/notification/presentation/pages/notifications_screen.dart';
 import 'bulk_assess_screen.dart';
 
-/// One leaf in the grid: either a mock placeholder or a real photo.
-/// (This must live OUTSIDE the State class - Dart doesn't allow a class
-/// to be declared inside another class.)
+/// One mock leaf in the grid.
+/// [file] is always null here; it is kept only so BulkAssessScreen's
+/// `leafPhotos` parameter keeps working unchanged.
 class _LeafPhoto {
-  final bool isMock;
-  final File? file; // stamped photo for captured leaves, null for mock leaves
+  final File? file;
   final String? scenario; // tag for sample-leaf chip additions
-  final double? latitude;
-  final double? longitude;
-  final double? accuracy; // meters
-  final DateTime? capturedAt;
 
-  const _LeafPhoto({
-    required this.isMock,
-    this.file,
-    this.scenario,
-    this.latitude,
-    this.longitude,
-    this.accuracy,
-    this.capturedAt,
-  });
+  const _LeafPhoto({this.file, this.scenario});
 }
 
 class LeafScanScreen extends StatefulWidget {
@@ -50,17 +34,10 @@ class LeafScanScreen extends StatefulWidget {
 }
 
 class _LeafScanScreenState extends State<LeafScanScreen> {
-  final ImagePicker _picker = ImagePicker();
-
-  // true  = tapping the green button instantly adds a mock leaf (no camera).
-  // false = use the real camera / gallery.
-  static const bool _useMockCapture = false;
-
   // Mock mode stops at this many leaves.
   static const int _maxLeaves = 8;
 
   final List<_LeafPhoto> _selectedLeaves = [];
-  bool _isProcessing = false;
 
   void _showMessage(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
@@ -72,34 +49,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  /// Reads the current location without blocking capture. Returns null when
-  /// location services are off, permission is denied, or the request times out.
-  Future<Position?> _getLocation() async {
-    try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return null;
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        return null;
-      }
-
-      return await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
-        ),
-      );
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// Sample-leaf scenario chips shown in mock capture mode.
+  /// Sample-leaf scenario chips.
   static const List<String> _kSampleLeafScenarios = <String>[
     'Stage 2 leaf',
     'Healthy leaf',
@@ -121,100 +71,12 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     final bool isAlertLeaf = _selectedLeaves.length == _maxLeaves - 1;
 
     setState(() {
-      _selectedLeaves.add(_LeafPhoto(isMock: true, scenario: scenario));
+      _selectedLeaves.add(_LeafPhoto(scenario: scenario));
     });
 
     if (isAlertLeaf) {
       _showMessage('Leaf 8 looks unclear. Retake the photo.');
     }
-  }
-
-  /// Opens the camera, stamps the photo with GPS + date/time, then adds it to
-  /// the grid. Capture is never blocked by location: if GPS is unavailable the
-  /// photo is stamped with "Location unavailable" instead. If stamping itself
-  /// fails, the original photo is used and the error is logged.
-  Future<void> _captureFromCamera() async {
-    if (_useMockCapture) {
-      _addMockLeaf();
-      return;
-    }
-
-    setState(() => _isProcessing = true);
-    try {
-      final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 85, // keeps file size reasonable without losing much detail
-      );
-      if (photo == null) return; // user cancelled
-
-      // Show a loading indicator while we locate and stamp the photo.
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
-      );
-
-      final Position? position = await _getLocation();
-      final DateTime capturedAt = DateTime.now();
-
-      // Always stamp (GPS or not); stampImage writes "Location unavailable"
-      // when there is no position. Fall back to the original on any error.
-      File? stamped;
-      try {
-        stamped = await stampImage(
-          File(photo.path),
-          data: StampData(
-            latitude: position?.latitude,
-            longitude: position?.longitude,
-            accuracyMeters: position?.accuracy,
-            capturedAt: capturedAt,
-            line: widget.line,
-            isoWeek: widget.isoWeek,
-          ),
-        );
-      } catch (e) {
-        debugPrint('Leaf photo stamp failed: $e');
-      }
-
-      if (!mounted) return;
-      Navigator.of(context).pop(); // dismiss loading dialog
-
-      setState(() {
-        _selectedLeaves.add(
-          _LeafPhoto(
-            isMock: false,
-            file: stamped ?? File(photo.path),
-            latitude: position?.latitude,
-            longitude: position?.longitude,
-            accuracy: position?.accuracy,
-            capturedAt: capturedAt,
-          ),
-        );
-      });
-      if (position == null) {
-        _showMessage('GPS unavailable — photo saved without a location stamp.');
-      }
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
-    }
-  }
-
-  /// Opens the gallery so the user can pick one or more existing photos.
-  Future<void> _pickFromGallery() async {
-    if (_useMockCapture) {
-      _addMockLeaf();
-      return;
-    }
-
-    final List<XFile> photos = await _picker.pickMultiImage(imageQuality: 85);
-    if (photos.isEmpty) return; // user cancelled
-
-    setState(() {
-      _selectedLeaves.addAll(
-        photos.map((x) => _LeafPhoto(isMock: false, file: File(x.path))),
-      );
-    });
   }
 
   void _removeLeaf(int index) {
@@ -225,22 +87,20 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     setState(() => _selectedLeaves.clear());
   }
 
-  // Updated hook: navigate to validation screen when leaves are present.
   void _handleAssessAllLeaves() {
     if (_selectedLeaves.isEmpty) {
       _showMessage('No leaves added yet');
       return;
     }
-    // Navigate to the Black Sigatoka Validation screen
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => BulkAssessScreen(
-              leafCount: _selectedLeaves.length,
-              leafPhotos: _selectedLeaves.map((p) => p.file).toList(),
-              line: widget.line,
-              isoWeek: widget.isoWeek,
-              selectedDate: widget.selectedDate ?? DateTime(2026, 6, 8),
-            ),
+          leafCount: _selectedLeaves.length,
+          leafPhotos: _selectedLeaves.map((p) => p.file).toList(),
+          line: widget.line,
+          isoWeek: widget.isoWeek,
+          selectedDate: widget.selectedDate ?? DateTime(2026, 6, 8),
+        ),
       ),
     );
   }
@@ -277,10 +137,8 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
               const SizedBox(height: 20),
               _buildCaptureRow(),
               const SizedBox(height: 24),
-              if (_useMockCapture) ...[
-                _buildSampleLeavesSection(),
-                const SizedBox(height: 24),
-              ],
+              _buildSampleLeavesSection(),
+              const SizedBox(height: 24),
               _buildSelectedLeavesHeader(),
               const SizedBox(height: 12),
               _buildLeavesGrid(),
@@ -297,7 +155,6 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
   }
 
   /// Dark green frame with corner brackets and a faint leaf outline guide.
-  /// Fixed AspectRatio, so it never shrinks when leaves are added.
   Widget _buildScanFrame() {
     return AspectRatio(
       aspectRatio: 1.5,
@@ -321,7 +178,6 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
               ),
             ),
           ),
-          // Four corner brackets.
           const _CornerBracket(alignment: Alignment.topLeft),
           const _CornerBracket(alignment: Alignment.topRight),
           const _CornerBracket(alignment: Alignment.bottomLeft),
@@ -354,13 +210,14 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  /// Gallery button on the left, big green camera-capture circle on the right.
+  /// Gallery button on the left, big green capture circle on the right.
+  /// Both just add a mock leaf.
   Widget _buildCaptureRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
-          onTap: _pickFromGallery,
+          onTap: () => _addMockLeaf(),
           child: Column(
             children: [
               Container(
@@ -370,7 +227,8 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
                   color: const Color(0xFFF3E9D8),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.image_outlined, color: AppColors.accentYellow, size: 26),
+                child: const Icon(Icons.image_outlined,
+                    color: AppColors.accentYellow, size: 26),
               ),
               const SizedBox(height: 6),
               const Text(
@@ -382,7 +240,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
         ),
         const SizedBox(width: 40),
         GestureDetector(
-          onTap: _isProcessing ? null : _captureFromCamera,
+          onTap: () => _addMockLeaf(),
           child: Container(
             height: 64,
             width: 64,
@@ -432,8 +290,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  /// Grid of leaf thumbnails, each with a red remove (x) button,
-  /// plus one dashed "+" tile at the end to add more.
+  /// Grid of mock leaf tiles plus one dashed "+" tile at the end.
   Widget _buildLeavesGrid() {
     return GridView.builder(
       shrinkWrap: true,
@@ -449,23 +306,22 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
         if (index == _selectedLeaves.length) {
           return _buildAddTile();
         }
-        return _buildLeafThumbnail(index, _selectedLeaves[index]);
+        return _buildLeafThumbnail(index);
       },
     );
   }
 
-  Widget _buildLeafThumbnail(int index, _LeafPhoto leaf) {
-    // The mock leaf sitting in the 8th spot is the alert one.
-    final bool isAlert = leaf.isMock && index == _maxLeaves - 1;
+  Widget _buildLeafThumbnail(int index) {
+    // The leaf sitting in the 8th spot is the alert one.
+    final bool isAlert = index == _maxLeaves - 1;
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Tile (green mock tile, or the real photo).
         Positioned.fill(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(14),
-            child: _buildLeafImage(leaf, isAlert),
+            child: _buildMockTile(warning: isAlert),
           ),
         ),
 
@@ -513,21 +369,6 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  /// Real photo for picked/captured leaves, green tile for mock leaves.
-  Widget _buildLeafImage(_LeafPhoto leaf, bool isAlert) {
-    if (!leaf.isMock && leaf.file != null) {
-      return Image.file(
-        leaf.file!,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        // If the photo can't be read, show the warning tile instead.
-        errorBuilder: (context, error, stackTrace) => _buildMockTile(warning: true),
-      );
-    }
-    return _buildMockTile(warning: isAlert);
-  }
-
   /// Light-green mock leaf tile with a darker-green leaf icon, or an orange warning icon.
   Widget _buildMockTile({required bool warning}) {
     return Container(
@@ -547,7 +388,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
 
   Widget _buildAddTile() {
     return GestureDetector(
-      onTap: _pickFromGallery,
+      onTap: () => _addMockLeaf(),
       child: DottedBorderBox(
         child: const Icon(Icons.add, color: AppColors.textGrey, size: 26),
       ),
@@ -572,8 +413,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  /// "Sample leaves" section shown in mock capture mode:
-  /// a grey label plus a Wrap of scenario chips.
+  /// "Sample leaves" section: a grey label plus a Wrap of scenario chips.
   Widget _buildSampleLeavesSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,29 +430,28 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              _kSampleLeafScenarios
-                  .map(
-                    (scenario) => ChoiceChip(
-                      label: Text(
-                        scenario,
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                      selected: false,
-                      onSelected: (_) => _addMockLeaf(scenario: scenario),
-                      backgroundColor: AppColors.white,
-                      side: const BorderSide(color: AppColors.borderGrey, width: 1),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      elevation: 0,
-                      pressElevation: 0,
+          children: _kSampleLeafScenarios
+              .map(
+                (scenario) => ChoiceChip(
+                  label: Text(
+                    scenario,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.textDark,
                     ),
-                  )
-                  .toList(),
+                  ),
+                  selected: false,
+                  onSelected: (_) => _addMockLeaf(scenario: scenario),
+                  backgroundColor: AppColors.white,
+                  side: const BorderSide(color: AppColors.borderGrey, width: 1),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                  elevation: 0,
+                  pressElevation: 0,
+                ),
+              )
+              .toList(),
         ),
       ],
     );
@@ -687,7 +526,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
   }
 }
 
-/// Small green corner-bracket mark used on each of the 4 corners of the scan frame.
+/// Small corner-bracket mark used on each of the 4 corners of the scan frame.
 class _CornerBracket extends StatelessWidget {
   final Alignment alignment;
 
@@ -695,8 +534,10 @@ class _CornerBracket extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isTop = alignment == Alignment.topLeft || alignment == Alignment.topRight;
-    final bool isLeft = alignment == Alignment.topLeft || alignment == Alignment.bottomLeft;
+    final bool isTop =
+        alignment == Alignment.topLeft || alignment == Alignment.topRight;
+    final bool isLeft =
+        alignment == Alignment.topLeft || alignment == Alignment.bottomLeft;
 
     return Align(
       alignment: alignment,
@@ -774,7 +615,6 @@ class _DashedBorderPainter extends CustomPainter {
     const double dashSpace = 4;
     final Path dashPath = Path();
 
-    // Trace the rounded-rectangle outline and chop it into short dashes.
     final Path outline = Path()..addRRect(rrect);
     for (final metric in outline.computeMetrics()) {
       double distance = 0;
