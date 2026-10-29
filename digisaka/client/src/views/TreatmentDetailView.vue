@@ -59,7 +59,12 @@ watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value,
 const record = () => store.apply(productId.value, appliedOn.value);
 // A product in an earlier week's Selection may not be a unit now: fall back to the name in its id.
 const productName = (id) => (sel.value?.units ?? []).find((u) => productOf(u.unit_id) === id)?.product ?? id.split('#').pop().replace(/^Fungicide/, '');
-const lastApplied = computed(() => store.history[store.history.length - 1] ?? null);
+// Every product applied on the latest recorded date, not just the last row.
+const lastApplied = computed(() => {
+  const day = store.history.reduce((m, h) => (h.applied_on > m ? h.applied_on : m), '');
+  const rows = store.history.filter((h) => h.applied_on === day);
+  return rows.length ? { on: day, names: [...new Set(rows.map((h) => productName(h.product_id)))] } : null;
+});
 </script>
 
 <template>
@@ -75,7 +80,7 @@ const lastApplied = computed(() => store.history[store.history.length - 1] ?? nu
       <section class="prop-card">
         <h3>Products</h3>
         <p class="meta">{{ period.start ? `Approval period ${period.start} to ${period.end} (${period.days} days)` : 'Not approved yet — no approval period.' }}</p>
-        <p v-if="lastApplied" class="meta recent">Recently applied: {{ productName(lastApplied.product_id) }} on {{ lastApplied.applied_on }}.<template v-if="excluded.some((u) => (u.checks ?? []).some((c) => c.check === 'rotation'))"> Products of the same practice are listed under excluded, to rotate.</template></p>
+        <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.join(', ') }} on {{ lastApplied.on }}.<template v-if="excluded.some((u) => (u.checks ?? []).some((c) => c.check === 'rotation'))"> Products of the same practice are listed under excluded, to rotate.</template></p>
         <p class="meta counts">{{ byGroup('recommended').length }} recommended · {{ byGroup('eligible').length }} eligible · {{ excluded.length }} excluded</p>
         <ul class="units">
           <li v-for="u in shown" :id="`unit-${u.unit_id}`" :key="u.unit_id"><ProductCard :unit="u" /></li>
