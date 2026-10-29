@@ -26,8 +26,8 @@ test('every scheduler request needs a Practitioner token', async () => {
   assert.equal((await get('/lines', as('both@digisaka.test'))).status, 200);
 });
 
-test('lists the six seed lines', async () => {
-  assert.deepEqual((await (await get('/lines')).json()).lines, ['L01', 'L02', 'L03', 'L04', 'L05', 'L06']);
+test('lists the seven seed lines', async () => {
+  assert.deepEqual((await (await get('/lines')).json()).lines, ['L01', 'L02', 'L03', 'L04', 'L05', 'L06', 'L07']);
 });
 
 test('line status carries the scenario for each seed line', async () => {

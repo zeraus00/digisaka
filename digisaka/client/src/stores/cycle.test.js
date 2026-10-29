@@ -76,6 +76,31 @@ describe('close', () => {
   });
 });
 
+describe('reopen', () => {
+  const rejected = () => done({ outcome: 'human_review_required', outcome_reason: 'gate_e_rejected' });
+  it('reopens a rejected week, polls the new cycle and ends on its selection', async () => {
+    fetchMock.mockResolvedValueOnce(json(202, cyc())).mockResolvedValueOnce(json(200, rejected()));
+    const s = useCycleStore();
+    await s.close('L04', '2026-W24', wait);
+    fetchMock.mockClear();
+    fetchMock.mockResolvedValueOnce(json(202, cyc({ cycle_id: 'c2', retry_of: 'c1' }))).mockResolvedValueOnce(json(200, done({ cycle_id: 'c2', retry_of: 'c1' })));
+    await s.reopen(wait);
+    expect(urls()).toEqual(['POST /api/v1/scheduler/cycles/c1/reopen', 'GET /api/v1/scheduler/cycles/c2']);
+    expect(s.phase).toBe('selection');
+    expect(s.cycle.cycle_id).toBe('c2');
+  });
+  it('keeps the rejected cycle on screen with the message when the reopen is refused', async () => {
+    fetchMock.mockResolvedValueOnce(json(202, cyc())).mockResolvedValueOnce(json(200, rejected()));
+    const s = useCycleStore();
+    await s.close('L04', '2026-W24', wait);
+    fetchMock.mockResolvedValueOnce(json(409, { error: 'cycle_not_reopenable', detail: 'x' }));
+    await s.reopen(wait);
+    expect(s.phase).toBe('review');
+    expect(s.cycle.cycle_id).toBe('c1');
+    expect(s.error).toMatch(/reopened/);
+  });
+});
+
 describe('follow', () => {
   it('clears a finished cycle that belongs to another line-week', () => {
     const s = useCycleStore();

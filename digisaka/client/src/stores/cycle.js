@@ -45,6 +45,19 @@ export const useCycleStore = defineStore('cycle', {
         if (run === this.run) Object.assign(this, { phase: 'failed', error: messageFor(err) });
       } finally { if (run === this.run) this.busy = false; }
     },
+    // A rejected week runs the scheduler again (ADR-0036); a refusal leaves the rejected cycle on screen.
+    async reopen(wait = sleep) {
+      if (this.busy || !this.cycle) return;
+      const first = this.cycle; this.run++; const run = this.run;
+      Object.assign(this, { busy: true, error: '' });
+      try {
+        this.cycle = await api.post(`${base}/cycles/${e(first.cycle_id)}/reopen`);
+        this.busy = false;
+        await this._poll(run, wait);
+      } catch (err) {
+        if (run === this.run) Object.assign(this, { cycle: first, phase: 'review', error: messageFor(err) });
+      } finally { if (run === this.run) this.busy = false; }
+    },
     // Check again after a timeout or error.
     resume(wait = sleep) { this.run++; return this._poll(this.run, wait); },
     async _poll(run, wait) {

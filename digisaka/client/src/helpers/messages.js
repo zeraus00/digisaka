@@ -16,6 +16,7 @@ const MESSAGES = {
   invalid_date: 'Enter the date as YYYY-MM-DD.',
   application_already_recorded: 'The application was already recorded.',
   cycle_running: 'The cycle is still running.',
+  cycle_not_reopenable: 'Only a rejected week that has not already been reopened can be reopened.',
   cycle_not_failed: 'Only a failed cycle can be retried.',
   cycle_slot_taken: 'Another cycle is already running for this line.',
   validation_error: 'The request was not accepted. Check the image and values and try again.',

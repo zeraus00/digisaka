@@ -251,6 +251,8 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
           <h2>Human review required</h2>
           <p>No treatment is proposed for this week. An expert needs to look at this line.</p>
           <p v-if="cycle.cycle?.outcome_reason">Reason: {{ outcomeReasonText(cycle.cycle.outcome_reason) }}</p>
+          <p v-if="cycle.cycle?.status === 'reopened'" class="hint">This week was reopened; a newer cycle replaces this one.</p>
+          <button v-else-if="cycle.cycle?.outcome_reason === 'gate_e_rejected'" class="primary" :disabled="cycle.busy" @click="cycle.reopen()">Reopen this week</button>
         </template>
         <template v-else-if="cycle.phase === 'failed'">
           <h2>The cycle failed</h2>

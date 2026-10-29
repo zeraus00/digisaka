@@ -109,6 +109,26 @@ test('L06 fails, retry succeeds, and a cycle that is not failed cannot be retrie
   assert.equal((await call('POST', `${B}/cycles/nope/retry`)).body.error, 'unknown_cycle');
 });
 
+test('L07 is rejected, can be reopened once, and the reopen ends in a draft', async () => {
+  await verify('L07');
+  const id = (await close('L07')).body.cycle_id;
+  assert.equal((await call('POST', `${B}/cycles/${id}/reopen`)).body.error, 'cycle_running');
+  t += 3000;
+  const first = (await call('GET', `${B}/cycles/${id}`)).body;
+  assert.deepEqual([first.status, first.outcome_reason], ['done', 'gate_e_rejected']);
+  const again = await call('POST', `${B}/cycles/${id}/reopen`);
+  assert.equal(again.status, 202);
+  assert.equal(again.body.retry_of, id);
+  assert.equal((await call('POST', `${B}/cycles/${id}/reopen`)).body.error, 'cycle_not_reopenable');
+  t += 3000;
+  const next = (await call('GET', `${B}/cycles/${again.body.cycle_id}`)).body;
+  assert.deepEqual([next.status, next.outcome], ['done', 'awaiting_decision']);
+  assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'reopened');
+  assert.equal((await close('L07')).body.cycle_id, again.body.cycle_id);
+  assert.equal((await call('POST', `${B}/cycles/c-L06-23/reopen`)).body.error, 'cycle_not_reopenable');
+  assert.equal((await call('POST', `${B}/cycles/nope/reopen`)).body.error, 'unknown_cycle');
+});
+
 test('only one running cycle per line', async () => {
   await verify('L06');
   const id = (await close('L06')).body.cycle_id;

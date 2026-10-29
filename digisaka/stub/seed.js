@@ -68,6 +68,8 @@ const seed = () => ({
       selections: [{ selection_id: 'sel-L06-23', origin_cycle_id: 'c-L06-23', origin_week: '2026-W23', status: 'draft', payload: 'real', periods: [], decided_by: null, decided_at: null, note: null }],
       applications: [], leaves: 6,
     },
+    // Nothing recorded; closing a verified week ends in a rejected Selection, which can be reopened.
+    L07: { weeks: [], cycles: [], selections: [], applications: [], leaves: 0 },
   },
 });
 
