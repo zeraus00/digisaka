@@ -3,8 +3,8 @@ import { computed, ref, watch } from 'vue';
 import { scheduleEvents, monthGrids } from '../helpers/schedule.js';
 import { todayIso } from '../helpers/today.js';
 
-const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] } });
-const events = computed(() => scheduleEvents(props.days, props.applications));
+const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] }, nameOf: { type: Function, default: (id) => id } });
+const events = computed(() => scheduleEvents(props.days, props.applications, props.nameOf));
 const months = computed(() => monthGrids(events.value));
 // The month shown opens on today's month when the schedule has it, else the first.
 const at = ref(0);
@@ -12,9 +12,9 @@ watch(months, (ms) => { const i = ms.findIndex((m) => todayIso().startsWith(m.ke
 const m = computed(() => months.value[at.value]);
 const short = (iso) => `${iso.slice(8)}/${iso.slice(5, 7)}`;
 const range = (e) => (e.kind === 'application' ? `${short(e.start)} – ${short(e.end)}` : short(e.date));
-const KIND = { application: { icon: '💊', cls: 'gold' }, monitoring: { icon: '🔍', cls: 'plum' } };
+const KIND = { application: { icon: '💊', cls: 'gold' }, monitoring: { icon: '🔍', cls: 'plum' }, applied: { icon: '💊', cls: 'done' } };
 const todayDay = computed(() => (m.value && todayIso().startsWith(m.value.key) ? Number(todayIso().slice(8)) : null));
-const applied = computed(() => `${events.value.filter((e) => e.done).length} / ${events.value.filter((e) => e.kind === 'application').length} applied`);
+const applied = computed(() => `${events.value.filter((e) => e.done).length} / ${events.value.filter((e) => e.kind !== 'monitoring' && (e.kind === 'applied' || e.kind === 'application')).length} applied`);
 </script>
 
 <template>
@@ -45,7 +45,8 @@ const applied = computed(() => `${events.value.filter((e) => e.done).length} / $
           <div class="date">{{ range(e) }}<small>{{ e.date.slice(0, 4) }}</small></div>
           <div class="card">
             <h5>{{ e.label }}<small v-if="e.moa"> · {{ e.moa }}</small></h5>
-            <p v-if="e.kind === 'application'">Apply between {{ e.start }} and {{ e.end }}.<template v-if="e.done"> Applied.</template></p>
+            <p v-if="e.kind === 'applied'">Applied on {{ e.date }}.</p>
+            <p v-else-if="e.kind === 'application'">Apply between {{ e.start }} and {{ e.end }}.<template v-if="e.done"> Applied.</template></p>
             <p v-else>Scan this line again on {{ e.date }}.<template v-if="e.after"> Follows {{ e.after }}.</template></p>
           </div>
         </li>

@@ -24,6 +24,18 @@ describe('scheduleEvents', () => {
     expect(rec('2026-07-04', id)).toBe(false);
     expect(rec('2026-07-01', 'other')).toBe(false);
   });
+  it('adds an applied event for a recorded application no planned window covers, in date order', () => {
+    const ev = scheduleEvents(days, [{ product_id: 'http://x#FungicidePyrimethanil', applied_on: '2026-06-01' }], (id) => id.split('#').pop());
+    expect(ev.map((e) => [e.date, e.kind, e.label, e.done])).toEqual([
+      ['2026-06-01', 'applied', 'FungicidePyrimethanil', true],
+      ['2026-06-29', 'application', 'azoxystrobin', false],
+      ['2026-07-06', 'monitoring', 'Weekly assessment', false],
+    ]);
+  });
+  it('does not repeat an application a planned window already covers', () => {
+    const ev = scheduleEvents(days, [{ product_id: productOf(unit), applied_on: '2026-07-01' }]);
+    expect(ev.filter((e) => e.kind === 'applied')).toEqual([]);
+  });
   it('handles a missing days list', () => expect(scheduleEvents(undefined)).toEqual([]));
 });
 

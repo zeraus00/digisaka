@@ -47,6 +47,12 @@ describe('load', () => {
     const s = await loaded({ 'GET /lines/L04': json(200, lineStatus({ applications: apps })) });
     expect(s.applications.map((a) => a.application_id)).toEqual(['a1']);
   });
+  it('also carries the whole line history, oldest first, with the week of each selection', async () => {
+    const apps = [{ application_id: 'a2', selection_id: 'other', product_id: 'u-a', applied_on: '2026-06-12' }, { application_id: 'a1', selection_id: 's1', product_id: 'u-a', applied_on: '2026-06-11' }];
+    const s = await loaded({ 'GET /lines/L04': json(200, lineStatus({ applications: apps })) });
+    expect(s.history.map((a) => a.application_id)).toEqual(['a1', 'a2']);
+    expect(s.weeks.s1).toBeTruthy();
+  });
   it('reports a week without a selection as not found', async () => {
     routes({ 'GET /lines/L04': json(200, lineStatus()) });
     const s = useSelectionStore();

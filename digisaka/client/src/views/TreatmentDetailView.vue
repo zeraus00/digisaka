@@ -57,7 +57,9 @@ const reject = () => done(store.reject(note.value));
 const renew = () => done(store.renew(acked.value, note.value));
 watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value, old, next); });
 const record = () => store.apply(productId.value, appliedOn.value);
-const productName = (id) => products.value.find((u) => productOf(u.unit_id) === id)?.product ?? id;
+// A product in an earlier week's Selection may not be a unit now: fall back to the name in its id.
+const productName = (id) => (sel.value?.units ?? []).find((u) => productOf(u.unit_id) === id)?.product ?? id.split('#').pop().replace(/^Fungicide/, '');
+const lastApplied = computed(() => store.history[store.history.length - 1] ?? null);
 </script>
 
 <template>
@@ -73,6 +75,7 @@ const productName = (id) => products.value.find((u) => productOf(u.unit_id) === 
       <section class="prop-card">
         <h3>Products</h3>
         <p class="meta">{{ period.start ? `Approval period ${period.start} to ${period.end} (${period.days} days)` : 'Not approved yet — no approval period.' }}</p>
+        <p v-if="lastApplied" class="meta recent">Recently applied: {{ productName(lastApplied.product_id) }} on {{ lastApplied.applied_on }}.<template v-if="excluded.some((u) => (u.checks ?? []).some((c) => c.check === 'rotation'))"> Products of the same practice are listed under excluded, to rotate.</template></p>
         <p class="meta counts">{{ byGroup('recommended').length }} recommended · {{ byGroup('eligible').length }} eligible · {{ excluded.length }} excluded</p>
         <ul class="units">
           <li v-for="u in shown" :id="`unit-${u.unit_id}`" :key="u.unit_id"><ProductCard :unit="u" /></li>
@@ -121,20 +124,22 @@ const productName = (id) => products.value.find((u) => productOf(u.unit_id) === 
         <p v-else-if="sel.note" class="noted">Note: {{ sel.note }}</p>
       </section>
 
-      <section v-if="store.status === 'approved'" class="prop-card">
+      <section v-if="store.status === 'approved' || store.history.length" class="prop-card">
         <h3>Applications</h3>
-        <ul v-if="store.applications.length" class="apps">
-          <li v-for="a in store.applications" :key="a.application_id">{{ productName(a.product_id) }} on {{ a.applied_on }}</li>
+        <ul v-if="store.history.length" class="apps">
+          <li v-for="a in store.history" :key="a.application_id">{{ productName(a.product_id) }} on {{ a.applied_on }}<small v-if="store.weeks[a.selection_id]"> · week {{ store.weeks[a.selection_id] }}</small></li>
         </ul>
         <p v-else class="meta">None recorded yet.</p>
+        <template v-if="store.status === 'approved'">
         <div class="row">
           <select v-model="productId" aria-label="Product applied"><option value="" disabled>Product</option><option v-for="u in products" :key="u.unit_id" :value="u.unit_id">{{ u.product }}</option></select>
           <input v-model="appliedOn" type="date" :max="todayIso()" aria-label="Date applied" />
         </div>
         <div class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy" @click="record">Record application</button></div>
+        </template>
       </section>
 
-      <ScheduleCalendar :days="store.preview?.days ?? []" :applications="store.applications" />
+      <ScheduleCalendar :days="store.preview?.days ?? []" :applications="store.history" :name-of="productName" />
 
       <EvidenceCharts :cycle-id="store.cycle?.cycle_id ?? ''" />
     </template>

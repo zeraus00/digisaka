@@ -5,18 +5,22 @@ export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', '
 
 // The Selection preview's days as calendar events: an application (with its timing window) and/or a
 // weekly assessment per day. An application is done when one is recorded for its product inside its window.
-export function scheduleEvents(days, applications = []) {
-  return (days ?? []).flatMap((d) => {
+// A recorded application that no planned window covers (an earlier week's spray) is its own `applied` event.
+export function scheduleEvents(days, applications = [], nameOf = (id) => id) {
+  const planned = (days ?? []).flatMap((d) => {
     const out = [];
     const app = d.application;
     if (app) {
       const { start, end } = app.timing_window ?? { start: d.date, end: d.date };
       const done = applications.some((a) => a.product_id === productOf(app.unit_id) && a.applied_on >= start && a.applied_on <= end);
-      out.push({ date: d.date, kind: 'application', label: app.product, moa: app.moa, start, end, done });
+      out.push({ date: d.date, kind: 'application', label: app.product, moa: app.moa, start, end, done, productId: productOf(app.unit_id) });
     }
     if (d.monitoring) out.push({ date: d.date, kind: 'monitoring', label: d.monitoring.label, after: d.reassessment?.of ?? null, done: false });
     return out;
   });
+  const covered = (a) => planned.some((e) => e.kind === 'application' && a.product_id === e.productId && a.applied_on >= e.start && a.applied_on <= e.end);
+  const applied = applications.filter((a) => !covered(a)).map((a) => ({ date: a.applied_on, kind: 'applied', label: nameOf(a.product_id), done: true }));
+  return [...planned, ...applied].sort((a, b) => a.date.localeCompare(b.date));
 }
 
 // One grid per month the events fall in: leading nulls pad to Monday, `events` is keyed by day of month.

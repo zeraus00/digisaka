@@ -1,7 +1,7 @@
 // Display rules for a unit's checks. Built only from fields the payload already carries; the scheduler's detail text is a
 // fixed template, so each reader matches one template and anything else is shown as it came.
 export const CHECK_LABEL = {
-  stage_eligibility: 'Growth stage', alternation: 'Alternation', max_consecutive: 'Repeat applications', group_cap: 'Applications per group',
+  stage_eligibility: 'Growth stage', rotation: 'Rotation', alternation: 'Alternation', max_consecutive: 'Repeat applications', group_cap: 'Applications per group',
   mixture: 'Mixture', resistance_risk: 'Resistance risk', label_weather: 'Label and weather', fit_of_moa_to_conditions: 'Fit to conditions',
 };
 export const checkLabel = (check) => CHECK_LABEL[check] ?? check.replace(/_/g, ' ');
