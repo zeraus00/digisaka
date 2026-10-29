@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:digisaka/shared/utils/image_stamper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/components/app_bar_widget.dart';
 import '../../../../shared/components/app_button.dart';
@@ -13,10 +15,22 @@ import 'bulk_assess_screen.dart';
 /// to be declared inside another class.)
 class _LeafPhoto {
   final bool isMock;
-  final File? file; // null for mock leaves
+  final File? file; // stamped photo for captured leaves, null for mock leaves
   final String? scenario; // tag for sample-leaf chip additions
+  final double? latitude;
+  final double? longitude;
+  final double? accuracy; // meters
+  final DateTime? capturedAt;
 
-  const _LeafPhoto({required this.isMock, this.file, this.scenario});
+  const _LeafPhoto({
+    required this.isMock,
+    this.file,
+    this.scenario,
+    this.latitude,
+    this.longitude,
+    this.accuracy,
+    this.capturedAt,
+  });
 }
 
 class LeafScanScreen extends StatefulWidget {
@@ -40,12 +54,13 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
 
   // true  = tapping the green button instantly adds a mock leaf (no camera).
   // false = use the real camera / gallery.
-  static const bool _useMockCapture = true;
+  static const bool _useMockCapture = false;
 
   // Mock mode stops at this many leaves.
   static const int _maxLeaves = 8;
 
   final List<_LeafPhoto> _selectedLeaves = [];
+  bool _isProcessing = false;
 
   void _showMessage(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
@@ -55,6 +70,33 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const NotificationsScreen()),
     );
+  }
+
+  /// Reads the current location without blocking capture. Returns null when
+  /// location services are off, permission is denied, or the request times out.
+  Future<Position?> _getLocation() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return null;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return null;
+      }
+
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Sample-leaf scenario chips shown in mock capture mode.
@@ -87,22 +129,75 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     }
   }
 
-  /// Opens the camera. Whatever photo is taken gets added to the grid.
+  /// Opens the camera, stamps the photo with GPS + date/time, then adds it to
+  /// the grid. Capture is never blocked by location: if GPS is unavailable the
+  /// photo is stamped with "Location unavailable" instead. If stamping itself
+  /// fails, the original photo is used and the error is logged.
   Future<void> _captureFromCamera() async {
     if (_useMockCapture) {
       _addMockLeaf();
       return;
     }
 
-    final XFile? photo = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85, // keeps file size reasonable without losing much detail
-    );
-    if (photo == null) return; // user cancelled
+    setState(() => _isProcessing = true);
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85, // keeps file size reasonable without losing much detail
+      );
+      if (photo == null) return; // user cancelled
 
-    setState(() {
-      _selectedLeaves.add(_LeafPhoto(isMock: false, file: File(photo.path)));
-    });
+      // Show a loading indicator while we locate and stamp the photo.
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final Position? position = await _getLocation();
+      final DateTime capturedAt = DateTime.now();
+
+      // Always stamp (GPS or not); stampImage writes "Location unavailable"
+      // when there is no position. Fall back to the original on any error.
+      File? stamped;
+      try {
+        stamped = await stampImage(
+          File(photo.path),
+          data: StampData(
+            latitude: position?.latitude,
+            longitude: position?.longitude,
+            accuracyMeters: position?.accuracy,
+            capturedAt: capturedAt,
+            line: widget.line,
+            isoWeek: widget.isoWeek,
+          ),
+        );
+      } catch (e) {
+        debugPrint('Leaf photo stamp failed: $e');
+      }
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // dismiss loading dialog
+
+      setState(() {
+        _selectedLeaves.add(
+          _LeafPhoto(
+            isMock: false,
+            file: stamped ?? File(photo.path),
+            latitude: position?.latitude,
+            longitude: position?.longitude,
+            accuracy: position?.accuracy,
+            capturedAt: capturedAt,
+          ),
+        );
+      });
+      if (position == null) {
+        _showMessage('GPS unavailable — photo saved without a location stamp.');
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
   }
 
   /// Opens the gallery so the user can pick one or more existing photos.
@@ -287,7 +382,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
         ),
         const SizedBox(width: 40),
         GestureDetector(
-          onTap: _captureFromCamera,
+          onTap: _isProcessing ? null : _captureFromCamera,
           child: Container(
             height: 64,
             width: 64,
