@@ -194,10 +194,62 @@ rebuilt rather than ported.
 | Datasets & Images | Nested folders, multi-image upload (PNG/JPEG/WebP/GIF, 8 MB each), search, validate, move (re-labels), delete |
 | Users | Farmer list and CSV master-list import |
 
-Tracing and Knowledge Graph are greyed out until the workflow service can list workflows and facts.
+Tracing is greyed out until the workflow service can list workflows and facts.
+
+| Knowledge Graph | Interactive knowledge graph visualization powered by **Reactodia** (a React-based RDF graph explorer). Loads the use case's ontology from the Knowledge Maintenance API (`/api/v1/knowledge-maintenance/ontology/export?format=ttl`), parses Turtle with N3, and renders a force-directed graph of all `owl:Class` elements. Reacts to use case changes automatically. |
 
 **Image safety.** Uploads are checked by their bytes, not the header (SVG is refused), stored under
 `data/uploads` (set `UPLOAD_DIR` to move it) with random names, and served only to signed-in admins.
+
+### Knowledge Graph (Reactodia Integration)
+The **Knowledge Graph** screen (`/admin/kg`) is an interactive graph visualization built with **[Reactodia](https://reactodia.github.io/)**.
+
+**Dependencies added** (`client/package.json`):
+- `@reactodia/workspace` — graph workspace, layout, diagram components
+- `n3` — RDF/Turtle parser
+- `react` & `react-dom` — peer dependencies for Reactodia
+
+**Files created/changed:**
+- `client/src/admin/GraphView.vue` — Vue wrapper that mounts the React component `ReactodiaGraph` via `react-dom/client.createRoot`. Passes `useCaseSlug` and `token` as props.
+- `client/src/admin/ReactodiaGraph.jsx` — React component using Reactodia's hooks (`useLoadedWorkspace`, `blockingDefaultLayout`). Fetches ontology TTL, parses with N3, creates diagram via `model.createNewDiagram`, adds `owl:Class` elements via `model.createElement`, loads data with `model.requestData`, runs layout via `performLayout`.
+- `client/src/admin/nav.js` — enabled "Knowledge Graph" nav item (removed `unavailable: true`).
+- `client/src/router.js` — `/admin/kg` now points to `GraphView.vue`.
+- `client/vite.config.js` — `optimizeDeps.include` for `@reactodia/workspace` and `n3` (no worker config needed; uses synchronous `blockingDefaultLayout`).
+- `stub/km.js` — added `/api/v1/knowledge-maintenance/ontology/export` endpoint returning a sample Black Sigatoka domain TTL (classes: BlackSigatoka, BananaPlant, Leaf, LeafStage, Treatment, Fungicide, CulturalPractice; properties: hasStage, hasDisease, treatedWith, hasSeverity, hasIncubationDays; instances: YoungLeaf, MatureLeaf, OldLeaf, Mancozeb, Propiconazole, LeafRemoval, FieldSanitation). Also handles JSON-encoded Turtle responses.
+
+**How it works at runtime:**
+1. User selects a use case in the admin header (e.g., "Black Sigatoka").
+2. `GraphView.vue` mounts `ReactodiaGraph` with `useCaseSlug` and bearer `token`.
+3. `ReactodiaGraph` calls `GET /api/v1/knowledge-maintenance/ontology/export?format=ttl&useCase=<slug>` with the token.
+4. Response TTL (or JSON-encoded Turtle from stub) is parsed by `N3.Parser` into RDF quads.
+5. `RdfDataProvider` is created and quads are added via `dataProvider.addGraph(quads)`.
+6. A diagram is created via `model.createNewDiagram({ dataProvider, signal })`.
+7. All `owl:Class` elements are looked up and added as graph nodes via `model.createElement(element.id)`.
+8. `model.requestData()` loads the nodes, then `performLayout({ zoomToFit: true })` arranges them.
+9. Reactodia's `<DefaultWorkspace />` renders the interactive graph (pan, zoom, node drag, class labels).
+
+**Docker:** After adding the dependencies, rebuild the client image:
+```bash
+docker compose build web
+docker compose up -d
+```
+Or with the stub:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.stub.yml build web
+docker compose -f docker-compose.yml -f docker-compose.stub.yml up -d
+```
+
+**Stub unit tests:**
+```bash
+node --test "stub/*.test.js"
+```
+
+**Client tests (including contract tests against the stub):**
+```bash
+npm --prefix client test
+```
+
+**Not built:** graph filtering by class/type, tracing integration (reasoning traces as subgraphs), ontology editing from the graph, persisting viewport/zoom per use case.
 
 **Not built:** per-admin permissions beyond the admin role, image annotation/bounding boxes, and
 real-time sync between admins (reload to see another admin's changes).
