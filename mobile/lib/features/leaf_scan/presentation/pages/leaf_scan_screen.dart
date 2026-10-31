@@ -1,34 +1,39 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/components/app_bar_widget.dart';
 import '../../../../shared/components/app_button.dart';
-import 'validation_screen.dart';
+import '../../../../shared/widgets/assessment_stepper.dart';
+import 'package:digisaka/features/notification/presentation/pages/notifications_screen.dart';
+import 'bulk_assess_screen.dart';
 
-/// One leaf in the grid: either a mock placeholder or a real photo.
-/// (This must live OUTSIDE the State class - Dart doesn't allow a class
-/// to be declared inside another class.)
+/// One mock leaf in the grid.
+/// [file] is always null here; it is kept only so BulkAssessScreen's
+/// `leafPhotos` parameter keeps working unchanged.
 class _LeafPhoto {
-  final bool isMock;
-  final File? file; // null for mock leaves
+  final File? file;
+  final String? scenario; // tag for sample-leaf chip additions
 
-  const _LeafPhoto({required this.isMock, this.file});
+  const _LeafPhoto({this.file, this.scenario});
 }
 
 class LeafScanScreen extends StatefulWidget {
-  const LeafScanScreen({super.key});
+  final String line;
+  final String isoWeek;
+  final DateTime? selectedDate;
+
+  const LeafScanScreen({
+    super.key,
+    required this.line,
+    required this.isoWeek,
+    this.selectedDate,
+  });
 
   @override
   State<LeafScanScreen> createState() => _LeafScanScreenState();
 }
 
 class _LeafScanScreenState extends State<LeafScanScreen> {
-  final ImagePicker _picker = ImagePicker();
-
-  // true  = tapping the green button instantly adds a mock leaf (no camera).
-  // false = use the real camera / gallery.
-  static const bool _useMockCapture = true;
-
   // Mock mode stops at this many leaves.
   static const int _maxLeaves = 8;
 
@@ -38,9 +43,26 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  void _goToNotifications() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+    );
+  }
+
+  /// Sample-leaf scenario chips.
+  static const List<String> _kSampleLeafScenarios = <String>[
+    'Stage 2 leaf',
+    'Healthy leaf',
+    'Rescan needed',
+    'Referral',
+    'Not a leaf',
+    'QA unavailable',
+  ];
+
   /// Adds a mock leaf to the grid, respecting the maximum of 8.
   /// The 8th leaf is the "alert" one, so it also shows a SnackBar.
-  void _addMockLeaf() {
+  /// [scenario] tags the leaf with the sample-leaf chip label (if any).
+  void _addMockLeaf({String? scenario}) {
     if (_selectedLeaves.length >= _maxLeaves) {
       _showMessage('Maximum of 8 leaves reached');
       return;
@@ -49,47 +71,12 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     final bool isAlertLeaf = _selectedLeaves.length == _maxLeaves - 1;
 
     setState(() {
-      _selectedLeaves.add(const _LeafPhoto(isMock: true));
+      _selectedLeaves.add(_LeafPhoto(scenario: scenario));
     });
 
     if (isAlertLeaf) {
       _showMessage('Leaf 8 looks unclear. Retake the photo.');
     }
-  }
-
-  /// Opens the camera. Whatever photo is taken gets added to the grid.
-  Future<void> _captureFromCamera() async {
-    if (_useMockCapture) {
-      _addMockLeaf();
-      return;
-    }
-
-    final XFile? photo = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85, // keeps file size reasonable without losing much detail
-    );
-    if (photo == null) return; // user cancelled
-
-    setState(() {
-      _selectedLeaves.add(_LeafPhoto(isMock: false, file: File(photo.path)));
-    });
-  }
-
-  /// Opens the gallery so the user can pick one or more existing photos.
-  Future<void> _pickFromGallery() async {
-    if (_useMockCapture) {
-      _addMockLeaf();
-      return;
-    }
-
-    final List<XFile> photos = await _picker.pickMultiImage(imageQuality: 85);
-    if (photos.isEmpty) return; // user cancelled
-
-    setState(() {
-      _selectedLeaves.addAll(
-        photos.map((x) => _LeafPhoto(isMock: false, file: File(x.path))),
-      );
-    });
   }
 
   void _removeLeaf(int index) {
@@ -100,16 +87,20 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     setState(() => _selectedLeaves.clear());
   }
 
-  // Updated hook: navigate to validation screen when leaves are present.
   void _handleAssessAllLeaves() {
     if (_selectedLeaves.isEmpty) {
       _showMessage('No leaves added yet');
       return;
     }
-    // Navigate to the Black Sigatoka Validation screen
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => BlackSigatokaValidationScreen(leafCount: _selectedLeaves.length),
+        builder: (_) => BulkAssessScreen(
+          leafCount: _selectedLeaves.length,
+          leafPhotos: _selectedLeaves.map((p) => p.file).toList(),
+          line: widget.line,
+          isoWeek: widget.isoWeek,
+          selectedDate: widget.selectedDate ?? DateTime(2026, 6, 8),
+        ),
       ),
     );
   }
@@ -117,29 +108,45 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F5F2),
+      appBar: AppBarWidget(
+        title: 'Leaf Scan',
+        onNotificationsPressed: _goToNotifications,
+      ),
+      backgroundColor: AppColors.pageBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTitle(),
+              const Text(
+                'Scan or select banana leaves to check for signs of Black Sigatoka',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textDark,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
               const SizedBox(height: 20),
-              _buildStepper(),
-              const SizedBox(height: 24),
+              AssessmentStepper(currentStepIndex: 0),
+              const SizedBox(height: 20),
               _buildScanFrame(),
               const SizedBox(height: 10),
               _buildHintRow(),
               const SizedBox(height: 20),
               _buildCaptureRow(),
               const SizedBox(height: 24),
+              _buildSampleLeavesSection(),
+              const SizedBox(height: 24),
               _buildSelectedLeavesHeader(),
               const SizedBox(height: 12),
               _buildLeavesGrid(),
               const SizedBox(height: 28),
               _buildAssessButton(),
-              const SizedBox(height: 24), // bottom padding to avoid nav bar
+              const SizedBox(height: 20),
+              _buildPlaceholderFieldsSection(),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -147,83 +154,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  Widget _buildTitle() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Leaf Scan',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primaryGreen,
-          ),
-        ),
-        SizedBox(height: 6),
-        Text(
-          'Scan or select banana leaves to check for signs of Black Sigatoka',
-          style: TextStyle(fontSize: 13.5, color: AppColors.textGrey, height: 1.4),
-        ),
-      ],
-    );
-  }
-
-  /// The 1 - 2 - 3 step indicator at the top.
-  Widget _buildStepper() {
-    return Row(
-      children: [
-        _buildStepCircle(number: '1', label: 'Select Leaves', isActive: true),
-        _buildStepConnector(),
-        _buildStepCircle(number: '2', label: 'Bulk Assess', isActive: false),
-        _buildStepConnector(),
-        _buildStepCircle(number: '3', label: 'Results', isActive: false),
-      ],
-    );
-  }
-
-  Widget _buildStepCircle({
-    required String number,
-    required String label,
-    required bool isActive,
-  }) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 16,
-          backgroundColor: isActive ? AppColors.primaryGreen : AppColors.borderGrey,
-          child: Text(
-            number,
-            style: TextStyle(
-              color: isActive ? AppColors.white : AppColors.textGrey,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            color: isActive ? AppColors.primaryGreen : AppColors.textGrey,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStepConnector() {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        height: 2,
-        color: AppColors.borderGrey,
-      ),
-    );
-  }
-
   /// Dark green frame with corner brackets and a faint leaf outline guide.
-  /// Fixed AspectRatio, so it never shrinks when leaves are added.
   Widget _buildScanFrame() {
     return AspectRatio(
       aspectRatio: 1.5,
@@ -247,7 +178,6 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
               ),
             ),
           ),
-          // Four corner brackets.
           const _CornerBracket(alignment: Alignment.topLeft),
           const _CornerBracket(alignment: Alignment.topRight),
           const _CornerBracket(alignment: Alignment.bottomLeft),
@@ -280,13 +210,14 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  /// Gallery button on the left, big green camera-capture circle on the right.
+  /// Gallery button on the left, big green capture circle on the right.
+  /// Both just add a mock leaf.
   Widget _buildCaptureRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
-          onTap: _pickFromGallery,
+          onTap: () => _addMockLeaf(),
           child: Column(
             children: [
               Container(
@@ -296,7 +227,8 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
                   color: const Color(0xFFF3E9D8),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.image_outlined, color: AppColors.accentYellow, size: 26),
+                child: const Icon(Icons.image_outlined,
+                    color: AppColors.accentYellow, size: 26),
               ),
               const SizedBox(height: 6),
               const Text(
@@ -308,7 +240,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
         ),
         const SizedBox(width: 40),
         GestureDetector(
-          onTap: _captureFromCamera,
+          onTap: () => _addMockLeaf(),
           child: Container(
             height: 64,
             width: 64,
@@ -358,8 +290,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  /// Grid of leaf thumbnails, each with a red remove (x) button,
-  /// plus one dashed "+" tile at the end to add more.
+  /// Grid of mock leaf tiles plus one dashed "+" tile at the end.
   Widget _buildLeavesGrid() {
     return GridView.builder(
       shrinkWrap: true,
@@ -375,23 +306,22 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
         if (index == _selectedLeaves.length) {
           return _buildAddTile();
         }
-        return _buildLeafThumbnail(index, _selectedLeaves[index]);
+        return _buildLeafThumbnail(index);
       },
     );
   }
 
-  Widget _buildLeafThumbnail(int index, _LeafPhoto leaf) {
-    // The mock leaf sitting in the 8th spot is the alert one.
-    final bool isAlert = leaf.isMock && index == _maxLeaves - 1;
+  Widget _buildLeafThumbnail(int index) {
+    // The leaf sitting in the 8th spot is the alert one.
+    final bool isAlert = index == _maxLeaves - 1;
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Tile (green mock tile, or the real photo).
         Positioned.fill(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(14),
-            child: _buildLeafImage(leaf, isAlert),
+            child: _buildMockTile(warning: isAlert),
           ),
         ),
 
@@ -439,36 +369,18 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     );
   }
 
-  /// Real photo for picked/captured leaves, green tile for mock leaves.
-  Widget _buildLeafImage(_LeafPhoto leaf, bool isAlert) {
-    if (!leaf.isMock && leaf.file != null) {
-      return Image.file(
-        leaf.file!,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        // If the photo can't be read, show the warning tile instead.
-        errorBuilder: (context, error, stackTrace) => _buildMockTile(warning: true),
-      );
-    }
-    return _buildMockTile(warning: isAlert);
-  }
-
-  /// Green gradient tile with a leaf icon, or an orange warning icon.
+  /// Light-green mock leaf tile with a darker-green leaf icon, or an orange warning icon.
   Widget _buildMockTile({required bool warning}) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF3F7A55), Color(0xFF2A5A3C)],
-        ),
+      decoration: BoxDecoration(
+        color: AppColors.mockLeafTileBackground,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Center(
         child: Icon(
           warning ? Icons.warning_amber_rounded : Icons.eco,
           size: 30,
-          color: warning ? Colors.orange : const Color(0xFFA8D5B5),
+          color: warning ? Colors.orange : AppColors.mockLeafTileIconColor,
         ),
       ),
     );
@@ -476,7 +388,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
 
   Widget _buildAddTile() {
     return GestureDetector(
-      onTap: _pickFromGallery,
+      onTap: () => _addMockLeaf(),
       child: DottedBorderBox(
         child: const Icon(Icons.add, color: AppColors.textGrey, size: 26),
       ),
@@ -500,9 +412,121 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
       textColor: AppColors.white,
     );
   }
+
+  /// "Sample leaves" section: a grey label plus a Wrap of scenario chips.
+  Widget _buildSampleLeavesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Sample leaves',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textGrey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _kSampleLeafScenarios
+              .map(
+                (scenario) => ChoiceChip(
+                  label: Text(
+                    scenario,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  selected: false,
+                  onSelected: (_) => _addMockLeaf(scenario: scenario),
+                  backgroundColor: AppColors.white,
+                  side: const BorderSide(color: AppColors.borderGrey, width: 1),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                  elevation: 0,
+                  pressElevation: 0,
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  /// "Not available yet" section with two disabled placeholder fields.
+  Widget _buildPlaceholderFieldsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Not available yet',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primaryGreen,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildPlaceholderField('Stage override', "Use QA's stage"),
+        const SizedBox(height: 10),
+        _buildPlaceholderField('Treatment history', 'Not available yet'),
+      ],
+    );
+  }
+
+  /// A disabled dropdown-style placeholder field with muted fill.
+  Widget _buildPlaceholderField(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textDark,
+          ),
+        ),
+        const SizedBox(height: 6),
+        IgnorePointer(
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.placeholderFieldFill,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.borderGrey),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_drop_down,
+                  size: 20,
+                  color: AppColors.textGrey,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-/// Small green corner-bracket mark used on each of the 4 corners of the scan frame.
+/// Small corner-bracket mark used on each of the 4 corners of the scan frame.
 class _CornerBracket extends StatelessWidget {
   final Alignment alignment;
 
@@ -510,8 +534,10 @@ class _CornerBracket extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isTop = alignment == Alignment.topLeft || alignment == Alignment.topRight;
-    final bool isLeft = alignment == Alignment.topLeft || alignment == Alignment.bottomLeft;
+    final bool isTop =
+        alignment == Alignment.topLeft || alignment == Alignment.topRight;
+    final bool isLeft =
+        alignment == Alignment.topLeft || alignment == Alignment.bottomLeft;
 
     return Align(
       alignment: alignment,
@@ -589,7 +615,6 @@ class _DashedBorderPainter extends CustomPainter {
     const double dashSpace = 4;
     final Path dashPath = Path();
 
-    // Trace the rounded-rectangle outline and chop it into short dashes.
     final Path outline = Path()..addRRect(rrect);
     for (final metric in outline.computeMetrics()) {
       double distance = 0;
