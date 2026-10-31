@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { scheduleEvents, monthGrids, isoWeek } from './schedule.js';
-import { productOf } from '../stores/selection.js';
+import { productOf } from '../stores/suggestion.js';
 
 const unit = 'http://x#Type|http://x#FungicideAzoxystrobin';
 const days = [

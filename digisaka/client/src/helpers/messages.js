@@ -13,6 +13,7 @@ const MESSAGES = {
   acknowledgements_required: 'Acknowledge every listed check before approving.',
   no_active_selection: 'No approval period of this selection covers that date.',
   product_not_in_selection: 'That product is not part of this selection.',
+  product_not_offered: 'That product is not part of the current suggestion.',
   invalid_date: 'Enter the date as YYYY-MM-DD.',
   application_already_recorded: 'The application was already recorded.',
   cycle_running: 'The cycle is still running.',

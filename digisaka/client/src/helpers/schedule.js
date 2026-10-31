@@ -1,5 +1,5 @@
 import { fromIso } from './today.js';
-import { productOf } from '../stores/selection.js';
+import { productOf } from '../stores/suggestion.js';
 
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
