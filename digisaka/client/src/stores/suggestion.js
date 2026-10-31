@@ -16,7 +16,7 @@ const STALE = ['application_already_recorded'];
 // phase: idle, loading, ready, notfound, error. `updating` is true while a newer run is in progress.
 // `pending` holds a record the scheduler asked to confirm: {product_id, applied_on, revision, tier, alerts}.
 export const useSuggestionStore = defineStore('suggestion', {
-  state: () => ({ phase: 'idle', lineId: '', suggestion: null, history: [], cycles: [], error: '', busy: false, updating: false, pending: null, run: 0 }),
+  state: () => ({ phase: 'idle', lineId: '', suggestion: null, history: [], cycles: [], error: '', busy: false, updating: false, pending: null, tracked: '', run: 0 }),
   getters: {
     groups: (s) => s.suggestion?.groups ?? { recommended: [], eligible: [], excluded: [] },
     units() { return [...this.groups.recommended, ...this.groups.eligible, ...this.groups.excluded]; },
@@ -66,6 +66,14 @@ export const useSuggestionStore = defineStore('suggestion', {
       }
       if (run === this.run) this.updating = false;
       return 'timeout';
+    },
+    // Follow the run a scan started on a line; `tracked` ends as ready, failed, timeout or error.
+    async track(lineId, cycleId, wait = sleep) {
+      this.run++; const run = this.run;
+      Object.assign(this, { lineId, suggestion: null, history: [], cycles: [], error: '', busy: false, pending: null, tracked: '', phase: 'loading' });
+      const out = await this.follow(cycleId, wait, run);
+      if (run === this.run) this.tracked = out;
+      return out;
     },
     // Submit unconfirmed; a `confirmation_required` answer is not an error, it waits in `pending` for confirm() or cancel().
     async record(productId, appliedOn, wait = sleep) { return this._submit({ product_id: productId, applied_on: appliedOn, revision: this.revision, confirmed: false }, wait); },

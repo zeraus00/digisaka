@@ -4,6 +4,7 @@ import { useStub, CYCLE_MS } from './harness.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import { useCycleStore } from '../stores/cycle.js';
 import { useScanStore } from '../stores/scan.js';
+import { updateState } from '../helpers/scanUpdate.js';
 import { vi } from 'vitest';
 
 vi.mock('../helpers/image.js', () => ({ fileToPayload: async (f) => ({ img_name: f.name, img: 'AAAA' }) }));
@@ -98,5 +99,39 @@ describe('a scan reschedule against the stub', () => {
     expect(c.phase).toBe('monitoring');
     expect(await s.follow(id, wait)).toBe('ready');
     expect(s.revision).toBe(id);
+  });
+});
+
+describe('what a scan leaves for the Results step', () => {
+  const scanned = async (line, ...names) => {
+    const scan = useScanStore();
+    scan.select(line, '2026-W24');
+    scan.addFiles(names.map((n) => ({ name: `${n}.jpg` })));
+    await scan.assess();
+    return scan;
+  };
+  it('a verified scan has a reschedule: updating, then ready on the new revision', async () => {
+    const scan = await scanned('L04', 'a-healthy');
+    const s = useSuggestionStore();
+    expect(updateState({ reschedule: scan.reschedule, tracked: s.tracked, updating: s.updating })).toBe('updating');
+    expect(await s.track('L04', scan.reschedule.cycle_id, wait)).toBe('ready');
+    expect(updateState({ reschedule: scan.reschedule, tracked: s.tracked, updating: s.updating })).toBe('ready');
+    expect(s).toMatchObject({ revision: scan.reschedule.cycle_id, phase: 'ready' });
+  });
+  it('the first run of a line with no suggestion is followed through the not-yet-found reads', async () => {
+    const scan = await scanned('L01', 'a-healthy');
+    const s = useSuggestionStore();
+    expect(await s.track('L01', scan.reschedule.cycle_id, wait)).toBe('ready');
+    expect(s.revision).toBe('c-L01-24');
+  });
+  it('scans that verify nothing leave the line stage unchanged', async () => {
+    const scan = await scanned('L04', 'a-not_leaf', 'b-referral');
+    expect(scan.reschedule).toBeNull();
+    expect(updateState({ reschedule: scan.reschedule, tracked: '', updating: false })).toBe('unchanged');
+  });
+  it('a later verified scan of the same line-week does not start another run', async () => {
+    const scan = await scanned('L04', 'a-healthy', 'b-healthy');
+    expect(scan.leaves.map((l) => l.reschedule?.cycle_id ?? null)).toEqual(['c-L04-24', null]);
+    expect(scan.reschedule.cycle_id).toBe('c-L04-24');
   });
 });
