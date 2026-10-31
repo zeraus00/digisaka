@@ -2,8 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/components/app_bar_widget.dart';
 import '../../../../shared/components/app_button.dart';
+import '../../../../shared/widgets/assessment_stepper.dart';
+import 'package:digisaka/features/notification/presentation/pages/notifications_screen.dart';
 import 'validation_screen.dart';
+import '../widgets/week_context_card.dart';
 
 /// One leaf in the grid: either a mock placeholder or a real photo.
 /// (This must live OUTSIDE the State class - Dart doesn't allow a class
@@ -11,8 +15,9 @@ import 'validation_screen.dart';
 class _LeafPhoto {
   final bool isMock;
   final File? file; // null for mock leaves
+  final String? scenario; // tag for sample-leaf chip additions
 
-  const _LeafPhoto({required this.isMock, this.file});
+  const _LeafPhoto({required this.isMock, this.file, this.scenario});
 }
 
 class LeafScanScreen extends StatefulWidget {
@@ -38,9 +43,26 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  void _goToNotifications() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+    );
+  }
+
+  /// Sample-leaf scenario chips shown in mock capture mode.
+  static const List<String> _kSampleLeafScenarios = <String>[
+    'Stage 2 leaf',
+    'Healthy leaf',
+    'Rescan needed',
+    'Referral',
+    'Not a leaf',
+    'QA unavailable',
+  ];
+
   /// Adds a mock leaf to the grid, respecting the maximum of 8.
   /// The 8th leaf is the "alert" one, so it also shows a SnackBar.
-  void _addMockLeaf() {
+  /// [scenario] tags the leaf with the sample-leaf chip label (if any).
+  void _addMockLeaf({String? scenario}) {
     if (_selectedLeaves.length >= _maxLeaves) {
       _showMessage('Maximum of 8 leaves reached');
       return;
@@ -49,7 +71,7 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     final bool isAlertLeaf = _selectedLeaves.length == _maxLeaves - 1;
 
     setState(() {
-      _selectedLeaves.add(const _LeafPhoto(isMock: true));
+      _selectedLeaves.add(_LeafPhoto(isMock: true, scenario: scenario));
     });
 
     if (isAlertLeaf) {
@@ -109,7 +131,10 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     // Navigate to the Black Sigatoka Validation screen
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => BlackSigatokaValidationScreen(leafCount: _selectedLeaves.length),
+        builder: (_) => BlackSigatokaValidationScreen(
+              leafCount: _selectedLeaves.length,
+              leafPhotos: _selectedLeaves.map((p) => p.file).toList(),
+            ),
       ),
     );
   }
@@ -117,107 +142,55 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F5F2),
+      appBar: AppBarWidget(
+        title: 'Leaf Scan',
+        onNotificationsPressed: _goToNotifications,
+      ),
+      backgroundColor: AppColors.pageBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTitle(),
+              const Text(
+                'Scan or select banana leaves to check for signs of Black Sigatoka',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textDark,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
               const SizedBox(height: 20),
-              _buildStepper(),
-              const SizedBox(height: 24),
+              AssessmentStepper(currentStepIndex: 0),
+              const SizedBox(height: 20),
+              WeekContextCard(
+                initialLine: 'L04',
+                demoToday: DateTime(2026, 6, 14),
+              ),
+              const SizedBox(height: 20),
               _buildScanFrame(),
               const SizedBox(height: 10),
               _buildHintRow(),
               const SizedBox(height: 20),
               _buildCaptureRow(),
               const SizedBox(height: 24),
+              if (_useMockCapture) ...[
+                _buildSampleLeavesSection(),
+                const SizedBox(height: 24),
+              ],
               _buildSelectedLeavesHeader(),
               const SizedBox(height: 12),
               _buildLeavesGrid(),
               const SizedBox(height: 28),
               _buildAssessButton(),
-              const SizedBox(height: 24), // bottom padding to avoid nav bar
+              const SizedBox(height: 20),
+              _buildPlaceholderFieldsSection(),
+              const SizedBox(height: 24),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTitle() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Leaf Scan',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primaryGreen,
-          ),
-        ),
-        SizedBox(height: 6),
-        Text(
-          'Scan or select banana leaves to check for signs of Black Sigatoka',
-          style: TextStyle(fontSize: 13.5, color: AppColors.textGrey, height: 1.4),
-        ),
-      ],
-    );
-  }
-
-  /// The 1 - 2 - 3 step indicator at the top.
-  Widget _buildStepper() {
-    return Row(
-      children: [
-        _buildStepCircle(number: '1', label: 'Select Leaves', isActive: true),
-        _buildStepConnector(),
-        _buildStepCircle(number: '2', label: 'Bulk Assess', isActive: false),
-        _buildStepConnector(),
-        _buildStepCircle(number: '3', label: 'Results', isActive: false),
-      ],
-    );
-  }
-
-  Widget _buildStepCircle({
-    required String number,
-    required String label,
-    required bool isActive,
-  }) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 16,
-          backgroundColor: isActive ? AppColors.primaryGreen : AppColors.borderGrey,
-          child: Text(
-            number,
-            style: TextStyle(
-              color: isActive ? AppColors.white : AppColors.textGrey,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            color: isActive ? AppColors.primaryGreen : AppColors.textGrey,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStepConnector() {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        height: 2,
-        color: AppColors.borderGrey,
       ),
     );
   }
@@ -454,21 +427,18 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
     return _buildMockTile(warning: isAlert);
   }
 
-  /// Green gradient tile with a leaf icon, or an orange warning icon.
+  /// Light-green mock leaf tile with a darker-green leaf icon, or an orange warning icon.
   Widget _buildMockTile({required bool warning}) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF3F7A55), Color(0xFF2A5A3C)],
-        ),
+      decoration: BoxDecoration(
+        color: AppColors.mockLeafTileBackground,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Center(
         child: Icon(
           warning ? Icons.warning_amber_rounded : Icons.eco,
           size: 30,
-          color: warning ? Colors.orange : const Color(0xFFA8D5B5),
+          color: warning ? Colors.orange : AppColors.mockLeafTileIconColor,
         ),
       ),
     );
@@ -498,6 +468,120 @@ class _LeafScanScreenState extends State<LeafScanScreen> {
       onPressed: _handleAssessAllLeaves,
       backgroundColor: buttonColor,
       textColor: AppColors.white,
+    );
+  }
+
+  /// "Sample leaves" section shown in mock capture mode:
+  /// a grey label plus a Wrap of scenario chips.
+  Widget _buildSampleLeavesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Sample leaves',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textGrey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children:
+              _kSampleLeafScenarios
+                  .map(
+                    (scenario) => ChoiceChip(
+                      label: Text(
+                        scenario,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      selected: false,
+                      onSelected: (_) => _addMockLeaf(scenario: scenario),
+                      backgroundColor: AppColors.white,
+                      side: const BorderSide(color: AppColors.borderGrey, width: 1),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
+                      elevation: 0,
+                      pressElevation: 0,
+                    ),
+                  )
+                  .toList(),
+        ),
+      ],
+    );
+  }
+
+  /// "Not available yet" section with two disabled placeholder fields.
+  Widget _buildPlaceholderFieldsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Not available yet',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primaryGreen,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildPlaceholderField('Stage override', "Use QA's stage"),
+        const SizedBox(height: 10),
+        _buildPlaceholderField('Treatment history', 'Not available yet'),
+      ],
+    );
+  }
+
+  /// A disabled dropdown-style placeholder field with muted fill.
+  Widget _buildPlaceholderField(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textDark,
+          ),
+        ),
+        const SizedBox(height: 6),
+        IgnorePointer(
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.placeholderFieldFill,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.borderGrey),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_drop_down,
+                  size: 20,
+                  color: AppColors.textGrey,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
