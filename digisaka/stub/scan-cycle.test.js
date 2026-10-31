@@ -21,11 +21,10 @@ const call = async (method, path, body) => {
   return { status: res.status, body: await res.json() };
 };
 const scan = (line, name, extra = {}) => call('POST', `${B}/lines/${line}/weeks/${WEEK}/diagnoses`, { img_name: name, img: 'AAAA', ...extra });
-const close = (line) => call('POST', `${B}/lines/${line}/weeks/${WEEK}/close`);
 const verify = (line) => scan(line, 'leaf-healthy.jpg');
 
 test('each image name gives its canned answer; unrecognised names are stage 2', async () => {
-  assert.deepEqual((await scan('L04', 'a-healthy.jpg')).body, { qa_output_id: 'qa-1', outcome: 'healthy', stage: null });
+  assert.deepEqual((await scan('L04', 'a-healthy.jpg')).body, { qa_output_id: 'qa-1', outcome: 'healthy', stage: null, reschedule: { cycle_id: 'c-L04-24' } });
   assert.equal((await scan('L04', 'not_leaf.jpg')).body.outcome, 'not_leaf');
   assert.equal((await scan('L04', 'referral.jpg')).body.outcome, 'referral');
   assert.equal((await scan('L04', 'rescan.jpg')).body.next_action, 're_scan');
@@ -45,7 +44,7 @@ test('an image the QA service cannot take answers 503 once, then goes through', 
 test('confirming symptoms finishes the scan; denying asks for a re-scan, and a re-scan keeps the same session', async () => {
   const q = (await scan('L04', 'a.jpg')).body.qa_output_id;
   const yes = await call('POST', `${B}/diagnoses/${q}/confirm-symptoms`, { confirmed: true });
-  assert.deepEqual(yes.body, { qa_output_id: q, outcome: 'treatment_result', stage: 'Stage 2' });
+  assert.deepEqual(yes.body, { qa_output_id: q, outcome: 'treatment_result', stage: 'Stage 2', reschedule: { cycle_id: 'c-L04-24' } });
   const q2 = (await scan('L04', 'b.jpg')).body.qa_output_id;
   assert.equal((await call('POST', `${B}/diagnoses/${q2}/confirm-symptoms`, { confirmed: false })).body.next_action, 're_scan');
   const again = await scan('L04', 'b2.jpg', { qa_output_id: q2 });
@@ -60,46 +59,56 @@ test('scan validation: missing image and bad week', async () => {
   assert.equal((await call('POST', `${B}/lines/L04/weeks/bad/diagnoses`, { img_name: 'a', img: 'A' })).body.error, 'invalid_week');
 });
 
-test('closing before a verified scan is week_not_verified; a scan awaiting confirmation does not count', async () => {
-  assert.equal((await close('L04')).body.error, 'week_not_verified');
-  await scan('L04', 'a.jpg');
-  assert.equal((await close('L04')).status, 409);
+test('a scan awaiting confirmation or a re-scan does not reschedule; the first verified scan of a line-week does, once', async () => {
+  const pending = (await scan('L04', 'a.jpg')).body;
+  assert.equal(pending.reschedule, null);
+  const first = await call('POST', `${B}/diagnoses/${pending.qa_output_id}/confirm-symptoms`, { confirmed: true });
+  assert.deepEqual(first.body.reschedule, { cycle_id: 'c-L04-24' });
+  assert.equal((await verify('L04')).body.reschedule, null, 'a second verified scan of the week leaves the stage as it was');
+  assert.match((await verify('L05')).body.reschedule.cycle_id, /^c-L05-24-\d+$/, 'a taken cycle id gets a suffix');
 });
 
-test('L04 closes to a running cycle that becomes a selection visible in the line status', async () => {
-  await verify('L04');
-  const started = await close('L04');
-  assert.equal(started.status, 202);
-  assert.equal(started.body.status, 'running');
-  const id = started.body.cycle_id;
+test('the reschedule becomes the new revision of the suggestion; the week read lists every run, newest last', async () => {
+  const before = (await call('GET', `${B}/lines/L04/suggestion`)).body;
+  const id = (await verify('L04')).body.reschedule.cycle_id;
+  assert.equal((await call('GET', `${B}/lines/L04/suggestion`)).body.running, true);
   t += 2999;
-  assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'running');
+  assert.equal((await call('GET', `${B}/lines/L04/suggestion`)).body.revision, before.revision);
   t += 1;
-  assert.deepEqual(await call('GET', `${B}/cycles/${id}`).then((r) => [r.body.status, r.body.outcome]), ['done', 'awaiting_decision']);
-  const status = (await call('GET', `${B}/lines/L04`)).body;
-  assert.equal(status.selections.at(-1).origin_cycle_id, id);
-  assert.equal(status.latest_cycle.week, WEEK);
-  assert.equal(status.leaves_scanned, 10);
+  const after = (await call('GET', `${B}/lines/L04/suggestion`)).body;
+  assert.deepEqual([after.revision, after.running, after.trigger, after.changes.trigger], [id, false, 'scan', 'scan']);
+  const week = (await call('GET', `${B}/lines/L04/weeks/${WEEK}`)).body;
+  assert.deepEqual([week.cycle_id, week.status], [id, 'done']);
+  assert.deepEqual(week.runs.map((r) => [r.cycle_id, r.trigger, r.changed]), [[id, 'scan', true]]);
+  assert.deepEqual(Object.keys(week.runs[0]), ['cycle_id', 'trigger', 'started_at', 'changed']);
+  const seeded = (await call('GET', `${B}/lines/L03/weeks/${WEEK}`)).body;
+  assert.deepEqual(seeded.runs.map((r) => r.cycle_id), ['c-L03-24']);
+  assert.equal((await call('GET', `${B}/lines/L04/weeks/2026-W20`)).body.error, 'unknown_cycle');
+  assert.equal((await call('GET', `${B}/lines/L99/weeks/${WEEK}`)).body.error, 'unknown_line');
+  assert.equal((await call('GET', `${B}/lines/L04/weeks/bad`)).body.error, 'invalid_week');
 });
 
-test('L01 ends in monitoring and L05 in human review', async () => {
-  await verify('L01'); await verify('L05');
-  const l1 = (await close('L01')).body.cycle_id;
-  const l5 = (await close('L05')).body;
+test('a first run of a line with none gives it a suggestion, and the line status lists the finished cycle', async () => {
+  assert.equal((await call('GET', `${B}/lines/L01/suggestion`)).status, 404);
+  await verify('L01');
+  assert.equal((await call('GET', `${B}/lines/L01/suggestion`)).status, 404, 'still no finished run');
   t += 3000;
-  assert.equal((await call('GET', `${B}/cycles/${l1}`)).body.outcome, 'continue_monitoring');
-  assert.equal(l5.cycle_id, 'c-L05-24'); // L05 already has a W24 cycle in the seed
-  assert.equal(l5.outcome, 'human_review_required');
+  const s = (await call('GET', `${B}/lines/L01/suggestion`)).body;
+  assert.deepEqual([s.revision, s.outcome], ['c-L01-24', 'continue_monitoring']);
+  const status = (await call('GET', `${B}/lines/L01`)).body;
+  assert.equal(status.latest_cycle.week, WEEK);
+  assert.equal(status.leaves_scanned, 1);
 });
 
 test('L06 fails, retry succeeds, and a cycle that is not failed cannot be retried', async () => {
-  await verify('L06');
-  const id = (await close('L06')).body.cycle_id;
+  const id = (await verify('L06')).body.reschedule.cycle_id;
   assert.equal((await call('POST', `${B}/cycles/${id}/retry`)).body.error, 'cycle_not_failed');
   t += 3000;
   const failed = (await call('GET', `${B}/cycles/${id}`)).body;
   assert.equal(failed.status, 'failed');
   assert.ok(failed.failure_reason);
+  const suggestion = (await call('GET', `${B}/lines/L06/suggestion`)).body;
+  assert.deepEqual([suggestion.running, suggestion.revision], [false, 'c-L06-23'], 'a failed run leaves the suggestion as it was');
   const retry = await call('POST', `${B}/cycles/${id}/retry`);
   assert.equal(retry.status, 202);
   assert.equal(retry.body.status, 'running');
@@ -109,46 +118,20 @@ test('L06 fails, retry succeeds, and a cycle that is not failed cannot be retrie
   assert.equal((await call('POST', `${B}/cycles/nope/retry`)).body.error, 'unknown_cycle');
 });
 
-test('L07 is rejected, can be reopened once, and the reopen ends in a draft', async () => {
-  await verify('L07');
-  const id = (await close('L07')).body.cycle_id;
-  assert.equal((await call('POST', `${B}/cycles/${id}/reopen`)).body.error, 'cycle_running');
-  t += 3000;
-  const first = (await call('GET', `${B}/cycles/${id}`)).body;
-  assert.deepEqual([first.status, first.outcome_reason], ['done', 'gate_e_rejected']);
-  const again = await call('POST', `${B}/cycles/${id}/reopen`);
-  assert.equal(again.status, 202);
-  assert.equal(again.body.retry_of, id);
-  assert.equal((await call('POST', `${B}/cycles/${id}/reopen`)).body.error, 'cycle_not_reopenable');
-  t += 3000;
-  const next = (await call('GET', `${B}/cycles/${again.body.cycle_id}`)).body;
-  assert.deepEqual([next.status, next.outcome], ['done', 'awaiting_decision']);
-  assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'reopened');
-  assert.equal((await close('L07')).body.cycle_id, again.body.cycle_id);
-  assert.equal((await call('POST', `${B}/cycles/c-L06-23/reopen`)).body.error, 'cycle_not_reopenable');
-  assert.equal((await call('POST', `${B}/cycles/nope/reopen`)).body.error, 'unknown_cycle');
-});
-
-test('only one running cycle per line', async () => {
-  await verify('L06');
-  const id = (await close('L06')).body.cycle_id;
-  t += 3000; // failed
-  await call('POST', `${B}/cycles/${id}/retry`);
-  assert.equal((await call('POST', `${B}/cycles/${id}/retry`)).body.error, 'cycle_not_failed');
-  // Another week on the same line cannot open while this one runs.
-  await call('POST', `${B}/lines/L06/weeks/2026-W25/diagnoses`, { img_name: 'healthy.jpg', img: 'A' });
-  const other = await call('POST', `${B}/lines/L06/weeks/2026-W25/close`);
-  assert.equal(other.status, 409);
-  assert.equal(other.body.error, 'cycle_slot_taken');
+test('only one running run per line: a record while a run is in progress asks for no second reschedule', async () => {
+  await verify('L02');
+  const s = (await call('GET', `${B}/lines/L02/suggestion`)).body;
+  const u = s.groups.recommended.find((x) => !x.needs_confirmation);
+  const r = await call('POST', `${B}/lines/L02/applications`, { product_id: u.product_id, applied_on: '2026-06-05', revision: s.revision, confirmed: false });
+  assert.equal(r.status, 201);
+  assert.equal(r.body.reschedule, null);
 });
 
 test('state survives until reset, which restores the seed', async () => {
-  await verify('L04');
-  const id = (await close('L04')).body.cycle_id;
+  const id = (await verify('L04')).body.reschedule.cycle_id;
   t += 3000;
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'done');
   await fetch(`${base}/__stub/reset`, { method: 'POST' });
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.error, 'unknown_cycle');
-  assert.equal((await call('GET', `${B}/lines/L04`)).body.selections.length, 0);
-  assert.equal((await close('L04')).body.error, 'week_not_verified');
+  assert.equal((await verify('L04')).body.reschedule.cycle_id, 'c-L04-24');
 });

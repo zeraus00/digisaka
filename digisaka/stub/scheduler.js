@@ -1,6 +1,6 @@
 // Stand-in for the scheduler API under /api/v1/scheduler: lines, history, insights, evidence, scans and cycles.
 import { BASE, fail, ok, authed, isValidWeek } from './common.js';
-import { selectionRoutes, summaryOf, newDraft } from './selections.js';
+import { suggestionRoutes, summaryOf, newDraft, suggestionAfter } from './suggestions.js';
 import { insightsRoutes } from './insights.js';
 
 // The canned answer for an image is chosen by its name; anything unrecognised is a stage 2 leaf.
@@ -8,18 +8,17 @@ const SCENARIOS = ['healthy', 'not_leaf', 'referral', 'rescan', 'unavailable'];
 const scenarioOf = (name) => SCENARIOS.find((s) => String(name).toLowerCase().includes(s)) ?? 'stage2';
 const CHECKLIST = ['Dark streaks on the leaf underside', 'Yellow halo around the spots'];
 
-// What closing a week ends in, decided by the line. L06 fails on its first run only.
+// What a line's rescheduling run ends in, decided by the line. L06 fails on its first scan run only.
 const PLANS = {
   L04: { outcome: 'awaiting_decision' },
   L05: { outcome: 'human_review_required', reason: 'missing_feed_value' },
   L06: { outcome: 'continue_monitoring', reason: 'disease_not_worsening', failFirst: true },
   L07: { outcome: 'human_review_required', reason: 'gate_e_rejected' },
 };
-// A reopened week runs again and, unlike the first run, ends in a draft.
-const REOPEN_PLAN = { outcome: 'awaiting_decision' };
 const DEFAULT_PLAN = { outcome: 'continue_monitoring', reason: 'disease_not_worsening' };
 const FAILURE_REASON = 'The weather feed did not respond in time.';
 
+const SEED_TIME = '2026-06-01T08:00:00.000Z';
 const newest = (cycles) => [...cycles].sort((a, b) => b.week.localeCompare(a.week)).at(0) ?? null;
 
 export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) {
@@ -39,25 +38,45 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
     return null;
   };
 
-  // A closed week's cycle runs for cycleMs, then is done or failed. Settling is lazy, on the next read.
+  // A rescheduling run takes cycleMs, then is done or failed. Settling is lazy, on the next read.
   const settle = (run) => {
     if (run.status !== 'running' || now() - run.startedAt < cycleMs) return run;
     const l = line(run.line_id);
-    if (run.plan.failFirst && run.attempts === 1) {
+    if (run.plan.failFirst && run.trigger === 'scan' && run.attempts === 1) {
       Object.assign(run, { status: 'failed', failure_reason: FAILURE_REASON });
       return run;
     }
     Object.assign(run, { status: 'done', outcome: run.plan.outcome, outcome_reason: run.plan.reason ?? null, failure_reason: null });
     l.cycles.push({ cycle_id: run.cycle_id, week: run.week, status: 'done', outcome: run.outcome, outcome_reason: run.outcome_reason, evidence: null });
     l.leaves += Object.values(store.data.diagnoses).filter((d) => d.line_id === run.line_id && d.week === run.week && d.verified).length;
-    if (run.outcome === 'awaiting_decision') l.selections.push(newDraft(run.line_id, run.cycle_id, run.week));
+    l.selections.push(newDraft(run.line_id, run.cycle_id, run.week));
+    l.suggestion = suggestionAfter(l, run, run.startedAt + cycleMs);
     return run;
   };
   const settleAll = () => Object.values(store.data.runs).forEach(settle);
-  const runView = (r) => ({ cycle_id: r.cycle_id, line_id: r.line_id, week: r.week, status: r.status, outcome: r.outcome, outcome_reason: r.outcome_reason, failure_reason: r.failure_reason, retry_of: r.retry_of ?? null });
+  const runView = (r) => ({ cycle_id: r.cycle_id, line_id: r.line_id, week: r.week, status: r.status, outcome: r.outcome, outcome_reason: r.outcome_reason, failure_reason: r.failure_reason, trigger: r.trigger });
   const runsOf = (lineId) => Object.values(store.data.runs).filter((r) => r.line_id === lineId).map(settle);
   const verified = (lineId, week) => Object.values(store.data.diagnoses).some((d) => d.line_id === lineId && d.week === week && d.verified);
-  const answer = (d) => ({ qa_output_id: d.id, outcome: d.outcome, stage: d.stage, ...(d.checklist ? { symptom_checklist: d.checklist } : {}), ...(d.next_action ? { next_action: d.next_action } : {}) });
+  const answer = (d, reschedule = null) => ({ qa_output_id: d.id, outcome: d.outcome, stage: d.stage, reschedule, ...(d.checklist ? { symptom_checklist: d.checklist } : {}), ...(d.next_action ? { next_action: d.next_action } : {}) });
+
+  // Starts a rescheduling run for a line; null while one is already running (the scheduler folds the trigger into it).
+  const startRun = (lineId, week, trigger) => {
+    if (runsOf(lineId).some((r) => r.status === 'running')) return null;
+    const taken = (id) => store.data.runs[id] || Object.values(store.data.lines).some((l) => l.cycles.some((c) => c.cycle_id === id));
+    const base = `c-${lineId}-${week.slice(6)}`;
+    const cycle_id = taken(base) ? `${base}-${store.data.nextId++}` : base;
+    store.data.runs[cycle_id] = { cycle_id, line_id: lineId, week, trigger, status: 'running', outcome: null, outcome_reason: null, failure_reason: null, startedAt: now(), attempts: 1, plan: PLANS[lineId] ?? DEFAULT_PLAN };
+    return store.data.runs[cycle_id];
+  };
+  // A verified scan reschedules the line once per line-week; further scans of that week leave the stage as it was.
+  const rescheduleFor = (d) => {
+    if (!d.verified) return null;
+    const key = `${d.line_id}/${d.week}`;
+    if (store.data.scanRuns[key]) return null;
+    const run = startRun(d.line_id, d.week, 'scan');
+    if (run) store.data.scanRuns[key] = run.cycle_id;
+    return run && { cycle_id: run.cycle_id };
+  };
 
   return [
     { method: 'GET', path: `${BASE}/lines`, handle: authed(() => ok({ lines: Object.keys(store.data.lines) })) },
@@ -81,6 +100,21 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
           weeks_assessed: l.cycles.length,
           leaves_scanned: l.leaves,
         });
+      }),
+    },
+    {
+      method: 'GET', path: `${BASE}/lines/:id/weeks/:week`,
+      handle: authed(({ params }) => {
+        const bad = lineWeek(params);
+        if (bad) return bad;
+        const l = line(params.id);
+        // Seeded cycles stand for their week's first run; the runs after it come from the store (newest last).
+        const seeded = l.cycles.filter((c) => c.week === params.week && !store.data.runs[c.cycle_id]).map((c) => ({ cycle_id: c.cycle_id, trigger: 'scan', started_at: SEED_TIME, changed: true, outcome: c.outcome, outcome_reason: c.outcome_reason, status: c.status }));
+        const made = runsOf(params.id).filter((r) => r.week === params.week).map((r) => ({ cycle_id: r.cycle_id, trigger: r.trigger, started_at: new Date(r.startedAt).toISOString(), changed: r.status === 'done', outcome: r.outcome, outcome_reason: r.outcome_reason, status: r.status }));
+        const runs = [...seeded, ...made];
+        const latest = runs.at(-1);
+        if (!latest) return fail(404, 'unknown_cycle', `Line ${params.id} has no run for ${params.week}`);
+        return ok({ cycle_id: latest.cycle_id, line_id: params.id, week: params.week, status: latest.status, outcome: latest.outcome, outcome_reason: latest.outcome_reason, failure_reason: store.data.runs[latest.cycle_id]?.failure_reason ?? null, runs: runs.map((r) => ({ cycle_id: r.cycle_id, trigger: r.trigger, started_at: r.started_at, changed: r.changed })) });
       }),
     },
     {
@@ -129,7 +163,7 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         else if (scenario === 'not_leaf' || scenario === 'referral') d.outcome = scenario;
         else if (scenario === 'rescan') d.next_action = 're_scan';
         else Object.assign(d, { stage: 'Stage 2', checklist: CHECKLIST });
-        return { status: 201, body: answer(d) };
+        return { status: 201, body: answer(d, rescheduleFor(d)) };
       }),
     },
     {
@@ -142,24 +176,7 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
           if (body.confirmed) Object.assign(d, { outcome: 'treatment_result', verified: true, checklist: null });
           else Object.assign(d, { next_action: 're_scan', checklist: null });
         }
-        return ok(answer(d));
-      }),
-    },
-    {
-      method: 'POST', path: `${BASE}/lines/:id/weeks/:week/close`,
-      handle: authed(({ params }) => {
-        const bad = lineWeek(params);
-        if (bad) return bad;
-        const existing = runsOf(params.id).filter((r) => r.status !== 'reopened').find((r) => r.week === params.week);
-        const seeded = line(params.id).cycles.find((c) => c.week === params.week);
-        if (existing) return { status: existing.status === 'running' ? 202 : 200, body: runView(existing) };
-        if (seeded) return ok({ cycle_id: seeded.cycle_id, line_id: params.id, week: seeded.week, status: seeded.status, outcome: seeded.outcome, outcome_reason: seeded.outcome_reason, failure_reason: null });
-        if (!verified(params.id, params.week)) return fail(409, 'week_not_verified', 'No verified scan for this line-week');
-        if (runsOf(params.id).some((r) => r.status === 'running')) return fail(409, 'cycle_slot_taken', `A cycle is already running for ${params.id}`);
-        const cycle_id = `c-${params.id}-${params.week.slice(6)}`;
-        const run = { cycle_id, line_id: params.id, week: params.week, status: 'running', outcome: null, outcome_reason: null, failure_reason: null, startedAt: now(), attempts: 1, plan: PLANS[params.id] ?? DEFAULT_PLAN };
-        store.data.runs[cycle_id] = run;
-        return { status: 202, body: runView(run) };
+        return ok(answer(d, rescheduleFor(d)));
       }),
     },
     {
@@ -183,28 +200,7 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         return { status: 202, body: runView(run) };
       }),
     },
-    {
-      method: 'POST', path: `${BASE}/cycles/:id/reopen`,
-      handle: authed(({ params }) => {
-        const run = store.data.runs[params.id];
-        const found = run ? null : findCycle(params.id);
-        if (!run && !found) return fail(404, 'unknown_cycle', `No cycle ${params.id}`);
-        const first = run ? settle(run) : found.cycle;
-        const lineId = run ? run.line_id : found.lineId;
-        if (first.status === 'running') return fail(409, 'cycle_running', `Cycle ${params.id} is still running`);
-        if (first.status !== 'done' || first.outcome_reason !== 'gate_e_rejected') return fail(409, 'cycle_not_reopenable', 'Only a rejected cycle can be reopened');
-        if (!verified(lineId, first.week)) return fail(409, 'week_not_verified', 'No verified scan for this line-week');
-        first.status = 'reopened';
-        const l = line(lineId);
-        const record = l.cycles.find((c) => c.cycle_id === first.cycle_id);
-        if (record) record.status = 'reopened';
-        const cycle_id = `${first.cycle_id}-r`;
-        const again = { cycle_id, line_id: lineId, week: first.week, status: 'running', outcome: null, outcome_reason: null, failure_reason: null, retry_of: first.cycle_id, startedAt: now(), attempts: 1, plan: REOPEN_PLAN };
-        store.data.runs[cycle_id] = again;
-        return { status: 202, body: runView(again) };
-      }),
-    },
-    ...selectionRoutes(store, { settleAll, now }),
+    ...suggestionRoutes(store, { settleAll, startRun, runsOf, now }),
     ...insightsRoutes(store, { settleAll }),
   ];
 }

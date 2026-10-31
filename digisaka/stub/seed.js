@@ -5,7 +5,7 @@ const wk = (week, yls, yli, rainfall_mm) => ({ week, yls, yli, rainfall_mm });
 
 const seed = () => ({
   // Filled while the stub runs: scans (diagnoses), closed-week cycles (runs) and id counters.
-  diagnoses: {}, uploads: {}, runs: {}, nextId: 1,
+  diagnoses: {}, uploads: {}, runs: {}, scanRuns: {}, nextId: 1,
   lines: {
     // Nothing recorded yet.
     L01: { weeks: [], cycles: [], selections: [], applications: [], leaves: 0 },
@@ -25,6 +25,7 @@ const seed = () => ({
         decided_by: 'stub-practitioner', decided_at: '2026-05-25T08:00:00.000Z', note: null,
       }],
       applications: [{ application_id: 'app-L02-1', selection_id: 'sel-L02-23', product_id: 'u-chlorothalonil', applied_on: '2026-06-02', recorded_by: 'stub-practitioner', recorded_at: '2026-06-02T09:00:00.000Z' }],
+      suggestion: { payload: 'clean', basis: 'stage_confirmed' },
       leaves: 12,
     },
     // A draft selection waiting for a decision: it needs one acknowledgement.
@@ -39,6 +40,7 @@ const seed = () => ({
       }],
       selections: [{ selection_id: 'sel-L03-24', origin_cycle_id: 'c-L03-24', origin_week: '2026-W24', status: 'draft', payload: 'draft', periods: [], decided_by: null, decided_at: null, note: null }],
       applications: [],
+      suggestion: { payload: 'draft', basis: 'stage_confirmed' },
       leaves: 15,
     },
     // Ready to scan this week (the default demo line); last week had a gap in the YLI reading.
@@ -52,6 +54,7 @@ const seed = () => ({
         },
       }],
       selections: [], applications: [], leaves: 9,
+      suggestion: { payload: 'real', basis: 'all_healthy_images' },
     },
     // The rules could not decide: human review, no evidence for the cycle, and a draft with a blocking alert.
     L05: {
@@ -59,6 +62,7 @@ const seed = () => ({
       cycles: [{ cycle_id: 'c-L05-24', week: '2026-W24', status: 'done', outcome: 'human_review_required', outcome_reason: 'missing_feed_value', evidence: null }],
       selections: [{ selection_id: 'sel-L05-24', origin_cycle_id: 'c-L05-24', origin_week: '2026-W24', status: 'draft', payload: 'stressed', periods: [], decided_by: null, decided_at: null, note: null }],
       applications: [], leaves: 7,
+      suggestion: { payload: 'stressed', basis: 'no_confirmed_stage' },
     },
     // Monitoring so far; closing its next week fails (ticket 03).
     L06: {
@@ -67,6 +71,7 @@ const seed = () => ({
       // A fresh-line draft recorded from the scheduler (payload `real`): only Cannot-Check Alerts to acknowledge.
       selections: [{ selection_id: 'sel-L06-23', origin_cycle_id: 'c-L06-23', origin_week: '2026-W23', status: 'draft', payload: 'real', periods: [], decided_by: null, decided_at: null, note: null }],
       applications: [], leaves: 6,
+      suggestion: { payload: null, basis: 'stage_confirmed' },
     },
     // Nothing recorded; closing a verified week ends in a rejected Selection, which can be reopened.
     L07: { weeks: [], cycles: [], selections: [], applications: [], leaves: 0 },
