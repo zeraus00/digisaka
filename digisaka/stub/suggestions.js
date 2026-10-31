@@ -85,9 +85,11 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     for (const u of frozen?.selection.units ?? []) {
       const g = groupOf(u);
       const mine = alerts.filter((a) => a.unit_id === u.unit_id);
+      // Only the contract's fields: the scheduler's unit has a lower-case `label` and no payload extras (found in the live run).
       groups[g].push({
-        ...u, product_id: productOf(u.unit_id), label: u.product, practice_id: u.practice ?? u.unit_id.split('|')[0], rank: groups[g].length + 1,
-        checks: u.checks ?? [], alerts: mine, needs_confirmation: g === 'excluded' || mine.length > 0, reason: g === 'excluded' ? reasonOf(u) : null,
+        unit_id: u.unit_id, product_id: productOf(u.unit_id), label: u.product.toLowerCase(), practice_id: u.practice ?? u.unit_id.split('|')[0], rank: groups[g].length + 1,
+        checks: (u.checks ?? []).map((c) => ({ check: c.check, level: c.level, detail: c.detail ?? null, result: c.result })), alerts: mine,
+        needs_confirmation: g === 'excluded' || mine.length > 0, reason: g === 'excluded' ? reasonOf(u) : null,
       });
     }
     const basisAlert = BASIS_TEXT[cur.basis] ? [{ id: 'stage_basis', unit_id: null, kind: 'stage_basis', level: 'info', text: BASIS_TEXT[cur.basis], blocks_approval: false }] : [];
@@ -95,7 +97,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     const outcome = SERVED_OUTCOMES.includes(cycle?.outcome) ? cycle.outcome : null;
     return {
       revision: cur.revision, trigger: cur.trigger, created_at: cur.created_at, basis: cur.basis,
-      line_stage: { stage: confirmed ? 2 : null, tally: confirmed ? { 2: 1 } : {}, window: { start: addDays(today(), -7), end: today() } },
+      line_stage: { stage: confirmed ? 2 : null, tally: confirmed ? { 2: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
       groups, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
       schedule: frozen?.preview.days ?? [], alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
       running: runsOf(lineId).some((r) => r.status === 'running'), outcome, outcome_reason: outcome ? cycle.outcome_reason ?? null : null,
@@ -143,7 +145,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
         if (stale || (hit.unit.needs_confirmation && body.confirmed !== true)) {
           return { status: 409, body: { error: 'confirmation_required', detail: stale ? 'the suggestion changed; confirm to record against the current one' : 'the application needs confirming', revision: now_.revision, tier: hit.tier, alerts: hit.unit.alerts } };
         }
-        const application = { application_id: `app-${store.data.nextId++}`, product_id: body.product_id, applied_on: body.applied_on, recorded_by: PRACTITIONER, recorded_at: new Date(now()).toISOString(), confirmation: hit.unit.needs_confirmation ? { tier: hit.tier, alerts: hit.unit.alerts } : null };
+        const application = { application_id: `app-${store.data.nextId++}`, product_id: body.product_id, applied_on: body.applied_on, recorded_by: PRACTITIONER, recorded_at: new Date(now()).toISOString(), confirmation: { tier: hit.tier, alerts: hit.unit.alerts, revision: now_.revision, confirmed: body.confirmed === true } };
         line.applications.push(application);
         const week = [...line.cycles].sort((a, b) => b.week.localeCompare(a.week)).at(0).week;
         const run = startRun(params.id, week, 'application');

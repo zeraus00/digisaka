@@ -31,6 +31,8 @@ onMounted(load);
 watch(lineId, load);
 onBeforeUnmount(() => store.stop());
 watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value, old, next); });
+// The scheduler sends a practice id as the label (PracFungicideSpraying); read it as words.
+const guidanceName = (label) => label.replace(/^Prac/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
 const tierOf = (u) => GROUPS.find(([g]) => store.groups[g].includes(u))?.[0];
 const record = async () => { if (await store.record(productId.value, appliedOn.value) === 'recorded') productId.value = ''; };
 const confirm = async () => { if (await store.confirm() === 'recorded') productId.value = ''; };
@@ -75,7 +77,7 @@ const lastApplied = computed(() => {
             <summary><b>{{ label }}</b> · {{ store.groups[g].length }}</summary>
             <ul class="units">
               <li v-for="u in store.groups[g]" :id="`unit-${u.unit_id}`" :key="u.unit_id">
-                <ProductCard :unit="u" />
+                <ProductCard :unit="u" :group="g" />
                 <p v-if="u.needs_confirmation" class="confirm-mark">Needs confirmation to record</p>
                 <ul v-if="u.alerts.length" class="ualerts"><li v-for="a in u.alerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
               </li>
@@ -84,7 +86,7 @@ const lastApplied = computed(() => {
         </template>
         <section v-if="sug.other_guidance.length" class="ack notes guidance">
           <h4>Other guidance</h4>
-          <ul><li v-for="g in sug.other_guidance" :key="g.practice_id">{{ g.label }}</li></ul>
+          <ul><li v-for="o in sug.other_guidance" :key="o.practice_id">{{ guidanceName(o.label) }}</li></ul>
         </section>
       </section>
 

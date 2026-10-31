@@ -33,6 +33,8 @@ test('the suggestion has the contract fields, three groups and the schedule days
   const u = s.groups.recommended[0];
   for (const k of ['unit_id', 'product_id', 'label', 'practice_id', 'rank', 'checks', 'alerts', 'needs_confirmation', 'reason']) assert.ok(k in u, k);
   assert.equal(u.rank, 1);
+  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'label', 'needs_confirmation', 'practice_id', 'product_id', 'rank', 'reason', 'unit_id'], 'a unit carries the contract fields only');
+  assert.deepEqual(Object.keys(s.line_stage.window), ['from', 'to']);
 });
 
 test('each line carries its basis, outcome and units', async () => {
@@ -67,7 +69,7 @@ test('recording a recommended unit with no alerts succeeds and asks for a resche
   const r = await record('L02', { product_id: u.product_id, applied_on: '2026-06-05', revision: s.revision, confirmed: false });
   assert.equal(r.status, 201);
   assert.deepEqual(Object.keys(r.body.application), ['application_id', 'product_id', 'applied_on', 'recorded_by', 'recorded_at', 'confirmation']);
-  assert.equal(r.body.application.confirmation, null);
+  assert.deepEqual(r.body.application.confirmation, { tier: 'recommended', alerts: [], revision: s.revision, confirmed: false });
   const cycle = r.body.reschedule.cycle_id;
   assert.match(cycle, /^c-L02-23-\d+$/);
   assert.equal((await call('GET', '/lines/L02')).body.applications.at(-1).applied_on, '2026-06-05');

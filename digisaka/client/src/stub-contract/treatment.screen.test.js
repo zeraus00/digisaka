@@ -17,6 +17,8 @@ describe('treatment screen', () => {
     expect(html).toContain('Based on healthy images only');
     for (const g of ['recommended', 'eligible']) expect(html).toContain(`data-group="${g}"`);
     expect(html).toContain('Other guidance');
+    expect(html).toMatch(/<h4[^>]*>[A-Z][a-z]+<\/h4><span class="[^"]*eligible[^"]*"[^>]*>Eligible</);
+    expect(html).not.toMatch(/<h4[^>]*><\/h4>/);
     expect(html).toContain('Record application');
     expect(html).toContain('The data suggests the line is healthy');
     for (const gone of ['Approve', 'Reject', 'Renew', 'Approval period', 'acknowledge']) expect(html).not.toContain(gone);
