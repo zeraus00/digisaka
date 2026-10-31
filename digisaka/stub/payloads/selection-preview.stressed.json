@@ -1,0 +1,495 @@
+{
+ "kg_build": {
+  "abox_module": "black-sigatoka",
+  "abox_digest": "sha256:9f2c…e41a",
+  "files": [
+   "sample-abox-source.ttl",
+   "sample-abox-sample.ttl"
+  ],
+  "tbox_version": "3.2.0"
+ },
+ "selection": {
+  "selection_id": "sel-draft-2026-06-08-L2",
+  "line_id": "L2",
+  "status": "proposed",
+  "approval_period": {
+   "start": null,
+   "end": null,
+   "days": 30
+  },
+  "approvable": false,
+  "blockers": [
+   {
+    "unit_id": "u-pyrimethanil",
+    "check": "group_cap",
+    "level": "error",
+    "text": "D1: 4 recorded + 1 planned = 5, above the maximum of 4 per crop cycle"
+   }
+  ],
+  "acknowledgements_required": [
+   {
+    "id": "cc-spiroxamine-rainfast",
+    "unit_id": "u-spiroxamine",
+    "kind": "cannot_check",
+    "cause": "missing_rainfast",
+    "missing": "rainfast period",
+    "text": "No rainfast period in the KG for spiroxamine; weather cannot be checked for it."
+   }
+  ],
+  "acknowledged": [],
+  "units": [
+   {
+    "unit_id": "u-pyrimethanil",
+    "practice": "PracPyrimethanilApplication",
+    "product": "Pyrimethanil",
+    "moa": "D1",
+    "frac": "D1",
+    "multisite": false,
+    "sample_fact": true,
+    "indicated_by": [
+     "FindingFavourableAndProgressing"
+    ],
+    "checks": [
+     {
+      "check": "stage_eligibility",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "alternation",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "max_consecutive",
+      "result": "pass",
+      "level": "error",
+      "detail": "1 of 3"
+     },
+     {
+      "check": "group_cap",
+      "result": "fail",
+      "level": "error",
+      "detail": "D1: 4 recorded + 1 planned = 5 > max 4 per crop cycle"
+     },
+     {
+      "check": "label_weather",
+      "result": "pass",
+      "level": "warning",
+      "detail": "Rainfast 3 h"
+     }
+    ],
+    "cited_source": "S2 Table 3",
+    "excluded_from_schedule": true
+   },
+   {
+    "unit_id": "u-spiroxamine",
+    "practice": "PracSpiroxamineApplication",
+    "product": "Spiroxamine",
+    "moa": "G2",
+    "frac": "G2",
+    "multisite": false,
+    "sample_fact": true,
+    "indicated_by": [],
+    "checks": [
+     {
+      "check": "stage_eligibility",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "alternation",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "max_consecutive",
+      "result": "pass",
+      "level": "error",
+      "detail": "1 of 2"
+     },
+     {
+      "check": "group_cap",
+      "result": "warn",
+      "level": "warning",
+      "detail": "G2: 0 recorded + 2 planned = 2, at the minimum of 2 (maximum 3): approaching"
+     },
+     {
+      "check": "label_weather",
+      "result": "cannot_check",
+      "level": "warning",
+      "detail": "Rainfast period missing in the KG"
+     }
+    ],
+    "cited_source": "S1 p. 28"
+   },
+   {
+    "unit_id": "u-chlorothalonil",
+    "practice": "PracChlorothalonilApplication",
+    "product": "Chlorothalonil",
+    "moa": "M",
+    "frac": "M",
+    "multisite": true,
+    "sample_fact": true,
+    "indicated_by": [],
+    "checks": [
+     {
+      "check": "stage_eligibility",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "alternation",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "max_consecutive",
+      "result": "pass",
+      "level": "error",
+      "detail": "1 of 3"
+     },
+     {
+      "check": "group_cap",
+      "result": "warn",
+      "level": "warning",
+      "detail": "M: 2 recorded + 1 planned = 3, at the minimum of 3 (maximum 4): approaching"
+     },
+     {
+      "check": "label_weather",
+      "result": "pass",
+      "level": "warning",
+      "detail": "Rainfast 6 h"
+     }
+    ],
+    "cited_source": "S2 Table 3"
+   },
+   {
+    "unit_id": "u-azoxystrobin",
+    "practice": "StrobilurinAntifungalApplication",
+    "product": "Azoxystrobin",
+    "moa": "C3",
+    "frac": "C3",
+    "multisite": false,
+    "sample_fact": true,
+    "indicated_by": [],
+    "selectable": false,
+    "checks": [
+     {
+      "check": "stage_eligibility",
+      "result": "fail",
+      "level": "error",
+      "detail": "Not an option at the current stage"
+     }
+    ],
+    "cited_source": "S2 Table 3"
+   }
+  ]
+ },
+ "preview": {
+  "generated_on": "2026-06-08",
+  "horizon": {
+   "start": "2026-06-08",
+   "end": "2026-07-08",
+   "days": 30
+  },
+  "replan": null,
+  "header": {
+   "observation": {
+    "indicators": [
+     {
+      "indicator": "Youngest leaf infected (YLI)",
+      "values": [
+       8,
+       9,
+       10,
+       11
+      ],
+      "unit": "leaf number"
+     },
+     {
+      "indicator": "Youngest leaf spotted (YLS)",
+      "values": [
+       5,
+       5,
+       6,
+       7
+      ],
+      "unit": "leaf number"
+     }
+    ],
+    "trend": "worsening for 3 consecutive weeks",
+    "weeks": [
+     "2026-W21",
+     "2026-W22",
+     "2026-W23",
+     "2026-W24"
+    ]
+   },
+   "finding": {
+    "label": "Disease progressing under favourable rain",
+    "iri": "FindingFavourableAndProgressing",
+    "cited_source": "S1 p. 21",
+    "sample_fact": true
+   },
+   "action_needed": "Fungicide application required",
+   "eligible_products": [
+    "u-pyrimethanil",
+    "u-spiroxamine",
+    "u-chlorothalonil"
+   ],
+   "suggestion": {
+    "by": "llm_ranking",
+    "text": "Only units that passed every error check are ranked; pyrimethanil is left out until its cap is resolved.",
+    "rank": [
+     "u-spiroxamine",
+     "u-chlorothalonil"
+    ]
+   }
+  },
+  "days": [
+   {
+    "date": "2026-06-08",
+    "weekday": "Mon",
+    "state": "needs_approval",
+    "monitoring": {
+     "label": "Weekly assessment"
+    }
+   },
+   {
+    "date": "2026-06-09",
+    "weekday": "Tue",
+    "state": "needs_approval",
+    "application": {
+     "unit_id": "u-spiroxamine",
+     "product": "Spiroxamine",
+     "moa": "G2",
+     "frac": "G2",
+     "timing_window": {
+      "start": "2026-06-09",
+      "end": "2026-06-15",
+      "basis": "last application 2026-06-01 + 8 to 14 days"
+     },
+     "weather": {
+      "status": "cannot_check",
+      "detail": "No rainfast period in the KG (and beyond the forecast)"
+     }
+    }
+   },
+   {
+    "date": "2026-06-15",
+    "weekday": "Mon",
+    "state": "needs_approval",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "reassessment": {
+     "of": "planned 2026-06-09 spiroxamine"
+    }
+   },
+   {
+    "date": "2026-06-22",
+    "weekday": "Mon",
+    "state": "needs_approval",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "application": {
+     "unit_id": "u-chlorothalonil",
+     "product": "Chlorothalonil",
+     "moa": "M",
+     "frac": "M",
+     "timing_window": {
+      "start": "2026-06-21",
+      "end": "2026-06-27",
+      "basis": "2026-06-09 + 12 to 18 days"
+     },
+     "weather": {
+      "status": "moved",
+      "detail": "Rain forecast 2026-06-21 13:00 to 19:00 is inside the 6 h rainfast period; moved to the first suitable day in the window",
+      "original_date": "2026-06-21"
+     }
+    }
+   },
+   {
+    "date": "2026-06-29",
+    "weekday": "Mon",
+    "state": "needs_approval",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "reassessment": {
+     "of": "planned 2026-06-22 chlorothalonil"
+    }
+   },
+   {
+    "date": "2026-06-30",
+    "weekday": "Tue",
+    "state": "needs_approval",
+    "application": {
+     "unit_id": "u-spiroxamine",
+     "product": "Spiroxamine",
+     "moa": "G2",
+     "frac": "G2",
+     "timing_window": {
+      "start": "2026-06-30",
+      "end": "2026-07-06",
+      "basis": "2026-06-22 + 8 to 14 days"
+     },
+     "weather": {
+      "status": "cannot_check",
+      "detail": "No rainfast period in the KG (and beyond the forecast)"
+     }
+    }
+   },
+   {
+    "date": "2026-07-06",
+    "weekday": "Mon",
+    "state": "needs_approval",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "reassessment": {
+     "of": "planned 2026-06-30 spiroxamine"
+    }
+   }
+  ],
+  "caps": [
+   {
+    "group": "D1",
+    "recorded": 4,
+    "planned": 1,
+    "range": {
+     "min": 3,
+     "max": 4
+    },
+    "unit": "applications",
+    "period": "crop cycle",
+    "state": "exceeded",
+    "governing_source": "Sample: D1 cap",
+    "sample_fact": true,
+    "all_sources": [
+     {
+      "source": "Sample: D1 cap",
+      "risk": null
+     }
+    ],
+    "alternatives": [
+     "G2",
+     "M"
+    ],
+    "excluded_from_schedule": true
+   },
+   {
+    "group": "M (multisite)",
+    "recorded": 2,
+    "planned": 1,
+    "range": {
+     "min": 3,
+     "max": 4
+    },
+    "unit": "applications",
+    "period": "crop cycle",
+    "state": "approaching",
+    "governing_source": "Sample: M cap",
+    "sample_fact": true,
+    "all_sources": [
+     {
+      "source": "Sample: M cap",
+      "risk": null
+     }
+    ],
+    "alternatives": [
+     "G2"
+    ]
+   },
+   {
+    "group": "G2",
+    "recorded": 0,
+    "planned": 2,
+    "range": {
+     "min": 2,
+     "max": 3
+    },
+    "unit": "applications",
+    "period": "crop cycle",
+    "state": "approaching",
+    "governing_source": "Sample: G2 cap",
+    "sample_fact": true,
+    "all_sources": [
+     {
+      "source": "Sample: G2 cap",
+      "risk": null
+     }
+    ],
+    "alternatives": [
+     "M"
+    ]
+   }
+  ],
+  "weather": {
+   "provider": "open-meteo",
+   "provider_version": "v1",
+   "as_of": "2026-06-08T06:00:00+08:00",
+   "location": {
+    "lat": 14.6,
+    "lon": 121.0,
+    "scope": "farm (stopgap)"
+   },
+   "covered_until": "2026-06-24",
+   "status": "ok"
+  },
+  "alerts": [
+   {
+    "level": "error",
+    "kind": "cap_exceeded",
+    "text": "D1 would reach 5 applications (maximum 4). Pyrimethanil is left out of the schedule until this is resolved.",
+    "blocks_approval": true
+   },
+   {
+    "level": "warning",
+    "kind": "cap_approaching",
+    "text": "M at 3 of 3 to 4 per crop cycle (source: Sample: M cap). Alternatives: G2.",
+    "blocks_approval": false
+   },
+   {
+    "level": "warning",
+    "kind": "cap_approaching",
+    "text": "G2 at 2 of 2 to 3 per crop cycle (source: Sample: G2 cap). Alternatives: M.",
+    "blocks_approval": false
+   },
+   {
+    "level": "warning",
+    "kind": "cannot_check",
+    "cause": "missing_rainfast",
+    "id": "cc-spiroxamine-rainfast",
+    "text": "Rainfast period for spiroxamine is missing. Acknowledge to approve.",
+    "blocks_approval": true,
+    "until": "acknowledged"
+   },
+   {
+    "level": "info",
+    "kind": "history_coverage",
+    "text": "History covers only applications recorded in the scheduler since 2026-05-18."
+   }
+  ],
+  "sources": [
+   {
+    "cited_source": "S2 Table 3",
+    "values": [
+     "FRAC codes",
+     "mode of action"
+    ]
+   },
+   {
+    "cited_source": "Sample facts",
+    "values": [
+     "caps",
+     "intervals",
+     "rainfast periods"
+    ],
+    "sample_fact": true
+   }
+  ]
+ }
+}

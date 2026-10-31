@@ -61,7 +61,7 @@ describe('cycle store against the stub', () => {
   });
 
   it.each([
-    ['L04', 'proposal'],
+    ['L04', 'selection'],
     ['L01', 'monitoring'],
   ])('closing %s ends in %s', async (line, phase) => {
     await scanned(line, 'a-healthy');
@@ -87,11 +87,12 @@ describe('cycle store against the stub', () => {
     expect(c.phase).toBe('monitoring');
   });
 
-  it('a finished proposal appears in the line status', async () => {
+  it('a finished selection appears in the line status', async () => {
     await scanned('L04', 'a-healthy');
     await useCycleStore().close('L04', '2026-W24', wait);
     const lines = useLinesStore();
     await lines.load();
-    expect(lines.byId('L04').proposals.map((p) => p.week)).toEqual(['2026-W24']);
+    expect(lines.byId('L04').selections.map((x) => x.origin_week)).toEqual(['2026-W24']);
+    expect(lines.byId('L04').cycles.find((x) => x.week === '2026-W24')).toMatchObject({ continued: false, selection_id: expect.any(String) });
   });
 });

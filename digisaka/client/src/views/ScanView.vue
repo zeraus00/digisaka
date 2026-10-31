@@ -10,18 +10,22 @@ import { useFarmStore } from '../stores/farm.js';
 import { useCycleStore } from '../stores/cycle.js';
 import { groupLeaves } from '../helpers/groups.js';
 import { previousWeek, nextWeek, isoWeekOf, weekStart, weekEnd } from '../helpers/week.js';
-import { outcomeReasonText } from '../helpers/messages.js';
-import { todayIso, fromIso } from '../helpers/today.js';
+import { outcomeReasonText, REFERRAL_TEXT } from '../helpers/messages.js';
+import { todayIso, fromIso, keepIfEdited } from '../helpers/today.js';
 import { samplesEnabled, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
 const scan = useScanStore(), farm = useFarmStore(), cycle = useCycleStore();
 const step = ref(1); // 1 Select Leaves, 2 Bulk Assess, 3 Results
 const STEPS = ['Select Leaves', 'Bulk Assess', 'Results'];
 const AGENT_STEPS = ['Leaf Images Collected', 'Black Sigatoka Validation', 'Individual Stage Assessment', 'Stage Groups Organized', 'Human Verification', 'Treatment Recommendation', 'Schedule Review'];
-const maxDate = todayIso();                 // scans can't be added to a future week
-const dateInput = ref(maxDate);
+const maxDate = computed(() => todayIso()); // scans can't be added to a future week
+const dateInput = ref(maxDate.value);
+watch(maxDate, (next, old) => {
+  dateInput.value = keepIfEdited(dateInput.value, old, next);
+  scan.followToday(isoWeekOf(fromIso(old)), isoWeekOf(fromIso(next)));
+});
 const weekRange = computed(() => (scan.weekOk ? `${weekStart(scan.week)} to ${weekEnd(scan.week)}` : ''));
-const atLatest = computed(() => scan.week >= isoWeekOf(fromIso(maxDate)));
+const atLatest = computed(() => scan.week >= isoWeekOf(fromIso(maxDate.value)));
 const gallery = ref(null), camera = ref(null), rescanInput = ref(null), logBox = ref(null);
 const rescanId = ref(null);
 const stubSamples = samplesEnabled(); // only true on the stub stack (docker-compose.stub.yml)
@@ -32,7 +36,7 @@ onMounted(async () => {
   if (!scan.line && farm.lines.length) scan.select(farm.lines[0], scan.week);
 });
 // Runs before onMounted picks the first line (a no-op until a line is set), then on every line or week change.
-watch(() => [scan.line, scan.week], () => addDefaultSamples(scan), { immediate: true });
+watch(() => [scan.line, scan.week], () => { cycle.follow(scan.line, scan.week); addDefaultSamples(scan); }, { immediate: true });
 onBeforeUnmount(() => { cycle.stop(); for (const u of previews.values()) URL.revokeObjectURL(u); });
 
 const preview = (leaf) => {
@@ -44,7 +48,7 @@ const setDate = () => { if (dateInput.value) scan.select(scan.line, isoWeekOf(fr
 const stepWeek = (fn) => {
   const w = fn(scan.week);
   const start = weekStart(w);
-  dateInput.value = start > maxDate ? maxDate : start;
+  dateInput.value = start > maxDate.value ? maxDate.value : start;
   scan.select(scan.line, w);
 };
 const picked = (e) => { scan.addFiles([...e.target.files]); e.target.value = ''; };
@@ -219,7 +223,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
         </div>
         <div v-if="groups.unvalidated.length" class="group">
           <b>Unvalidated / Review Required <small>({{ groups.unvalidated.length }})</small></b>
-          <ul class="results"><li v-for="l in groups.unvalidated" :key="l.id"><img :src="preview(l)" :alt="`Leaf ${scan.leaves.indexOf(l) + 1}`">Leaf {{ scan.leaves.indexOf(l) + 1 }} — {{ outcomeLabel(l.outcome) }}</li></ul>
+          <ul class="results"><li v-for="l in groups.unvalidated" :key="l.id"><img :src="preview(l)" :alt="`Leaf ${scan.leaves.indexOf(l) + 1}`">Leaf {{ scan.leaves.indexOf(l) + 1 }} — {{ outcomeLabel(l.outcome) }}<template v-if="l.outcome === 'referral'">: {{ REFERRAL_TEXT }}</template></li></ul>
         </div>
         <p class="hint">This is an AI-assisted assessment and not a confirmed diagnosis. Results should be verified by an agricultural specialist before treatment decisions.</p>
       </section>
@@ -234,9 +238,9 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
           <h2>Working out a treatment...</h2>
           <p class="hint">This usually takes under a minute.</p>
         </template>
-        <template v-else-if="cycle.phase === 'proposal'">
-          <h2>A treatment proposal is ready</h2>
-          <RouterLink class="btn primary" :to="`/treatment/${encodeURIComponent(scan.line)}/${encodeURIComponent(scan.week)}`">Open proposal</RouterLink>
+        <template v-else-if="cycle.phase === 'selection'">
+          <h2>A treatment selection is ready</h2>
+          <RouterLink class="btn primary" :to="`/treatment/${encodeURIComponent(cycle.cycle?.line_id ?? scan.line)}/${encodeURIComponent(cycle.cycle?.week ?? scan.week)}`">Open selection</RouterLink>
         </template>
         <template v-else-if="cycle.phase === 'monitoring'">
           <h2>No treatment needed yet</h2>
@@ -247,6 +251,8 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
           <h2>Human review required</h2>
           <p>No treatment is proposed for this week. An expert needs to look at this line.</p>
           <p v-if="cycle.cycle?.outcome_reason">Reason: {{ outcomeReasonText(cycle.cycle.outcome_reason) }}</p>
+          <p v-if="cycle.cycle?.status === 'reopened'" class="hint">This week was reopened; a newer cycle replaces this one.</p>
+          <button v-else-if="cycle.cycle?.outcome_reason === 'gate_e_rejected'" class="primary" :disabled="cycle.busy" @click="cycle.reopen()">Reopen this week</button>
         </template>
         <template v-else-if="cycle.phase === 'failed'">
           <h2>The cycle failed</h2>
@@ -258,7 +264,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
           <button class="primary" @click="cycle.resume()">Check again</button>
         </template>
       </section>
-      <EvidenceCharts v-if="['proposal', 'monitoring', 'review'].includes(cycle.phase)" :cycle-id="cycle.cycle?.cycle_id ?? ''" />
+      <EvidenceCharts v-if="['selection', 'monitoring', 'review'].includes(cycle.phase)" :cycle-id="cycle.cycle?.cycle_id ?? ''" />
       <div class="nav"><button :disabled="cycle.phase !== 'idle'" @click="step = 2">Back</button><button v-if="cycle.phase !== 'closing' && cycle.phase !== 'running'" @click="startOver">New scan</button></div>
     </template>
   </div>

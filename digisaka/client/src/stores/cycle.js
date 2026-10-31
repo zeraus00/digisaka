@@ -10,12 +10,17 @@ const e = encodeURIComponent;
 
 const PHASE_OF_OUTCOME = { human_review_required: 'review', continue_monitoring: 'monitoring' };
 
-// Closes a line-week and follows its cycle. phase: idle, closing, running, proposal, monitoring, review, failed, timeout, error.
+// Closes a line-week and follows its cycle. phase: idle, closing, running, selection, monitoring, review, failed, timeout, error.
 export const useCycleStore = defineStore('cycle', {
   state: () => ({ phase: 'idle', cycle: null, error: '', busy: false, run: 0 }),
   actions: {
     reset() { this.run++; Object.assign(this, { phase: 'idle', cycle: null, error: '', busy: false }); },
     stop() { this.run++; },
+    // Keep only a cycle that belongs to the line-week on screen; a close in flight is left alone.
+    follow(line, week) {
+      if (this.busy || (this.cycle?.line_id === line && this.cycle?.week === week)) return;
+      this.reset();
+    },
     async close(line, week, wait = sleep) {
       if (this.busy) return;
       this.run++; const run = this.run;
@@ -40,6 +45,19 @@ export const useCycleStore = defineStore('cycle', {
         if (run === this.run) Object.assign(this, { phase: 'failed', error: messageFor(err) });
       } finally { if (run === this.run) this.busy = false; }
     },
+    // A rejected week runs the scheduler again (ADR-0036); a refusal leaves the rejected cycle on screen.
+    async reopen(wait = sleep) {
+      if (this.busy || !this.cycle) return;
+      const first = this.cycle; this.run++; const run = this.run;
+      Object.assign(this, { busy: true, error: '' });
+      try {
+        this.cycle = await api.post(`${base}/cycles/${e(first.cycle_id)}/reopen`);
+        this.busy = false;
+        await this._poll(run, wait);
+      } catch (err) {
+        if (run === this.run) Object.assign(this, { cycle: first, phase: 'review', error: messageFor(err) });
+      } finally { if (run === this.run) this.busy = false; }
+    },
     // Check again after a timeout or error.
     resume(wait = sleep) { this.run++; return this._poll(this.run, wait); },
     async _poll(run, wait) {
@@ -57,7 +75,7 @@ export const useCycleStore = defineStore('cycle', {
           if (run !== this.run) return;
           const c = this.cycle;
           if (c.status === 'failed') { this.phase = 'failed'; return; }
-          if (c.status !== 'running') { this.phase = PHASE_OF_OUTCOME[c.outcome] ?? 'proposal'; return; }
+          if (c.status !== 'running') { this.phase = PHASE_OF_OUTCOME[c.outcome] ?? 'selection'; return; }
           this.phase = 'running';
           if (i === POLL_LIMIT - 1) break;
           await wait(POLL_MS);

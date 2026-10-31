@@ -1,7 +1,7 @@
 <script setup>
 import { computed, watch, onBeforeUnmount } from 'vue';
 import { useEvidenceStore } from '../stores/evidence.js';
-import { verdictText, visibleWeeks } from '../helpers/evidence.js';
+import { levelText, verdictText, visibleWeeks } from '../helpers/evidence.js';
 import WeekCharts from './WeekCharts.vue';
 
 // What the rules looked at for one cycle: the last weeks of YLS/YLI and rainfall, with the verdicts.
@@ -21,7 +21,8 @@ const weeks = computed(() => (ev.value ? visibleWeeks(ev.value) : []));
     <p v-else-if="store.phase === 'error'" class="err">{{ store.error }} <button class="mark" type="button" @click="load">Try again</button></p>
     <template v-else-if="ev && weeks.length">
       <div class="chips">
-        <span class="chip" :class="String(ev.disease.worsening)">Disease getting worse: {{ verdictText(ev.disease.worsening) }}</span>
+        <span v-if="ev.disease.level" class="chip" :class="'level-' + ev.disease.level.verdict">YLS level: {{ levelText(ev.disease.level) }}</span>
+        <span class="chip" :class="String(ev.disease.falling)">YLS is falling: {{ verdictText(ev.disease.falling) }}</span>
         <span class="chip" :class="String(ev.rainfall.favourable)">Rainfall favours spread: {{ verdictText(ev.rainfall.favourable) }}</span>
       </div>
       <WeekCharts :weeks="weeks" :disease="ev.disease" :rainfall="ev.rainfall" />
@@ -36,7 +37,8 @@ h3 small { font-weight: 400; color: var(--ink-soft); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .chip { font-size: .85rem; padding: 4px 10px; border-radius: 999px; background: var(--tint); color: var(--forest-deep); }
 .chip.true { background: var(--warn-tint); color: var(--warn); }
-.chip.not_computable { background: var(--beige); color: var(--ink-soft); }
+.chip.level-critical, .chip.level-below { background: var(--warn-tint); color: var(--warn); }
+.chip.not_computable, .chip.level-not_computable { background: var(--beige); color: var(--ink-soft); }
 .hint { color: var(--ink-soft); }
 .err { color: var(--danger); }
 </style>

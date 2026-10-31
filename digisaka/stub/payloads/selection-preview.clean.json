@@ -1,0 +1,473 @@
+{
+ "kg_build": {
+  "abox_module": "black-sigatoka",
+  "abox_digest": "sha256:9f2c…e41a",
+  "files": [
+   "sample-abox-source.ttl",
+   "sample-abox-sample.ttl"
+  ],
+  "tbox_version": "3.2.0"
+ },
+ "selection": {
+  "selection_id": "sel-2026-05-25-L1",
+  "line_id": "L1",
+  "status": "approved",
+  "approval_period": {
+   "start": "2026-05-25",
+   "end": "2026-06-24",
+   "days": 30
+  },
+  "approvable": true,
+  "blockers": [],
+  "acknowledgements_required": [],
+  "acknowledged": [],
+  "units": [
+   {
+    "unit_id": "u-chlorothalonil",
+    "practice": "PracChlorothalonilApplication",
+    "product": "Chlorothalonil",
+    "moa": "M",
+    "frac": "M",
+    "multisite": true,
+    "sample_fact": true,
+    "indicated_by": [
+     "FindingFavourableAndProgressing"
+    ],
+    "checks": [
+     {
+      "check": "stage_eligibility",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "alternation",
+      "result": "pass",
+      "level": "error",
+      "detail": "Previous planned unit is M-different (G2)"
+     },
+     {
+      "check": "max_consecutive",
+      "result": "pass",
+      "level": "error",
+      "detail": "1 of 3"
+     },
+     {
+      "check": "group_cap",
+      "result": "pass",
+      "level": "error",
+      "detail": "M: 2 of 3 to 4 per crop cycle"
+     },
+     {
+      "check": "mixture",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "label_weather",
+      "result": "pass",
+      "level": "warning",
+      "detail": "Rainfast 6 h; wind at most 1.2 m/s; 18 to 26 C"
+     },
+     {
+      "check": "fit_of_moa_to_conditions",
+      "result": "unchecked",
+      "level": "info",
+      "detail": "No KG data for this"
+     }
+    ],
+    "cited_source": "S2 Table 3"
+   },
+   {
+    "unit_id": "u-pyrimethanil",
+    "practice": "PracPyrimethanilApplication",
+    "product": "Pyrimethanil",
+    "moa": "D1",
+    "frac": "D1",
+    "multisite": false,
+    "sample_fact": true,
+    "indicated_by": [],
+    "checks": [
+     {
+      "check": "stage_eligibility",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "alternation",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "max_consecutive",
+      "result": "pass",
+      "level": "error",
+      "detail": "1 of 3"
+     },
+     {
+      "check": "group_cap",
+      "result": "pass",
+      "level": "error",
+      "detail": "D1: 2 of 3 to 4 per crop cycle"
+     },
+     {
+      "check": "label_weather",
+      "result": "pass",
+      "level": "warning",
+      "detail": "Rainfast 3 h"
+     }
+    ],
+    "cited_source": "S2 Table 3"
+   },
+   {
+    "unit_id": "u-fenpropimorph",
+    "practice": "PracMorpholineApplication",
+    "product": "Fenpropimorph",
+    "moa": "G2",
+    "frac": "G2",
+    "multisite": false,
+    "sample_fact": true,
+    "indicated_by": [],
+    "checks": [
+     {
+      "check": "stage_eligibility",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "alternation",
+      "result": "pass",
+      "level": "error"
+     },
+     {
+      "check": "max_consecutive",
+      "result": "pass",
+      "level": "error",
+      "detail": "1 of 2"
+     },
+     {
+      "check": "group_cap",
+      "result": "pass",
+      "level": "error",
+      "detail": "G2: 1 of 2 to 3 per crop cycle"
+     },
+     {
+      "check": "label_weather",
+      "result": "pass",
+      "level": "warning",
+      "detail": "Rainfast 1 h"
+     }
+    ],
+    "cited_source": "S2 Table 3"
+   }
+  ]
+ },
+ "preview": {
+  "generated_on": "2026-06-08",
+  "horizon": {
+   "start": "2026-06-08",
+   "end": "2026-07-08",
+   "days": 30
+  },
+  "replan": {
+   "cycle": "2026-W24",
+   "kept": [
+    "approval",
+    "recorded application 2026-06-02"
+   ],
+   "recomputed": "dates"
+  },
+  "header": {
+   "observation": {
+    "indicators": [
+     {
+      "indicator": "Youngest leaf infected (YLI)",
+      "values": [
+       7,
+       8,
+       9,
+       10
+      ],
+      "unit": "leaf number"
+     },
+     {
+      "indicator": "Youngest leaf spotted (YLS)",
+      "values": [
+       4,
+       4,
+       5,
+       5
+      ],
+      "unit": "leaf number"
+     }
+    ],
+    "trend": "worsening for 3 consecutive weeks",
+    "weeks": [
+     "2026-W21",
+     "2026-W22",
+     "2026-W23",
+     "2026-W24"
+    ]
+   },
+   "finding": {
+    "label": "Disease progressing under favourable rain",
+    "iri": "FindingFavourableAndProgressing",
+    "cited_source": "S1 p. 21",
+    "sample_fact": true
+   },
+   "action_needed": "Fungicide application required",
+   "eligible_products": [
+    "u-chlorothalonil",
+    "u-pyrimethanil",
+    "u-fenpropimorph"
+   ],
+   "suggestion": {
+    "by": "llm_ranking",
+    "text": "Rotate D1 then G2, then back to the multisite; keeps each group under its cap.",
+    "rank": [
+     "u-pyrimethanil",
+     "u-fenpropimorph",
+     "u-chlorothalonil"
+    ]
+   }
+  },
+  "days": [
+   {
+    "date": "2026-06-08",
+    "weekday": "Mon",
+    "state": "approved",
+    "monitoring": {
+     "label": "Weekly assessment",
+     "note": "Reassessment of the 2026-06-02 application"
+    },
+    "reassessment": {
+     "of": "recorded 2026-06-02 chlorothalonil"
+    }
+   },
+   {
+    "date": "2026-06-10",
+    "weekday": "Wed",
+    "state": "approved",
+    "application": {
+     "unit_id": "u-pyrimethanil",
+     "product": "Pyrimethanil",
+     "moa": "D1",
+     "frac": "D1",
+     "timing_window": {
+      "start": "2026-06-10",
+      "end": "2026-06-16",
+      "basis": "last application 2026-06-02 + 8 to 14 days"
+     },
+     "weather": {
+      "status": "ok",
+      "detail": "No rain forecast within 3 h of application"
+     }
+    }
+   },
+   {
+    "date": "2026-06-15",
+    "weekday": "Mon",
+    "state": "approved",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "reassessment": {
+     "of": "planned 2026-06-10 pyrimethanil"
+    }
+   },
+   {
+    "date": "2026-06-19",
+    "weekday": "Fri",
+    "state": "approved",
+    "application": {
+     "unit_id": "u-fenpropimorph",
+     "product": "Fenpropimorph",
+     "moa": "G2",
+     "frac": "G2",
+     "timing_window": {
+      "start": "2026-06-19",
+      "end": "2026-06-24",
+      "basis": "2026-06-10 + 9 to 14 days"
+     },
+     "weather": {
+      "status": "ok"
+     }
+    }
+   },
+   {
+    "date": "2026-06-22",
+    "weekday": "Mon",
+    "state": "approved",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "reassessment": {
+     "of": "planned 2026-06-19 fenpropimorph"
+    }
+   },
+   {
+    "date": "2026-06-29",
+    "weekday": "Mon",
+    "state": "needs_approval",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "application": {
+     "unit_id": "u-chlorothalonil",
+     "product": "Chlorothalonil",
+     "moa": "M",
+     "frac": "M",
+     "timing_window": {
+      "start": "2026-06-29",
+      "end": "2026-07-03",
+      "basis": "2026-06-19 + 10 to 14 days"
+     },
+     "weather": {
+      "status": "not_yet_checked",
+      "detail": "Beyond the forecast (ends 2026-06-24)"
+     }
+    }
+   },
+   {
+    "date": "2026-07-06",
+    "weekday": "Mon",
+    "state": "needs_approval",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "reassessment": {
+     "of": "planned 2026-06-29 chlorothalonil"
+    }
+   },
+   {
+    "date": "2026-07-07",
+    "weekday": "Tue",
+    "state": "needs_approval",
+    "application": {
+     "unit_id": "u-pyrimethanil",
+     "product": "Pyrimethanil",
+     "moa": "D1",
+     "frac": "D1",
+     "timing_window": {
+      "start": "2026-07-07",
+      "end": "2026-07-13",
+      "basis": "2026-06-29 + 8 to 14 days"
+     },
+     "weather": {
+      "status": "not_yet_checked"
+     }
+    }
+   }
+  ],
+  "caps": [
+   {
+    "group": "M (multisite)",
+    "recorded": 1,
+    "planned": 1,
+    "range": {
+     "min": 3,
+     "max": 4
+    },
+    "unit": "applications",
+    "period": "crop cycle",
+    "state": "ok",
+    "governing_source": "Sample: M cap",
+    "sample_fact": true,
+    "all_sources": [
+     {
+      "source": "Sample: M cap",
+      "risk": null
+     }
+    ],
+    "alternatives": [
+     "D1",
+     "G2"
+    ]
+   },
+   {
+    "group": "D1",
+    "recorded": 0,
+    "planned": 2,
+    "range": {
+     "min": 3,
+     "max": 4
+    },
+    "unit": "applications",
+    "period": "crop cycle",
+    "state": "ok",
+    "governing_source": "Sample: D1 cap",
+    "sample_fact": true,
+    "all_sources": [
+     {
+      "source": "Sample: D1 cap",
+      "risk": null
+     }
+    ],
+    "alternatives": [
+     "M",
+     "G2"
+    ]
+   },
+   {
+    "group": "G2",
+    "recorded": 0,
+    "planned": 1,
+    "range": {
+     "min": 2,
+     "max": 3
+    },
+    "unit": "applications",
+    "period": "crop cycle",
+    "state": "ok",
+    "governing_source": "Sample: G2 cap",
+    "sample_fact": true,
+    "all_sources": [
+     {
+      "source": "Sample: G2 cap",
+      "risk": null
+     }
+    ],
+    "alternatives": [
+     "M",
+     "D1"
+    ]
+   }
+  ],
+  "weather": {
+   "provider": "open-meteo",
+   "provider_version": "v1",
+   "as_of": "2026-06-08T06:00:00+08:00",
+   "location": {
+    "lat": 14.6,
+    "lon": 121.0,
+    "scope": "farm (stopgap)"
+   },
+   "covered_until": "2026-06-24",
+   "status": "ok"
+  },
+  "alerts": [
+   {
+    "level": "info",
+    "kind": "history_coverage",
+    "text": "History covers only applications recorded in the scheduler since 2026-05-25."
+   }
+  ],
+  "sources": [
+   {
+    "cited_source": "S2 Table 3",
+    "values": [
+     "FRAC codes",
+     "mode of action"
+    ]
+   },
+   {
+    "cited_source": "Sample facts",
+    "values": [
+     "caps",
+     "intervals",
+     "rainfast periods"
+    ],
+    "sample_fact": true
+   }
+  ]
+ }
+}

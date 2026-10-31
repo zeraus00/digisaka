@@ -134,3 +134,19 @@ describe('confirm and re-scan', () => {
     expect(s.leaves[0].phase).toBe('rescan');
   });
 });
+
+describe('followToday', () => {
+  it('moves to the new week when no leaves are loaded and the week was the old default', () => {
+    const s = useScanStore(); s.select('L04', '2026-W24');
+    s.followToday('2026-W24', '2026-W25');
+    expect(s.week).toBe('2026-W25');
+  });
+  it('keeps the week of a scan in progress or one the user picked', () => {
+    const s = ready('a');
+    s.followToday('2026-W24', '2026-W25');
+    expect(s.week).toBe('2026-W24');
+    const t = useScanStore(); t.leaves = []; t.select('L04', '2026-W22');
+    t.followToday('2026-W24', '2026-W25');
+    expect(t.week).toBe('2026-W22');
+  });
+});

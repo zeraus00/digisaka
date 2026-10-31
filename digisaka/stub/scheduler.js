@@ -1,6 +1,7 @@
-// Stand-in for the scheduler API under /api/v1/scheduler: lines, history, evidence, scans and cycles.
-import { BASE, fail, ok, authed, isValidWeek, nextWindow } from './common.js';
-import { proposalRoutes, summaryOf } from './proposals.js';
+// Stand-in for the scheduler API under /api/v1/scheduler: lines, history, insights, evidence, scans and cycles.
+import { BASE, fail, ok, authed, isValidWeek } from './common.js';
+import { selectionRoutes, summaryOf, newDraft } from './selections.js';
+import { insightsRoutes } from './insights.js';
 
 // The canned answer for an image is chosen by its name; anything unrecognised is a stage 2 leaf.
 const SCENARIOS = ['healthy', 'not_leaf', 'referral', 'rescan', 'unavailable'];
@@ -9,10 +10,13 @@ const CHECKLIST = ['Dark streaks on the leaf underside', 'Yellow halo around the
 
 // What closing a week ends in, decided by the line. L06 fails on its first run only.
 const PLANS = {
-  L04: { outcome: 'proposal' },
+  L04: { outcome: 'awaiting_decision' },
   L05: { outcome: 'human_review_required', reason: 'missing_feed_value' },
   L06: { outcome: 'continue_monitoring', reason: 'disease_not_worsening', failFirst: true },
+  L07: { outcome: 'human_review_required', reason: 'gate_e_rejected' },
 };
+// A reopened week runs again and, unlike the first run, ends in a draft.
+const REOPEN_PLAN = { outcome: 'awaiting_decision' };
 const DEFAULT_PLAN = { outcome: 'continue_monitoring', reason: 'disease_not_worsening' };
 const FAILURE_REASON = 'The weather feed did not respond in time.';
 
@@ -46,14 +50,11 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
     Object.assign(run, { status: 'done', outcome: run.plan.outcome, outcome_reason: run.plan.reason ?? null, failure_reason: null });
     l.cycles.push({ cycle_id: run.cycle_id, week: run.week, status: 'done', outcome: run.outcome, outcome_reason: run.outcome_reason, evidence: null });
     l.leaves += Object.values(store.data.diagnoses).filter((d) => d.line_id === run.line_id && d.week === run.week && d.verified).length;
-    if (run.outcome === 'proposal') {
-      const { start, end } = nextWindow(run.week);
-      l.proposals.push({ proposal_id: `p-${run.line_id}-${run.week.slice(6)}`, cycle_id: run.cycle_id, option_id: 'opt-protectant', status: 'proposed', week: run.week, window_start: start, window_end: end });
-    }
+    if (run.outcome === 'awaiting_decision') l.selections.push(newDraft(run.line_id, run.cycle_id, run.week));
     return run;
   };
   const settleAll = () => Object.values(store.data.runs).forEach(settle);
-  const runView = (r) => ({ cycle_id: r.cycle_id, line_id: r.line_id, week: r.week, status: r.status, outcome: r.outcome, outcome_reason: r.outcome_reason, failure_reason: r.failure_reason });
+  const runView = (r) => ({ cycle_id: r.cycle_id, line_id: r.line_id, week: r.week, status: r.status, outcome: r.outcome, outcome_reason: r.outcome_reason, failure_reason: r.failure_reason, retry_of: r.retry_of ?? null });
   const runsOf = (lineId) => Object.values(store.data.runs).filter((r) => r.line_id === lineId).map(settle);
   const verified = (lineId, week) => Object.values(store.data.diagnoses).some((d) => d.line_id === lineId && d.week === week && d.verified);
   const answer = (d) => ({ qa_output_id: d.id, outcome: d.outcome, stage: d.stage, ...(d.checklist ? { symptom_checklist: d.checklist } : {}), ...(d.next_action ? { next_action: d.next_action } : {}) });
@@ -68,7 +69,12 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         const latest = newest(l.cycles);
         return ok({
           line_id: params.id,
-          proposals: l.proposals.map((p) => summaryOf(store.data, l, p)),
+          selections: l.selections.map(summaryOf),
+          // Newest first, like the scheduler; the stub has no continued weeks, so a cycle's selection is the one it began.
+          cycles: [...l.cycles].sort((a, b) => b.week.localeCompare(a.week)).map((c) => ({
+            cycle_id: c.cycle_id, week: c.week, status: c.status, outcome: c.outcome, outcome_reason: c.outcome_reason,
+            selection_id: l.selections.find((s) => s.origin_cycle_id === c.cycle_id)?.selection_id ?? null, continued: false,
+          })),
           applications: l.applications,
           latest_cycle: latest && { cycle_id: latest.cycle_id, week: latest.week, status: latest.status, outcome: latest.outcome, outcome_reason: latest.outcome_reason },
           human_review_required: latest?.outcome === 'human_review_required',
@@ -144,7 +150,7 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
       handle: authed(({ params }) => {
         const bad = lineWeek(params);
         if (bad) return bad;
-        const existing = runsOf(params.id).find((r) => r.week === params.week);
+        const existing = runsOf(params.id).filter((r) => r.status !== 'reopened').find((r) => r.week === params.week);
         const seeded = line(params.id).cycles.find((c) => c.week === params.week);
         if (existing) return { status: existing.status === 'running' ? 202 : 200, body: runView(existing) };
         if (seeded) return ok({ cycle_id: seeded.cycle_id, line_id: params.id, week: seeded.week, status: seeded.status, outcome: seeded.outcome, outcome_reason: seeded.outcome_reason, failure_reason: null });
@@ -177,6 +183,28 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         return { status: 202, body: runView(run) };
       }),
     },
-    ...proposalRoutes(store, { settleAll }),
+    {
+      method: 'POST', path: `${BASE}/cycles/:id/reopen`,
+      handle: authed(({ params }) => {
+        const run = store.data.runs[params.id];
+        const found = run ? null : findCycle(params.id);
+        if (!run && !found) return fail(404, 'unknown_cycle', `No cycle ${params.id}`);
+        const first = run ? settle(run) : found.cycle;
+        const lineId = run ? run.line_id : found.lineId;
+        if (first.status === 'running') return fail(409, 'cycle_running', `Cycle ${params.id} is still running`);
+        if (first.status !== 'done' || first.outcome_reason !== 'gate_e_rejected') return fail(409, 'cycle_not_reopenable', 'Only a rejected cycle can be reopened');
+        if (!verified(lineId, first.week)) return fail(409, 'week_not_verified', 'No verified scan for this line-week');
+        first.status = 'reopened';
+        const l = line(lineId);
+        const record = l.cycles.find((c) => c.cycle_id === first.cycle_id);
+        if (record) record.status = 'reopened';
+        const cycle_id = `${first.cycle_id}-r`;
+        const again = { cycle_id, line_id: lineId, week: first.week, status: 'running', outcome: null, outcome_reason: null, failure_reason: null, retry_of: first.cycle_id, startedAt: now(), attempts: 1, plan: REOPEN_PLAN };
+        store.data.runs[cycle_id] = again;
+        return { status: 202, body: runView(again) };
+      }),
+    },
+    ...selectionRoutes(store, { settleAll, now }),
+    ...insightsRoutes(store, { settleAll }),
   ];
 }
