@@ -1,7 +1,7 @@
 <script setup>
 import { computed, watch, onBeforeUnmount } from 'vue';
 import { useEvidenceStore } from '../stores/evidence.js';
-import { levelText, spreadChipText, verdictText, visibleWeeks } from '../helpers/evidence.js';
+import { conditionDetail, levelText, spreadChipText, verdictText, visibleWeeks } from '../helpers/evidence.js';
 import WeekCharts from './WeekCharts.vue';
 
 // What the rules looked at for one cycle: the last weeks of YLS/YLI and rainfall, with the verdicts.
@@ -23,7 +23,7 @@ const weeks = computed(() => (ev.value ? visibleWeeks(ev.value) : []));
       <div class="chips">
         <span v-if="ev.disease.level" class="chip" :class="'level-' + ev.disease.level.verdict">YLS level: {{ levelText(ev.disease.level) }}</span>
         <span class="chip" :class="String(ev.disease.falling)">YLS is falling: {{ verdictText(ev.disease.falling) }}</span>
-        <span class="chip" :class="String(ev.rainfall.favourable)">{{ spreadChipText(ev.rainfall.favourable) }}</span>
+        <span class="chip" :class="String(ev.rainfall.favourable)">{{ spreadChipText(ev.rainfall.favourable, conditionDetail(ev.rainfall)) }}</span>
       </div>
       <WeekCharts :weeks="weeks" :disease="ev.disease" :rainfall="ev.rainfall" />
     </template>

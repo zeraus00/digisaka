@@ -71,6 +71,8 @@ test('evidence has weeks, disease and rainfall; a cycle without it is unknown_ev
   assert.equal(ev.disease.falling, true);
   assert.deepEqual(ev.disease.level, { yls: 5, below: 8, critical_below: 6, verdict: 'critical' });
   assert.equal(ev.rainfall.recent_total_mm, 84);
+  assert.deepEqual(ev.rainfall.conditions.map((c) => [c.id, c.verdict, c.missing]), [['c1', 'met', null], ['c2', 'met', null], ['c3', 'met', null]]);
+  assert.ok(ev.rainfall.conditions.every((c) => typeof c.label === 'string'));
   const none = await get('/cycles/c-L05-24/evidence');
   assert.equal(none.status, 404);
   assert.equal((await none.json()).error, 'unknown_evidence');

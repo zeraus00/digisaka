@@ -3,6 +3,13 @@
 // real feed would have a gap. `evidence` is the rules' reading of a cycle, null for a cycle with no trend stage.
 const wk = (week, yls, yli, rainfall_mm) => ({ week, yls, yli, rainfall_mm });
 
+// The infection-risk rule's conditions as the scheduler lists them: all met, for a verdict of yes.
+const spreadConditions = () => [
+  { id: 'c1', label: 'Rainfall rising over two weeks', verdict: 'met', missing: null },
+  { id: 'c2', label: 'Rainfall above 0 mm over two weeks', verdict: 'met', missing: null },
+  { id: 'c3', label: 'Leaf wetness above 6 hours', verdict: 'met', missing: null },
+];
+
 const seed = () => ({
   // Filled while the stub runs: scans (diagnoses), closed-week cycles (runs) and id counters.
   diagnoses: {}, uploads: {}, runs: {}, scanRuns: {}, nextId: 1,
@@ -16,7 +23,7 @@ const seed = () => ({
         cycle_id: 'c-L02-23', week: '2026-W23', status: 'done', outcome: 'approved', outcome_reason: null,
         evidence: {
           disease: { worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W21', '2026-W22', '2026-W23'], worsening: true, falling: true, level: { yls: 6, below: 8, critical_below: 6, verdict: 'below' } },
-          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W22', '2026-W23'], previous_weeks: ['2026-W20', '2026-W21'], recent_total_mm: 48, previous_total_mm: 24, favourable: true },
+          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W22', '2026-W23'], previous_weeks: ['2026-W20', '2026-W21'], recent_total_mm: 48, previous_total_mm: 24, favourable: true, conditions: spreadConditions() },
         },
       }],
       selections: [{
@@ -35,7 +42,7 @@ const seed = () => ({
         cycle_id: 'c-L03-24', week: '2026-W24', status: 'done', outcome: 'awaiting_decision', outcome_reason: null,
         evidence: {
           disease: { worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W22', '2026-W23', '2026-W24'], worsening: true, falling: true, level: { yls: 5, below: 8, critical_below: 6, verdict: 'critical' } },
-          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W23', '2026-W24'], previous_weeks: ['2026-W21', '2026-W22'], recent_total_mm: 84, previous_total_mm: 52, favourable: true },
+          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W23', '2026-W24'], previous_weeks: ['2026-W21', '2026-W22'], recent_total_mm: 84, previous_total_mm: 52, favourable: true, conditions: spreadConditions() },
         },
       }],
       selections: [{ selection_id: 'sel-L03-24', origin_cycle_id: 'c-L03-24', origin_week: '2026-W24', status: 'draft', payload: 'draft', periods: [], decided_by: null, decided_at: null, note: null }],
@@ -50,7 +57,7 @@ const seed = () => ({
         cycle_id: 'c-L04-23', week: '2026-W23', status: 'done', outcome: 'continue_monitoring', outcome_reason: 'disease_not_worsening',
         evidence: {
           disease: { worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W21', '2026-W22', '2026-W23'], worsening: false, falling: false, level: { yls: 8, below: 8, critical_below: 6, verdict: 'not_below' } },
-          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W22', '2026-W23'], previous_weeks: ['2026-W20', '2026-W21'], recent_total_mm: 56, previous_total_mm: 40, favourable: true },
+          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W22', '2026-W23'], previous_weeks: ['2026-W20', '2026-W21'], recent_total_mm: 56, previous_total_mm: 40, favourable: true, conditions: spreadConditions() },
         },
       }],
       selections: [], applications: [], leaves: 9,
