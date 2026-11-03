@@ -36,6 +36,7 @@ const OUTCOME_REASONS = {
   rainfall_not_favourable: 'Rainfall is not favourable for the disease.',
   rainfall_not_computable: 'Rainfall could not be assessed.',
   missing_feed_value: 'Weather or scan data for this week is missing.',
+  fewer_than_min_weeks: 'There are not enough weekly records for the rules to decide.',
   gate_e_rejected: 'The selection was rejected.',
 };
 export const outcomeReasonText = (code) => (code ? OUTCOME_REASONS[code] ?? code : '');
