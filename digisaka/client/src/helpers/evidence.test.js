@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diseaseCaption, rainfallCaption, verdictText, levelText, missingWeeks, linePath, niceMax, visibleWeeks } from './evidence.js';
+import { diseaseCaption, rainfallCaption, spreadChipText, verdictText, levelText, missingWeeks, linePath, niceMax, visibleWeeks } from './evidence.js';
 
 const weeks = [
   { week: '2026-W22', yls: 7, yli: 4, rainfall_mm: 10 },
@@ -34,6 +34,21 @@ describe('rainfallCaption', () => {
   });
   it('says not enough data when not computable', () => {
     expect(rainfallCaption(ev({ rainfall: { ...ev().rainfall, favourable: 'not_computable', recent_total_mm: null, previous_total_mm: null } }))).toBe('Not enough rainfall data to compare the last 2 weeks.');
+  });
+});
+
+describe('rainfallCaption when the verdict is unknown but the totals are known', () => {
+  it('does not blame the rainfall data', () => {
+    const caption = rainfallCaption(ev({ rainfall: { ...ev().rainfall, favourable: 'not_computable' } }));
+    expect(caption).toBe('Rain over the last 2 weeks: 84 mm, up from 52 mm. Not enough rainfall or leaf-wetness data to tell if conditions favour spread.');
+  });
+});
+
+describe('spreadChipText', () => {
+  it('names the conditions, since the verdict also reads leaf wetness', () => {
+    expect(spreadChipText(true)).toBe('Conditions favour spread: yes');
+    expect(spreadChipText(false)).toBe('Conditions favour spread: no');
+    expect(spreadChipText('not_computable')).toBe('Conditions favour spread: not enough data');
   });
 });
 
