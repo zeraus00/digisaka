@@ -60,7 +60,7 @@ const lastApplied = computed(() => {
         <span>{{ OUTCOME[sug.outcome] ?? BASIS[sug.basis] ?? 'Current suggestion' }}</span>
         <span v-if="store.updating" class="updating" role="status">Updating…</span>
       </div>
-      <p v-if="sug.outcome_reason" class="meta">{{ outcomeReasonText(sug.outcome_reason) }}</p>
+      <p v-if="sug.outcome_reason" class="meta reason">{{ outcomeReasonText(sug.outcome_reason) }}</p>
       <p v-if="sug.basis && sug.outcome !== 'human_review_required'" class="meta basis">{{ BASIS[sug.basis] }}</p>
       <p v-if="sug.changes?.summary" class="meta changes">What changed: {{ sug.changes.summary }}</p>
 
@@ -162,7 +162,7 @@ const lastApplied = computed(() => {
 .row { display: flex; gap: 8px; margin-top: 10px; } .row select, .row input { flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 12px; font: 600 14px var(--font-body); }
 
 .banner.ok { background: #D5E9DB; } .banner .updating { margin-left: auto; font: 700 13px var(--font-body); }
-.meta.basis, .meta.changes { margin: 0 0 8px; }
+.meta.reason, .meta.basis, .meta.changes { margin: 0 0 8px; } .meta ~ .prop-card { margin-top: 16px; }
 .grp { margin-top: 12px; } .grp summary { cursor: pointer; color: var(--forest); }
 .confirm-mark { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: var(--warn); }
 .ualerts { margin: 4px 0 0 18px; font-size: 13px; }
