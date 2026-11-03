@@ -9,7 +9,7 @@ describe('updateState', () => {
     expect(updateState({ reschedule: { cycle_id: 'c1' }, tracked: '', updating: false })).toBe('updating');
     expect(updateState({ reschedule: { cycle_id: 'c1' }, tracked: 'ready', updating: true })).toBe('updating');
   });
-  it.each(['ready', 'failed', 'timeout', 'error'])('a followed run that ended %s says so', (tracked) => {
+  it.each(['ready', 'unchanged', 'failed', 'timeout', 'error'])('a followed run that ended %s says so', (tracked) => {
     expect(updateState({ reschedule: { cycle_id: 'c1' }, tracked, updating: false })).toBe(tracked);
   });
 });

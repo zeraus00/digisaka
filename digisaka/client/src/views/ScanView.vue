@@ -248,8 +248,8 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
       <section class="card" aria-live="polite">
         <p v-if="cycle.error || suggestion.error" class="err" role="alert">{{ cycle.error || suggestion.error }}</p>
         <template v-if="update === 'unchanged'">
-          <h2>The line stage is unchanged</h2>
-          <p class="hint">These scans did not move the stage, so the current treatment suggestion still stands.</p>
+          <h2>The treatment suggestion is unchanged</h2>
+          <p class="hint">These scans did not change it, so the current treatment suggestion still stands.</p>
           <RouterLink class="btn primary" :to="treatmentPath">Open the current suggestion</RouterLink>
         </template>
         <template v-else-if="update === 'updating'">

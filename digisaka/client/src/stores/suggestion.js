@@ -45,7 +45,7 @@ export const useSuggestionStore = defineStore('suggestion', {
       }
     },
     // Poll the suggestion until no run is in progress and, when `target` names a cycle, until that cycle is the revision.
-    // Returns ready, failed (the run failed), timeout, error or stopped.
+    // Returns ready, unchanged (the run finished and left the suggestion as it was), failed (the run failed), timeout, error or stopped.
     async follow(target, wait = sleep, run = this.run) {
       let failures = 0;
       this.updating = true;
@@ -57,7 +57,11 @@ export const useSuggestionStore = defineStore('suggestion', {
           this.phase = 'ready';
           const s = this.suggestion;
           if (!s.running && (!target || s.revision === target)) { this.updating = false; return 'ready'; }
-          if (!s.running && target && (await api.get(`${base}/cycles/${e(target)}`).catch(() => null))?.status === 'failed') { this.updating = false; return 'failed'; }
+          if (!s.running && target) {
+            // The suggestion shows the latest run that changed something, so a run that changed nothing never becomes its revision.
+            const status = (await api.get(`${base}/cycles/${e(target)}`).catch(() => null))?.status;
+            if (status === 'failed' || status === 'done') { this.updating = false; return status === 'failed' ? 'failed' : 'unchanged'; }
+          }
         } catch (err) {
           // The first run of a line has no suggestion until it is done; any other blip gives up after three in a row.
           if (!(target && err.code === 'unknown_cycle') && ++failures >= 3) { this.updating = false; this.error = messageFor(err); return 'error'; }
@@ -67,7 +71,7 @@ export const useSuggestionStore = defineStore('suggestion', {
       if (run === this.run) this.updating = false;
       return 'timeout';
     },
-    // Follow the run a scan started on a line; `tracked` ends as ready, failed, timeout or error.
+    // Follow the run a scan started on a line; `tracked` ends as ready, unchanged, failed, timeout or error.
     async track(lineId, cycleId, wait = sleep) {
       this.run++; const run = this.run;
       Object.assign(this, { lineId, suggestion: null, history: [], cycles: [], error: '', busy: false, pending: null, tracked: '', phase: 'loading' });
