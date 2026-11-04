@@ -20,7 +20,7 @@ const seed = () => ({
     L02: {
       weeks: [wk('2026-W20', 9, 5, 10), wk('2026-W21', 8, 5, 14), wk('2026-W22', 7, 4, 20), wk('2026-W23', 6, 4, 28)],
       cycles: [{
-        cycle_id: 'c-L02-23', week: '2026-W23', status: 'done', outcome: 'approved', outcome_reason: null,
+        cycle_id: 'c-L02-23', week: '2026-W23', status: 'done', outcome: 'suggested', outcome_reason: null,
         evidence: {
           disease: { worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W21', '2026-W22', '2026-W23'], worsening: true, falling: true, level: { yls: 6, below: 8, critical_below: 6, verdict: 'below' } },
           rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W22', '2026-W23'], previous_weeks: ['2026-W20', '2026-W21'], recent_total_mm: 48, previous_total_mm: 24, favourable: true, conditions: spreadConditions() },
@@ -39,7 +39,7 @@ const seed = () => ({
     L03: {
       weeks: [wk('2026-W20', 9, 5, 15), wk('2026-W21', 8, 5, 20), wk('2026-W22', 7, 4, 32), wk('2026-W23', 6, 4, 40), wk('2026-W24', 5, 3, 44)],
       cycles: [{
-        cycle_id: 'c-L03-24', week: '2026-W24', status: 'done', outcome: 'awaiting_decision', outcome_reason: null,
+        cycle_id: 'c-L03-24', week: '2026-W24', status: 'done', outcome: 'suggested', outcome_reason: null,
         evidence: {
           disease: { worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W22', '2026-W23', '2026-W24'], worsening: true, falling: true, level: { yls: 5, below: 8, critical_below: 6, verdict: 'critical' } },
           rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W23', '2026-W24'], previous_weeks: ['2026-W21', '2026-W22'], recent_total_mm: 84, previous_total_mm: 52, favourable: true, conditions: spreadConditions() },

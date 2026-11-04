@@ -15,9 +15,9 @@ describe('lines store against the stub', () => {
     await s.load();
     expect(s.error).toBe('');
     expect(s.statuses.map((l) => l.line_id)).toEqual(['L01', 'L02', 'L03', 'L04', 'L05', 'L06', 'L07']);
-    expect(s.withSelections.map((l) => l.line_id)).toEqual(['L02', 'L03', 'L05', 'L06']);
-    expect(dashboardSummary(s.statuses)).toMatchObject({ lines: 7, awaitingDecision: 3, humanReview: 1 });
-    expect(weekRows(s.byId('L02'))[0].appliedOn).toEqual(['2026-06-02']);
+    expect(s.withCycles.map((l) => l.line_id)).toEqual(['L02', 'L03', 'L04', 'L05', 'L06']);
+    expect(dashboardSummary(s.statuses)).toMatchObject({ lines: 7, applications: 1, humanReview: 1 });
+    expect(weekRows(s.byId('L02'))[0]).toMatchObject({ week: '2026-W23', label: 'Suggestion ready' });
   });
   it('shows the Practitioner message when a Technical User is signed in', async () => {
     const auth = useAuthStore();

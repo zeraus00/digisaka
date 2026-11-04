@@ -36,6 +36,8 @@ const OUTCOME_REASONS = {
   rainfall_not_favourable: 'Rainfall is not favourable for the disease.',
   rainfall_not_computable: 'Rainfall could not be assessed.',
   missing_feed_value: 'Weather or scan data for this week is missing.',
+  requirement_not_fired: 'Treatment not yet warranted by this week\'s data and the current rules.',
+  data_or_expert_review_needed: 'Data is missing or an expert needs to review this week.',
   fewer_than_min_weeks: 'There are not enough weekly records for the system to decide.',
   gate_e_rejected: 'The selection was rejected.',
 };
