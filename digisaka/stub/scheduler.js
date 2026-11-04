@@ -1,6 +1,6 @@
 // Stand-in for the scheduler API under /api/v1/scheduler: lines, history, insights, evidence, scans and cycles.
 import { BASE, fail, ok, authed, isValidWeek } from './common.js';
-import { suggestionRoutes, summaryOf, newDraft, suggestionAfter } from './suggestions.js';
+import { suggestionRoutes, suggestionAfter } from './suggestions.js';
 import { insightsRoutes } from './insights.js';
 
 // The canned answer for an image is chosen by its name; anything unrecognised is a stage 2 leaf.
@@ -49,7 +49,6 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
     Object.assign(run, { status: 'done', outcome: run.plan.outcome, outcome_reason: run.plan.reason ?? null, failure_reason: null });
     l.cycles.push({ cycle_id: run.cycle_id, week: run.week, status: 'done', outcome: run.outcome, outcome_reason: run.outcome_reason, evidence: null });
     l.leaves += Object.values(store.data.diagnoses).filter((d) => d.line_id === run.line_id && d.week === run.week && d.verified).length;
-    l.selections.push(newDraft(run.line_id, run.cycle_id, run.week));
     l.suggestion = suggestionAfter(l, run, run.startedAt + cycleMs);
     return run;
   };
@@ -88,11 +87,9 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         const latest = newest(l.cycles);
         return ok({
           line_id: params.id,
-          selections: l.selections.map(summaryOf),
-          // Newest first, like the scheduler; the stub has no continued weeks, so a cycle's selection is the one it began.
+          // Newest first, like the scheduler.
           cycles: [...l.cycles].sort((a, b) => b.week.localeCompare(a.week)).map((c) => ({
             cycle_id: c.cycle_id, week: c.week, status: c.status, outcome: c.outcome, outcome_reason: c.outcome_reason,
-            selection_id: l.selections.find((s) => s.origin_cycle_id === c.cycle_id)?.selection_id ?? null, continued: false,
           })),
           applications: l.applications,
           latest_cycle: latest && { cycle_id: latest.cycle_id, week: latest.week, status: latest.status, outcome: latest.outcome, outcome_reason: latest.outcome_reason },

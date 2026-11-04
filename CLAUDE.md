@@ -26,6 +26,8 @@ Feature branches are stacked: each is built on the branch below it, ending at th
 
 Work only inside this repository (`mobile/`, `digisaka/`, `tasks/`). Do not read, search or edit sibling folders under `my-projects/` unless the human developer asks. The scheduler and Knowledge Maintenance services are reached over HTTP, not by reading their source.
 
+The web integration covers the QA and scheduler screens (Scan, Treatment, History, Schedule, Dashboard), all on the scheduler's reactive, suggestion-only flow (AI_NeSy_Framework ADR-0037): a line's ranked suggestion is read, an application is recorded with a confirmation when the pick is flagged, and nothing is approved, rejected, renewed, closed or reopened. Those routes answer 404, and the client and stub carry no code for them.
+
 ### Decisions
 
 When a decision comes up while planning or implementing, rank it as minor, standard, or potentially destructive or breaking. For minor and standard ones, follow the recommended option without asking. For destructive or breaking ones (for example, removing screens or endpoints, or changing what a screen does), stop and let the human developer decide.

@@ -1,7 +1,7 @@
 // Suggestions: a line's current treatment suggestion (three groups, basis, what changed) and recording an
 // application against it. The groups are built from a frozen 0004 payload laid out as the scheduler's
 // SuggestionView; a line with no finished run has none. Also the scheduler's dev-date routes (the stub's
-// "today"). A line's `selections` stay only so the line status and the schedule list keep their rows.
+// "today").
 import { readFileSync } from 'node:fs';
 import { BASE, fail, ok, authed } from './common.js';
 
@@ -25,14 +25,8 @@ const DEFAULT = { payload: 'clean', basis: 'stage_confirmed' };
 
 // A product here is the part of a unit id after `Option|`, as the scheduler records it.
 const productOf = (unitId) => unitId.split('|').pop();
-// Only these two outcomes are served; the rest ("approved", "awaiting_decision") belong to the retired approval flow.
+// Only these two outcomes are served beside `suggested`; the old approval outcomes are gone.
 const SERVED_OUTCOMES = ['human_review_required', 'continue_monitoring'];
-
-// A selection as the line status lists it (the schedule list still reads it).
-export const summaryOf = (sel) => ({ selection_id: sel.selection_id, origin_cycle_id: sel.origin_cycle_id, origin_week: sel.origin_week, status: sel.status, products: [], approval_period: { approval_period_id: null, start: null, end: null, days: 30 }, reselection_required: false });
-
-// A row for a finished run in the line status.
-export const newDraft = (lineId, cycleId, week) => ({ selection_id: `sel-${lineId}-${week.slice(6)}`, origin_cycle_id: cycleId, origin_week: week, status: 'draft', payload: 'draft', periods: [], decided_by: null, decided_at: null, note: null });
 
 // The basis wording confirms rather than accuses: what the data suggests, then a way to verify.
 const BASIS_TEXT = {

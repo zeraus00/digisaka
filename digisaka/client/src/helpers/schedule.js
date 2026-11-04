@@ -11,7 +11,7 @@ export function isoWeek(iso) {
   return `${year}-W${String(Math.ceil(((d - Date.UTC(year, 0, 1)) / 86400000 + 1) / 7)).padStart(2, '0')}`;
 }
 
-// The Selection preview's days as calendar events: an application (with its timing window) and/or a
+// The suggestion's schedule days as calendar events: an application (with its timing window) and/or a
 // weekly assessment per day. An application is done when one is recorded for its product inside its window.
 // A weekly assessment is done once the line has a finished cycle for its week (`assessedWeeks`).
 // Every recorded application is its own `applied` event, so the calendar can show it apart from the suggested step.
