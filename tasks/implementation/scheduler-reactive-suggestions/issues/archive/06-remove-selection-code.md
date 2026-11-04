@@ -13,5 +13,5 @@
 - [x] No source file references the Selection store, approval, rejection, renewal, reopen or close week
 - [x] None of the unreachable approval-flow code named above remains
 - [x] The client build and all tests pass; `DevDateBar` still works on the stub
-- [ ] A manual run against the real scheduler passes the screens (the acceptance gate in CLAUDE.md)
+- [x] A manual run against the real scheduler passes the screens (the acceptance gate in CLAUDE.md)
 - [x] CLAUDE.md, README, FLOW and API describe the suggestion flow
