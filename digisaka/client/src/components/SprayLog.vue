@@ -39,7 +39,7 @@ const fracTone = computed(() => (usage.value.some((g) => g.status === 'maxed') ?
         <h2>{{ fracHeading(usage) }}</h2>
         <p v-if="!usage.length" class="jr-hint">No FRAC group usage is recorded.</p>
         <div v-for="g in usage" :key="g.frac_code" class="jr-unit">
-          <div class="top"><span><span class="jr-pill">FRAC {{ g.frac_code }}</span> {{ g.mode_of_action }}</span><span v-if="STATUS_LABEL[g.status]" class="jr-pill" :class="g.status === 'ok' ? 'ok' : g.status === 'discouraged' ? 'warn' : 'bad'">{{ STATUS_LABEL[g.status] }}</span></div>
+          <div class="top"><span class="jr-pill">FRAC {{ g.frac_code }}</span><span v-if="STATUS_LABEL[g.status]" class="jr-pill" :class="g.status === 'ok' ? 'ok' : g.status === 'discouraged' ? 'warn' : 'bad'">{{ STATUS_LABEL[g.status] }}</span></div>
           <p>{{ usageLine(g) }}<template v-if="g.source"> · {{ g.source }}</template></p>
           <ul v-if="g.alerts?.length"><li v-for="a in g.alerts" :key="a.text">{{ a.text }}<template v-if="a.alternatives?.length"> Alternatives: {{ a.alternatives.join(', ') }}.</template></li></ul>
         </div>
