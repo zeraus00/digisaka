@@ -130,7 +130,7 @@ h1 em { font-style: normal; color: var(--banana); }
 .badge.ok { background: var(--tint); color: var(--forest); } .badge.warn { background: var(--warn-tint); color: #B4432A; }
 @media (max-width: 900px) {
   .hero { flex-direction: column; gap: 14px; padding: 22px; }
-  h1 { font-size: 26px; } .hero-side { text-align: left; } .date { display: none; }
+  h1 { font-size: 26px; } .hero-side { text-align: left; } .date { display: none; } .refresh { margin-top: 14px; }
   .actions { grid-template-columns: 1fr; gap: 12px; }
   .stats { gap: 10px; } .stat b { font-size: 26px; }
 }
