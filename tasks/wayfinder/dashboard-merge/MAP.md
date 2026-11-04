@@ -27,11 +27,18 @@ A decided spec, ready for `/to-tickets`, for bringing `fork/web/user/dashboard` 
 ## Decisions so far
 
 - [Merge resolution and a green merge commit](tickets/0001-merge-resolution-and-a-green-merge-commit.md): trial merge is green (build, client, stub, server); conflicting views stay ours, `lineHistory` and `LineHistory.vue` stay ours until the store slice, the prototype catalog is deleted in the merge, `bananaleaf2.png` is kept; a follow-up commit moves mockups and drops Profile and the README line.
+- [Line Insights store](tickets/0002-line-insights-store.md): new `insights` store beside `lineHistory` (which keeps `/history` for the charts); owner screens load on mount, no cache; display-only getters; the fork's old-flow `lineHistory` reads are not ported.
+- [Stub payloads for the decided fields](tickets/0003-stub-payloads-for-the-decided-fields.md): insights payload files gain the fields (KG mode-of-action codes, M row `discouraged`, canopy bands from the counts); unit `facts` are built from the recorded `real` payload; the stub follows live on the four mismatches now; one stub slice lands before the screens.
+- [How the Treatment Review journey reads the suggestion](tickets/0004-how-the-treatment-review-journey-reads-the-suggestion.md): one `suggestion` store, step 3's tracking runs on into step 4; "current" is ready and not updating with a `ready`/`unchanged` update state; step 3's update card becomes a shared `SuggestionUpdate`; four steps, Schedule is a link; back from `/treatment` does not restore the journey.
+
+- [Field map for the insights screens](tickets/0005-field-map-for-the-insights-screens.md): Disease Detection and Weather mapped element by element to insights fields, the suggestion's `outcome`, or a `TODO(contract)` grey-out (humidity, leaf wetness, infection risk level); text tables in one `helpers/insights.js`; the canopy pill is the server's verdict, the caption states numbers only; progression reads the `R1` reading by rule prefix.
+
+- [Field map for spray log and fungicides](tickets/0006-field-map-for-spray-log-and-fungicides.md): spray history and FRAC card read `history[]` and `group_usage[]` (server status, "Discouraged" heading); one shared `InsightsSummary`; options grouped by the server's tiers with an "Excluded options" caution section; details from `facts` through one `unitFacts` helper and the real `checks[]`; empty fact reads "Unknown", not-provided fields read "Coming soon" with `TODO(contract)`.
+- [Restyle /treatment to the fork's fungicide design](tickets/0007-restyle-treatment-to-the-fork-fungicide-design.md): `ProductCard` keeps its tiers and checks, reads pills from `unitFacts`, shares `ProductFacts.vue` with the journey's details page; recording flow, calendar and guidance unchanged; this slice comes after the journey's fungicide slice.
 
 ## Not yet specified
 
-- The `/treatment` restyle to the fork's fungicide design: which parts of the fungicide list and details carry over to `ProductCard`, once the spray log and fungicides field map is set.
-- Ticket order and waves for `/to-tickets`, once the merge and store tickets resolve (what must land before each screen, and what the stub tickets share with the screen tickets).
+None. Ticket order and waves are set at `/to-tickets` (known: the stub slice comes first).
 
 ## Out of scope
 
