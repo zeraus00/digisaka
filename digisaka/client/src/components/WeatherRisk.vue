@@ -21,7 +21,7 @@ const BADGE = { fired: 'bad', not_fired: 'ok' };
   <section v-else-if="data" class="jr-layout" aria-label="Weather and risk">
     <div>
       <div class="jr-metrics jr-card">
-        <article class="jr-metric"><span>Recorded rainfall</span><strong>{{ rainfall == null ? '—' : `${rainfall} mm` }}</strong><small>{{ rainfall == null ? 'No rainfall value recorded for this week' : `${week} · weekly total` }}</small></article>
+        <article class="jr-metric"><span>Recorded rainfall</span><strong>{{ rainfall == null ? '—' : `${rainfall} mm` }}</strong><small>{{ rainfall == null ? 'No rainfall value recorded for this week' : `Week ${Number(week.split('W').pop())}` }}</small></article>
         <!-- TODO(contract): humidity, leaf wetness -->
         <article class="jr-metric jr-off"><span>Humidity</span><strong>Coming soon</strong><small>The scheduler does not provide this yet</small></article>
         <article class="jr-metric jr-off"><span>Leaf wetness</span><strong>Coming soon</strong><small>The scheduler does not provide this yet</small></article>
