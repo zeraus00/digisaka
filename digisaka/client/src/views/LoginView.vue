@@ -95,7 +95,7 @@ onMounted(() => {
                 id="email"
                 v-model="f.email"
                 class="form-input"
-                placeholder="Email or Mobile Number"
+                placeholder="Email"
                 autocomplete="email"
                 required
                 :disabled="busy"
@@ -111,7 +111,7 @@ onMounted(() => {
                 id="password"
                 v-model="f.password"
                 class="form-input password-input"
-                placeholder="Email Password"
+                placeholder="Password"
                 autocomplete="current-password"
                 required
                 :disabled="busy"
@@ -136,11 +136,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="remember-me">
-            <input type="checkbox" id="rememberMe" v-model="f.rememberMe" :disabled="busy">
-            <label for="rememberMe">Remember me</label>
-          </div>
-
           <div class="err" role="alert" v-if="error">{{ error }}</div>
 
           <button class="signin-button" type="submit" :disabled="busy" :class="{ 'is-visible': reveal.button }">
@@ -155,7 +150,6 @@ onMounted(() => {
 
 <style scoped>
 .login-page {
-  font-family: 'Roboto', Helvetica, Arial, sans-serif;
   color: var(--ink);
   background: #F3F4F6;
   min-height: 100vh;
@@ -184,7 +178,6 @@ onMounted(() => {
 .form-wrapper .login-heading,
 .form-wrapper .login-subtitle,
 .form-wrapper .form-group,
-.form-wrapper .remember-me,
 .form-wrapper .err,
 .form-wrapper .signin-button {
   opacity: 0;
@@ -195,7 +188,6 @@ onMounted(() => {
 .form-wrapper.is-visible .login-heading,
 .form-wrapper.is-visible .login-subtitle,
 .form-wrapper.is-visible .form-group,
-.form-wrapper.is-visible .remember-me,
 .form-wrapper.is-visible .err,
 .form-wrapper.is-visible .signin-button {
   opacity: 1;
@@ -205,9 +197,8 @@ onMounted(() => {
 /* Stagger delays for form children */
 .form-wrapper.is-visible .login-heading { transition-delay: 0ms; }
 .form-wrapper.is-visible .login-subtitle { transition-delay: 50ms; }
-.form-wrapper.is-visible .form-group:nth-child(1) { transition-delay: 100ms; }
-.form-wrapper.is-visible .form-group:nth-child(2) { transition-delay: 150ms; }
-.form-wrapper.is-visible .remember-me { transition-delay: 200ms; }
+.form-wrapper.is-visible .form-group:nth-of-type(1) { transition-delay: 100ms; }
+.form-wrapper.is-visible .form-group:nth-of-type(2) { transition-delay: 150ms; }
 .form-wrapper.is-visible .err { transition-delay: 250ms; }
 .form-wrapper.is-visible .signin-button { transition-delay: 300ms; }
 
@@ -217,7 +208,6 @@ onMounted(() => {
   .form-wrapper .login-heading,
   .form-wrapper .login-subtitle,
   .form-wrapper .form-group,
-  .form-wrapper .remember-me,
   .form-wrapper .err,
   .form-wrapper .signin-button,
   .mobile-brand {
@@ -286,7 +276,6 @@ onMounted(() => {
 }
 
 .brand-text {
-  font-family: 'Roboto', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: #006D43;
@@ -299,7 +288,6 @@ onMounted(() => {
 }
 
 .promo-heading {
-  font-family: 'Roboto', sans-serif;
   font-size: 36px;
   font-weight: 700;
   line-height: 44px;
@@ -308,7 +296,6 @@ onMounted(() => {
 }
 
 .promo-description {
-  font-family: 'Roboto', sans-serif;
   font-size: 20px;
   font-weight: 400;
   line-height: 28px;
@@ -321,7 +308,6 @@ onMounted(() => {
 }
 
 .footer-text {
-  font-family: 'Roboto', sans-serif;
   font-size: 16px;
   font-weight: 400;
   color: #9AA5A4;
@@ -371,7 +357,6 @@ onMounted(() => {
 }
 
 .login-heading {
-  font-family: 'Roboto', sans-serif;
   font-size: 36px;
   font-weight: 700;
   line-height: 43px;
@@ -380,7 +365,6 @@ onMounted(() => {
 }
 
 .login-subtitle {
-  font-family: 'Roboto', sans-serif;
   font-size: 18px;
   font-weight: 400;
   color: #98A2B3;
@@ -393,7 +377,6 @@ onMounted(() => {
 
 .form-label {
   display: block;
-  font-family: 'Roboto', sans-serif;
   font-size: 16px;
   font-weight: 400;
   color: #667085;
@@ -412,7 +395,6 @@ onMounted(() => {
   border: 1px solid var(--line);
   border-radius: 11px;
   background: #FFFFFF;
-  font-family: 'Roboto', sans-serif;
   font-size: 14px;
   color: #1C1C1C;
   outline: none;
@@ -453,6 +435,11 @@ onMounted(() => {
   padding: 0;
 }
 
+.toggle-password:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 2px;
+}
+
 .toggle-password:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -463,56 +450,6 @@ onMounted(() => {
   height: 20px;
   stroke: #666666;
   fill: none;
-}
-
-.remember-me {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 24px 0 32px 0;
-}
-
-.remember-me input[type="checkbox"] {
-  width: 15px;
-  height: 15px;
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  appearance: none;
-  cursor: pointer;
-  position: relative;
-  flex-shrink: 0;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.remember-me input[type="checkbox"]:checked {
-  background: #006F47;
-  border-color: #006F47;
-}
-
-.remember-me input[type="checkbox"]:checked::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.remember-me input[type="checkbox"]:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.remember-me label {
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  color: #111111;
-  cursor: pointer;
-  user-select: none;
 }
 
 .err {
@@ -529,7 +466,6 @@ onMounted(() => {
   background: #006F47;
   border: none;
   border-radius: 10px;
-  font-family: 'Roboto', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: #FFFFFF;
@@ -656,9 +592,6 @@ onMounted(() => {
   .password-input {
     padding-right: 48px;
   }
-  .remember-me {
-    margin: 20px 0 28px 0;
-  }
   .signin-button {
     height: 48px;
     font-size: 16px;
@@ -666,7 +599,6 @@ onMounted(() => {
 }
 
 @media (max-height: 700px) {
-  .promo-content,
   .promo-description {
     display: none;
   }
