@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useInsightsStore } from '../stores/insights.js';
 import InsightsSummary from './InsightsSummary.vue';
+import { sentenceCase } from '../helpers/checks.js';
 import { sprayBadge, dayMonth, fracHeading, usageLine, STATUS_LABEL } from '../helpers/insights.js';
 
 // The Spray log step: the recorded applications and the FRAC groups' usage, as Line Insights serves them.
@@ -26,7 +27,7 @@ const fracTone = computed(() => (usage.value.some((g) => g.status === 'maxed') ?
             <span class="date">{{ dayMonth(h.applied_on) }}</span>
             <b>{{ h.product }}</b>
             <span class="pills">
-              <span v-if="h.multisite != null" class="jr-pill">{{ h.multisite ? 'Multi-site' : 'Single-site' }}</span>
+              <span v-for="m in h.plant_mobility" :key="m" class="jr-pill">{{ sentenceCase(m) }}</span>
               <span class="jr-pill">FRAC {{ h.frac_code }}</span>
               <span class="jr-pill" :class="sprayBadge(h, usage).tone">{{ sprayBadge(h, usage).label }}</span>
             </span>

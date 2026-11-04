@@ -30,7 +30,7 @@ const RISK = ['status', 'finding', 'result', 'conditions'];
 const CONDITION = ['label', 'result', 'input'];
 const OUTLOOK = ['status', 'rain_above_mm', 'days'];
 const DAY = ['date', 'status', 'precipitation_mm', 'temperature_c', 'wind_kmh'];
-const APPLICATION = ['applied_on', 'product_id', 'product', 'mode_of_action', 'frac_code', 'multisite', 'source', 'response'];
+const APPLICATION = ['applied_on', 'product_id', 'product', 'mode_of_action', 'frac_code', 'multisite', 'plant_mobility', 'source', 'response'];
 const USAGE = ['mode_of_action', 'frac_code', 'multisite', 'count', 'range_min', 'range_max', 'period', 'source', 'status', 'alerts'];
 const ALERT = ['kind', 'text', 'alternatives'];
 const ACTIONS = ['status', 'kinds', 'summary'];
@@ -67,6 +67,8 @@ test('a week with a cycle serves every field, with the risk, history, alerts and
   assert.ok(b.risk.conditions.some((c) => c.result === 'cannot_check'));
   assert.deepEqual(b.rain_outlook.days.map((d) => d.status), ['rain', 'rain', 'dry', 'not_reported', 'dry']);
   assert.deepEqual([...new Set(b.history.map((a) => a.response))].sort(), ['not_poor', 'not_yet_reassessed', 'poor']);
+  b.history.forEach((a) => assert.ok(Array.isArray(a.plant_mobility) && a.plant_mobility.every((m) => typeof m === 'string'), a.product));
+  assert.ok(b.history.some((a) => a.plant_mobility.length === 0), 'one entry is unknown (an empty list)');
   assert.equal(typeof b.history_coverage, 'string');
   assert.equal(JSON.stringify(b).includes('resistance_alerts'), false);
   assert.equal(b.functional_leaves_target, 10);

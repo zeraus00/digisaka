@@ -179,6 +179,9 @@
       "mode_of_action": "Mode of action M",
       "frac_code": "M",
       "multisite": true,
+      "plant_mobility": [
+        "Contact"
+      ],
       "source": "Sample source B",
       "response": "not_poor"
     },
@@ -189,6 +192,7 @@
       "mode_of_action": "Mode of action D1",
       "frac_code": "D1",
       "multisite": false,
+      "plant_mobility": [],
       "source": "Sample source B",
       "response": "poor"
     },
@@ -199,6 +203,9 @@
       "mode_of_action": "Mode of action M",
       "frac_code": "M",
       "multisite": true,
+      "plant_mobility": [
+        "Contact"
+      ],
       "source": "Sample source B",
       "response": "not_yet_reassessed"
     }
