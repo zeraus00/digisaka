@@ -60,7 +60,9 @@ onMounted(() => {
     </template>
 
     <template v-else-if="page === 2">
-      <p v-if="suggestion.phase !== 'ready'" class="jr-hint" role="status">Loading the suggestion…</p>
+      <p v-if="suggestion.phase === 'notfound'" class="jr-hint">This line has no treatment suggestion yet. A scan is suggested to start one.</p>
+      <p v-else-if="suggestion.phase === 'error'" class="jr-err" role="alert">{{ suggestion.error }} <button type="button" @click="suggestion.load(line)">Try again</button></p>
+      <p v-else-if="suggestion.phase !== 'ready'" class="jr-hint" role="status">Loading the suggestion…</p>
       <section v-else class="jr-layout">
         <div>
           <article class="jr-card">
