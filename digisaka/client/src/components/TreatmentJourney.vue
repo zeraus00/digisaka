@@ -1,16 +1,14 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useInsightsStore } from '../stores/insights.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import WeatherRisk from './WeatherRisk.vue';
 import SprayLog from './SprayLog.vue';
 import SuggestionUpdate from './SuggestionUpdate.vue';
-import ProductFacts from './ProductFacts.vue';
+import FungicideOptions from './FungicideOptions.vue';
+import FungicideDetails from './FungicideDetails.vue';
 import InsightsSummary from './InsightsSummary.vue';
 import { RouterLink } from 'vue-router';
-import { unitFacts, titleCase, checkLabel, humanDetail, reasonText, planFor, stripChecks, RESULT_LABEL, GROUP_LABEL } from '../helpers/checks.js';
-import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
-import { paginate } from '../helpers/paging.js';
 import '../styles/journey.css';
 
 // Scan step 4: Weather, Spray log, Fungicides (list, then details), then a link to the schedule on /treatment.
@@ -23,18 +21,9 @@ const PAGES = ['Weather', 'Spray log', 'Fungicides', 'Schedule'];
 const activeStep = computed(() => Math.min(page.value, 2));
 const unitId = ref('');
 const unit = computed(() => suggestion.units.find((u) => u.unit_id === unitId.value) ?? null);
-const tierOf = (u) => ['recommended', 'eligible', 'excluded'].find((g) => suggestion.groups[g].includes(u));
 const showDetails = (u) => { unitId.value = u.unit_id; page.value = 3; };
 const scheduleLink = computed(() => `/treatment/${encodeURIComponent(props.line)}/${encodeURIComponent(props.week)}`);
-const plan = computed(() => (unit.value ? planFor(suggestion.days, unit.value) : null));
-const checksOf = (u) => (u.checks ?? []).map((c) => ({ ...c, label: checkLabel(c.check), ...humanDetail(c.check, c.detail) }));
-const failing = (u) => stripChecks(u).filter((c) => c.result === 'fail').map((c) => ({ label: checkLabel(c.check), ...humanDetail(c.check, c.detail) }));
-const counts = computed(() => `${suggestion.groups.recommended.length + suggestion.groups.eligible.length} eligible · ${suggestion.groups.excluded.length} excluded`);
-// One flat list (recommended, eligible, excluded), five cards a page; back from details keeps the page.
-const optionPage = ref(1);
-const rows = computed(() => ['recommended', 'eligible', 'excluded'].flatMap((g) => suggestion.groups[g].map((u) => ({ u, g }))));
-const paged = computed(() => paginate(rows.value, optionPage.value));
-watch(() => suggestion.units, () => { optionPage.value = 1; });
+const optionPage = ref(1); // kept across a trip to details
 const TITLES = ['Weather risk', 'Spray log', 'Fungicide options', 'Fungicide details'];
 
 onMounted(() => {
@@ -71,43 +60,7 @@ onMounted(() => {
       <p v-else-if="suggestion.phase !== 'ready'" class="jr-hint" role="status">Loading the suggestion…</p>
       <section v-else class="jr-layout">
         <div>
-          <article class="jr-card">
-            <div class="jr-row"><h2>Fungicide options</h2><span class="jr-hint">{{ counts }}</span></div>
-            <p class="jr-warn">These are separate product choices, not a combination to mix. Compatibility has not been assessed.</p>
-            <p v-if="!suggestion.units.length" class="jr-hint">No fungicide options were suggested for this line.</p>
-            <div class="jr-tier">
-              <template v-for="({ u, g }, i) in paged.shown" :key="u.unit_id">
-                <template v-if="g !== 'excluded'">
-                  <button type="button" class="jr-unit combo" :aria-label="`View details for ${titleCase(u.label)}`" @click="showDetails(u)">
-                    <span class="top"><b>{{ titleCase(u.label) }}</b><span v-if="g === 'recommended'" class="jr-pill ok">Recommended</span></span>
-                    <span class="pills">
-                      <span v-if="unitFacts(u).frac" class="jr-pill">FRAC {{ unitFacts(u).frac }}</span><span v-if="unitFacts(u).site" class="jr-pill">{{ unitFacts(u).site }}</span>
-                      <span v-for="m in unitFacts(u).mobility" :key="m" class="jr-pill">{{ m }}</span>
-                      <span class="jr-pill jr-off">Price: Coming soon</span><span class="jr-hint more">Details →</span>
-                    </span>
-                  </button>
-                </template>
-                <template v-else>
-                  <div v-if="i === 0 || paged.shown[i - 1].g !== 'excluded'"><p class="jr-hint">Use caution</p><h3>Excluded options</h3></div>
-                  <button type="button" class="jr-unit excluded" :aria-label="`View excluded product details for ${titleCase(u.label)}`" @click="showDetails(u)">
-                    <span class="top"><b>{{ titleCase(u.label) }}</b><span class="jr-pill bad">{{ GROUP_LABEL.excluded }}</span></span>
-                    <span class="pills">
-                      <span v-if="unitFacts(u).frac" class="jr-pill">FRAC {{ unitFacts(u).frac }}</span><span v-if="unitFacts(u).site" class="jr-pill">{{ unitFacts(u).site }}</span>
-                      <span v-for="m in unitFacts(u).mobility" :key="m" class="jr-pill">{{ m }}</span><span class="jr-pill jr-off">Price: Coming soon</span>
-                    </span>
-                    <span>{{ reasonText(u.reason) }}</span>
-                    <ul v-if="failing(u).length"><li v-for="c in failing(u)" :key="c.label">{{ c.label }}: {{ c.text }}</li></ul>
-                    <ul v-if="u.alerts.length"><li v-for="a in orderAlerts(u.alerts)" :key="a.id"><span aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span> {{ a.text }}</li></ul>
-                  </button>
-                </template>
-              </template>
-            </div>
-            <nav v-if="paged.pages > 1" class="jr-pager" aria-label="Fungicide options pages">
-              <button type="button" :disabled="optionPage <= 1" @click="optionPage--">Previous</button>
-              <span class="jr-hint">Page {{ optionPage }} of {{ paged.pages }}</span>
-              <button type="button" :disabled="optionPage >= paged.pages" @click="optionPage++">Next</button>
-            </nav>
-          </article>
+          <FungicideOptions v-model:page="optionPage" @select="showDetails" />
         </div>
         <InsightsSummary />
       </section>
@@ -115,31 +68,7 @@ onMounted(() => {
     </template>
 
     <template v-else-if="page === 3 && unit">
-      <section class="jr-layout">
-        <div>
-          <article class="jr-card">
-            <div class="jr-row"><div><h2>{{ titleCase(unit.label) }}</h2><span class="jr-hint">Product information</span></div><span class="jr-pill" :class="tierOf(unit) === 'excluded' ? 'bad' : 'ok'">{{ GROUP_LABEL[tierOf(unit)] }}</span></div>
-            <ProductFacts :unit="unit" />
-            <div class="jr-rows">
-              <div class="jr-row"><span>Application window</span><b>{{ plan?.window ?? 'Not in this plan' }}</b></div>
-              <div class="jr-row"><span>Next assessment</span><b>{{ plan?.next ?? 'Not in this plan' }}</b></div>
-            </div>
-          </article>
-          <article v-if="tierOf(unit) === 'excluded' || unit.alerts.length" class="jr-card">
-            <h3>Caution</h3>
-            <p v-if="unit.reason">{{ reasonText(unit.reason) }}</p>
-            <ul class="jr-rows"><li v-for="a in orderAlerts(unit.alerts)" :key="a.id" class="jr-row"><span>{{ LEVEL_ICON[a.level] }} {{ a.text }}</span></li></ul>
-          </article>
-        </div>
-        <aside class="jr-card" aria-label="Eligibility checks">
-          <h3>Eligibility checks</h3>
-          <p v-if="!checksOf(unit).length" class="jr-hint">No checks were run{{ unit.reason ? `: ${reasonText(unit.reason)}` : '.' }}</p>
-          <div v-for="c in checksOf(unit)" :key="c.check" class="jr-check"><span>{{ c.label }}<template v-if="c.text"><br><small class="jr-hint">{{ c.text }}</small></template></span><span class="jr-pill" :class="c.result === 'pass' ? 'ok' : c.result === 'fail' ? 'bad' : 'warn'">{{ RESULT_LABEL[c.result] ?? c.result }}</span></div>
-          <!-- TODO(contract): label and registration -->
-          <div class="jr-check jr-off"><span>Label and registration</span><span class="jr-pill">Coming soon</span></div>
-          <p class="jr-hint">Verify the registered label and consult an agricultural specialist before making treatment decisions.</p>
-        </aside>
-      </section>
+      <section class="jr-layout"><div><FungicideDetails :unit="unit" /></div></section>
       <div class="jr-nav"><button type="button" @click="page = 2">Back to options</button><RouterLink class="jr-btn primary" :to="scheduleLink">Continue to schedule</RouterLink></div>
     </template>
   </section>

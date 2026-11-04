@@ -8,6 +8,9 @@ describe('paginate', () => {
     expect(paginate(rows, 1)).toEqual({ shown: [1, 2, 3, 4, 5], pages: 2 });
     expect(paginate(rows, 2)).toEqual({ shown: [6, 7], pages: 2 });
   });
+  it('a page past the end shows the last page', () => {
+    expect(paginate(rows, 9).shown).toEqual([6, 7]);
+  });
   it('an empty or short list is one page', () => {
     expect(paginate([], 1)).toEqual({ shown: [], pages: 1 });
     expect(paginate([1, 2, 3, 4, 5], 1).pages).toBe(1);
