@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from 'vue';
 import { useInsightsStore } from '../stores/insights.js';
+import Icon from './Icon.vue';
 import InsightsSummary from './InsightsSummary.vue';
-import { rainOutlookText, conditionWord, weekday, dayRain } from '../helpers/insights.js';
+import { rainOutlookText, conditionMark, conditionReading, weekday, dayRain } from '../helpers/insights.js';
 
 // The Weather step: recorded rainfall, the risk finding, the 5-day outlook and what drives the assessment, all as the scheduler served them.
 const props = defineProps({ line: { type: String, required: true }, week: { type: String, required: true } });
@@ -41,9 +42,13 @@ const BADGE = { fired: 'bad', not_fired: 'ok' };
       <article class="jr-card">
         <h2>What is driving the assessment</h2>
         <ul v-if="risk?.conditions?.length" class="jr-rows">
-          <li v-for="c in risk.conditions" :key="c.label" class="jr-row"><span>{{ c.label }}</span><b>{{ conditionWord(c.result) }}</b></li>
+          <li v-for="c in risk.conditions" :key="c.label" class="jr-row">
+            <span class="jr-mark" :class="c.result" role="img" :aria-label="conditionMark(c.result)[1]"><Icon v-if="conditionMark(c.result)[0]" :name="conditionMark(c.result)[0]" :size="16" /></span>
+            <span class="jr-label">{{ c.label }}</span>
+            <b>{{ c.result === 'cannot_check' ? conditionMark(c.result)[1] : conditionReading(c.input) }}</b>
+          </li>
         </ul>
-        <div v-for="r in data.readings" :key="r.rule"><b>{{ r.finding }}</b><p class="jr-hint">{{ r.text }}<template v-if="r.source"> · {{ r.source }}</template></p></div>
+        <div v-for="r in data.readings" :key="r.rule" class="jr-indent"><b>{{ r.finding }}</b><p class="jr-hint">{{ r.text }}<template v-if="r.source"> · {{ r.source }}</template></p></div>
         <p v-if="!risk?.conditions?.length && !data.readings?.length" class="jr-hint">Nothing was assessed for this week.</p>
       </article>
     </div>

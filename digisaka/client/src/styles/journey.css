@@ -35,3 +35,8 @@
 .jr-warn { padding: 8px 12px; border-radius: var(--radius-sm); background: #FCE7C8; color: #6B4A0B; font-size: 13px; }
 .jr-bar { height: 10px; border-radius: 6px; background: var(--line); }
 .jr-check { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; padding: 4px 0; }
+.jr-mark { display: inline-flex; align-items: center; flex: 0 0 var(--mark-w, 1.4em); font-weight: 800; color: var(--ink); }
+.jr-mark.met { color: var(--forest); }
+.jr-mark.not_met { color: var(--danger); }
+.jr-row .jr-label { flex: 1; }
+.jr-indent { padding-left: calc(var(--mark-w, 1.4em) + 12px); } /* the mark column plus the row gap */

@@ -23,9 +23,10 @@ export function rainOutlookText(outlook) {
   return `Rain on ${rain} of the next ${days.length} days${unreported ? `, ${unreported} not reported` : ''}${over}`;
 }
 
-// A condition's result as the practitioner reads it; an unknown result passes through.
-const CONDITION = { met: 'Met', not_met: 'Not met', cannot_check: 'Cannot be checked' };
-export const conditionWord = (result) => CONDITION[result] ?? result;
+// A condition's result as an icon name (none when it cannot be checked, which is written out instead) with its spoken form, and the reading it was judged on (shown only when there is one number).
+const CONDITION = { met: ['check', 'Passed'], not_met: ['x', 'Not passed'], cannot_check: ['', 'Cannot be checked'] };
+export const conditionMark = (result) => CONDITION[result] ?? [result, result];
+export const conditionReading = (input) => (input?.length === 1 ? String(input[0]) : '');
 
 // The Treatment chip is on when either fungicide kind is active; the other chips follow their own kind.
 export const TREATMENT_KINDS = ['systemic_fungicide', 'contact_fungicide'];

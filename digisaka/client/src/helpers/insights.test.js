@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionWord, actionChips, weekday, dayRain, sprayBadge, fracHeading, usageLine } from './insights.js';
+import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionMark, conditionReading, actionChips, weekday, dayRain, sprayBadge, fracHeading, usageLine } from './insights.js';
 
 describe('insights text', () => {
   it('words each canopy status, hides null and passes an unknown one through', () => {
@@ -28,7 +28,8 @@ describe('insights text', () => {
     expect(rainOutlookText(null)).toBe('Weather not yet checked.');
   });
   it('words a condition result and passes an unknown one through', () => {
-    expect([conditionWord('met'), conditionWord('not_met'), conditionWord('cannot_check'), conditionWord('x')]).toEqual(['Met', 'Not met', 'Cannot be checked', 'x']);
+    expect([conditionMark('met'), conditionMark('not_met'), conditionMark('cannot_check'), conditionMark('x')]).toEqual([['check', 'Passed'], ['x', 'Not passed'], ['', 'Cannot be checked'], ['x', 'x']]);
+    expect([conditionReading([84]), conditionReading([5, 3]), conditionReading(null)]).toEqual(['84', '', '']);
   });
   it('turns the Treatment chip on for either fungicide kind', () => {
     const chips = (kinds) => Object.fromEntries(actionChips(kinds));
