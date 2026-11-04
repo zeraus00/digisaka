@@ -21,7 +21,7 @@ const BASIS = {
   no_confirmed_stage: 'No stage is confirmed for this line yet',
 };
 const OUTCOME = { human_review_required: 'Human Review Required', continue_monitoring: 'Continue monitoring' };
-const GROUPS = [['recommended', 'Recommended'], ['eligible', 'Eligible'], ['excluded', 'Fails a check or not for this stage']];
+const GROUPS = [['recommended', 'Recommended'], ['eligible', 'Eligible'], ['excluded', 'Excluded options']];
 const lineAlerts = computed(() => orderAlerts(sug.value?.alerts ?? []));
 
 const productId = ref(''), appliedOn = ref(todayIso());
@@ -74,7 +74,7 @@ const lastApplied = computed(() => {
         </section>
         <template v-for="[g, label] in GROUPS" :key="g">
           <details v-if="store.groups[g].length" class="grp" :open="g !== 'excluded'" :data-group="g">
-            <summary><b>{{ label }}</b> · {{ store.groups[g].length }}</summary>
+            <summary><b>{{ label }}</b><template v-if="g === 'excluded'"> (use caution)</template> · {{ store.groups[g].length }}</summary>
             <ul class="units">
               <li v-for="u in store.groups[g]" :id="`unit-${u.unit_id}`" :key="u.unit_id">
                 <ProductCard :unit="u" :group="g" />
