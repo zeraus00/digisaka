@@ -19,6 +19,7 @@
 .jr-days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; }
 .jr-days div { padding: 8px 4px; border: 1px solid var(--line); border-radius: var(--radius-sm); display: grid; gap: 2px; font-size: 13px; }
 .jr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.journey > header { margin-bottom: 16px; }
 .jr-steps { display: flex; list-style: none; padding: 0; margin: 0 0 16px; gap: 8px; }
 .jr-steps li { flex: 1; display: grid; justify-items: center; gap: 4px; font-size: 12px; color: var(--ink-soft); }
 .jr-steps li span { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--line); font-weight: 800; }
