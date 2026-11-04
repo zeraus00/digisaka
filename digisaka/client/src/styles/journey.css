@@ -35,6 +35,7 @@
 .jr-unit.combo { border: 2px solid var(--forest); background: #F4FAF5; } .jr-unit.excluded { background: #F4F4F4; }
 .jr-unit .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .jr-unit .pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.jr-unit .more { margin-left: auto; }
 .jr-unit ul { margin: 0 0 0 18px; color: var(--ink-soft); font-size: 13px; }
 .jr-warn { padding: 8px 12px; border-radius: var(--radius-sm); background: #FCE7C8; color: #6B4A0B; font-size: 13px; }
 .jr-bar { height: 10px; border-radius: 6px; background: var(--line); }

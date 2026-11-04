@@ -75,7 +75,7 @@ onMounted(() => {
                 <span class="pills">
                   <span v-if="unitFacts(u).frac" class="jr-pill">FRAC {{ unitFacts(u).frac }}</span><span v-if="unitFacts(u).site" class="jr-pill">{{ unitFacts(u).site }}</span>
                   <span v-for="m in unitFacts(u).mobility" :key="m" class="jr-pill">{{ m }}</span>
-                  <span class="jr-pill jr-off">Price: Coming soon</span><span class="jr-hint">View details →</span>
+                  <span class="jr-pill jr-off">Price: Coming soon</span><span class="jr-hint more">Details →</span>
                 </span>
               </button>
             </div>
