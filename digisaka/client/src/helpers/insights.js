@@ -47,5 +47,8 @@ export function sprayBadge(spray, usage) {
   const status = (usage ?? []).find((g) => g.frac_code === spray.frac_code)?.status;
   return { label: STATUS_LABEL[status] && status !== 'ok' ? STATUS_LABEL[status] : 'Applied', tone: TONE[status] ?? 'ok' };
 }
+// An ISO date as 'D Mon' ('2026-09-01' -> '1 Sep'); the month names are fixed so no locale writes 'Sept'.
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const dayMonth = (iso) => { const [, m, d] = (iso ?? '').split('-').map(Number); return m ? `${d} ${MONTHS[m - 1]}` : iso; };
 export const fracHeading = (usage) => ((usage ?? []).some((g) => g.status === 'discouraged' || g.status === 'maxed') ? 'Discouraged FRAC groups' : 'FRAC history');
 export const usageLine = (g) => (g.range_min == null || g.range_max == null ? `${g.count} recorded, cap unknown` : `${g.count} of ${g.range_min} to ${g.range_max} ${g.period}`);

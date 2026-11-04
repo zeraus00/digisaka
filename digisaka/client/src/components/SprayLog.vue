@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useInsightsStore } from '../stores/insights.js';
 import InsightsSummary from './InsightsSummary.vue';
-import { sprayBadge, fracHeading, usageLine, STATUS_LABEL } from '../helpers/insights.js';
+import { sprayBadge, dayMonth, fracHeading, usageLine, STATUS_LABEL } from '../helpers/insights.js';
 
 // The Spray log step: the recorded applications and the FRAC groups' usage, as Line Insights serves them.
 const insights = useInsightsStore();
@@ -18,13 +18,18 @@ const usage = computed(() => data.value?.group_usage ?? []);
         <div class="jr-row"><h2>Spray history</h2><span class="jr-pill">{{ history.length }} recorded</span></div>
         <p v-if="data.history_coverage" class="jr-hint">{{ data.history_coverage }}</p>
         <p v-if="!history.length" class="jr-hint">No treatment applications are recorded for this line.</p>
-        <ul v-else class="jr-rows">
-          <li v-for="h in history" :key="h.applied_on + h.product_id" class="jr-row">
-            <span>{{ h.applied_on }}</span>
-            <span><b>{{ h.product }}</b><br><small>{{ h.mode_of_action }} · FRAC {{ h.frac_code }}</small></span>
-            <span class="jr-pill" :class="sprayBadge(h, usage).tone">{{ sprayBadge(h, usage).label }}</span>
+        <ol v-else class="timeline">
+          <li class="ok"><span class="date">Today</span><b>Next spray decision</b></li>
+          <li v-for="h in history" :key="h.applied_on + h.product_id" :class="sprayBadge(h, usage).tone">
+            <span class="date">{{ dayMonth(h.applied_on) }}</span>
+            <b>{{ h.product }}</b>
+            <span class="pills">
+              <span v-if="h.multisite != null" class="jr-pill">{{ h.multisite ? 'Multi-site' : 'Single-site' }}</span>
+              <span class="jr-pill">FRAC {{ h.frac_code }}</span>
+              <span class="jr-pill" :class="sprayBadge(h, usage).tone">{{ sprayBadge(h, usage).label }}</span>
+            </span>
           </li>
-        </ul>
+        </ol>
       </article>
 
       <article class="jr-card">
@@ -41,3 +46,15 @@ const usage = computed(() => data.value?.group_usage ?? []);
     <InsightsSummary />
   </section>
 </template>
+
+<style scoped>
+/* The fork design's timeline: a line down the left, a dot per spray coloured by its badge, "Today" on top. */
+.timeline { list-style: none; margin: 4px 0 0 8px; padding: 0 0 0 22px; border-left: 3px solid var(--line); }
+.timeline li { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 12px 0; font-size: 14px; --c: var(--forest); }
+.timeline li.warn { --c: #E59A0F; }
+.timeline li.bad { --c: #D6455A; }
+.timeline li::before { content: ''; position: absolute; left: -31px; width: 13px; height: 13px; border-radius: 50%; background: var(--c); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--c); }
+.date { flex: 0 0 52px; color: var(--ink-soft); font-size: 13px; }
+.timeline b { flex: 1 1 110px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+</style>

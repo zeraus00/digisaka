@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionMark, conditionReading, actionChips, weekday, dayRain, sprayBadge, fracHeading, usageLine } from './insights.js';
+import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionMark, conditionReading, dayMonth, actionChips, weekday, dayRain, sprayBadge, fracHeading, usageLine } from './insights.js';
 
 describe('insights text', () => {
   it('words each canopy status, hides null and passes an unknown one through', () => {
@@ -30,6 +30,7 @@ describe('insights text', () => {
   it('words a condition result and passes an unknown one through', () => {
     expect([conditionMark('met'), conditionMark('not_met'), conditionMark('cannot_check'), conditionMark('x')]).toEqual([['check', 'Passed'], ['x', 'Not passed'], ['', 'Cannot be checked'], ['x', 'x']]);
     expect([conditionReading([84]), conditionReading([5, 3]), conditionReading(null)]).toEqual(['84', '', '']);
+    expect([dayMonth('2026-09-01'), dayMonth('2026-05-12'), dayMonth(null)]).toEqual(['1 Sep', '12 May', null]);
   });
   it('turns the Treatment chip on for either fungicide kind', () => {
     const chips = (kinds) => Object.fromEntries(actionChips(kinds));
