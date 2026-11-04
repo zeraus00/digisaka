@@ -18,7 +18,6 @@ const MENU = [
   { to: '/scan', label: 'Disease Detection', icon: 'scan' },
   { to: '/history', label: 'Diagnosis History', icon: 'history' },
   { to: '/schedule', label: 'Treatment Schedule', icon: 'calendar' },
-  { to: '/profile', label: 'My Profile', icon: 'user' },
 ];
 
 onMounted(() => useDevClockStore().load());
