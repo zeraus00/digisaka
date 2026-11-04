@@ -9,6 +9,8 @@ const insights = useInsightsStore();
 const data = computed(() => insights.data);
 const history = computed(() => [...(data.value?.history ?? [])].sort((a, b) => b.applied_on.localeCompare(a.applied_on)));
 const usage = computed(() => data.value?.group_usage ?? []);
+// The FRAC card is outlined when a group is discouraged (orange) or maxed (red), as the fork design outlines its restricted card.
+const fracTone = computed(() => (usage.value.some((g) => g.status === 'maxed') ? 'bad' : usage.value.some((g) => g.status === 'discouraged') ? 'warn' : ''));
 </script>
 
 <template>
@@ -32,7 +34,7 @@ const usage = computed(() => data.value?.group_usage ?? []);
         </ol>
       </article>
 
-      <article class="jr-card">
+      <article class="jr-card" :class="fracTone">
         <h2>{{ fracHeading(usage) }}</h2>
         <p v-if="!usage.length" class="jr-hint">No FRAC group usage is recorded.</p>
         <div v-for="g in usage" :key="g.frac_code" class="jr-unit">
@@ -57,4 +59,6 @@ const usage = computed(() => data.value?.group_usage ?? []);
 .date { flex: 0 0 52px; color: var(--ink-soft); font-size: 13px; }
 .timeline b { flex: 1 1 110px; }
 .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.jr-card.warn { border: 1.5px solid #E59A0F; }
+.jr-card.bad { border: 1.5px solid #D6455A; }
 </style>
