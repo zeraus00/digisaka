@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText } from './insights.js';
+import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionWord, actionChips, weekday, dayRain } from './insights.js';
 
 describe('insights text', () => {
   it('words each canopy status, hides null and passes an unknown one through', () => {
@@ -26,5 +26,19 @@ describe('insights text', () => {
     expect(rainOutlookText({ status: 'ok', rain_above_mm: null, days: days.slice(2, 3) })).toBe('Rain on 0 of the next 1 days');
     expect(rainOutlookText({ status: 'weather_not_yet_checked', days })).toBe('Weather not yet checked.');
     expect(rainOutlookText(null)).toBe('Weather not yet checked.');
+  });
+  it('words a condition result and passes an unknown one through', () => {
+    expect([conditionWord('met'), conditionWord('not_met'), conditionWord('cannot_check'), conditionWord('x')]).toEqual(['Met', 'Not met', 'Cannot be checked', 'x']);
+  });
+  it('turns the Treatment chip on for either fungicide kind', () => {
+    const chips = (kinds) => Object.fromEntries(actionChips(kinds));
+    expect(chips([{ kind: 'contact_fungicide', active: true }]).Treatment).toBe(true);
+    expect(chips([{ kind: 'systemic_fungicide', active: true }]).Treatment).toBe(true);
+    expect(chips([{ kind: 'systemic_fungicide', active: false }, { kind: 'monitoring', active: true }])).toMatchObject({ Treatment: false, Monitor: true, Preventive: false });
+    expect(chips(undefined).Monitor).toBe(false);
+  });
+  it('names the weekday and the day rainfall', () => {
+    expect(weekday('2026-06-08')).toBe('Mon');
+    expect([dayRain({ status: 'dry' }), dayRain({ status: 'rain', precipitation_mm: 3.1 }), dayRain({ status: 'not_reported' })]).toEqual(['0 mm', '3.1 mm', '—']);
   });
 });

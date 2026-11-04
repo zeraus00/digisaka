@@ -22,3 +22,18 @@ export function rainOutlookText(outlook) {
   const over = outlook.rain_above_mm == null ? '' : ` (rain means over ${outlook.rain_above_mm} mm)`;
   return `Rain on ${rain} of the next ${days.length} days${unreported ? `, ${unreported} not reported` : ''}${over}`;
 }
+
+// A condition's result as the practitioner reads it; an unknown result passes through.
+const CONDITION = { met: 'Met', not_met: 'Not met', cannot_check: 'Cannot be checked' };
+export const conditionWord = (result) => CONDITION[result] ?? result;
+
+// The Treatment chip is on when either fungicide kind is active; the other chips follow their own kind.
+export const TREATMENT_KINDS = ['systemic_fungicide', 'contact_fungicide'];
+export const actionChips = (kinds) => {
+  const on = (...names) => (kinds ?? []).some((k) => k.active && names.includes(k.kind));
+  return [['Preventive', on('preventive')], ['Mechanical', on('mechanical')], ['Treatment', on(...TREATMENT_KINDS)], ['Monitor', on('monitoring')]];
+};
+
+// A day of the 5-day strip: its weekday, and the rainfall it shows ("—" when the weather is not reported).
+export const weekday = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' });
+export const dayRain = (d) => (d.status === 'dry' ? '0 mm' : d.status === 'rain' && d.precipitation_mm != null ? `${d.precipitation_mm} mm` : '—');
