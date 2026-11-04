@@ -23,16 +23,17 @@ const insights = async (line, week) => (await get(`/lines/${line}/weeks/${week}/
 const keys = (o) => Object.keys(o).sort();
 const same = (o, fields) => assert.deepEqual(keys(o), [...fields].sort());
 
-const TOP = ['line_id', 'week', 'window_weeks', 'functional_leaves_threshold', 'series', 'readings', 'risk', 'rain_outlook', 'history', 'history_coverage', 'resistance_alerts', 'actions'];
-const WEEK = ['week', 'yli', 'yls', 'functional_leaves', 'leaves_at_shooting', 'rainfall_mm'];
+const TOP = ['line_id', 'week', 'window_weeks', 'functional_leaves_threshold', 'functional_leaves_target', 'series', 'readings', 'risk', 'rain_outlook', 'history', 'history_coverage', 'group_usage', 'actions'];
+const WEEK = ['week', 'yli', 'yls', 'functional_leaves', 'leaves_at_shooting', 'rainfall_mm', 'canopy_status'];
 const READING = ['rule', 'finding', 'text', 'source', 'sample_fact'];
 const RISK = ['status', 'finding', 'result', 'conditions'];
 const CONDITION = ['label', 'result', 'input'];
 const OUTLOOK = ['status', 'rain_above_mm', 'days'];
 const DAY = ['date', 'status', 'precipitation_mm', 'temperature_c', 'wind_kmh'];
-const APPLICATION = ['applied_on', 'product_id', 'product', 'mode_of_action', 'source', 'response'];
-const ALERT = ['kind', 'group', 'count', 'range_min', 'range_max', 'period', 'source', 'alternatives', 'text'];
-const ACTIONS = ['status', 'kinds'];
+const APPLICATION = ['applied_on', 'product_id', 'product', 'mode_of_action', 'frac_code', 'multisite', 'source', 'response'];
+const USAGE = ['mode_of_action', 'frac_code', 'multisite', 'count', 'range_min', 'range_max', 'period', 'source', 'status', 'alerts'];
+const ALERT = ['kind', 'text', 'alternatives'];
+const ACTIONS = ['status', 'kinds', 'summary'];
 const KIND = ['kind', 'active', 'options'];
 const KINDS = ['preventive', 'systemic_fungicide', 'contact_fungicide', 'mechanical', 'monitoring'];
 
@@ -48,7 +49,7 @@ function shape(b) {
   assert.equal(b.rain_outlook.days.length, 5);
   b.rain_outlook.days.forEach((d) => same(d, DAY));
   b.history.forEach((a) => same(a, APPLICATION));
-  b.resistance_alerts.forEach((a) => same(a, ALERT));
+  b.group_usage.forEach((g) => { same(g, USAGE); g.alerts.forEach((a) => same(a, ALERT)); });
   same(b.actions, ACTIONS);
   assert.deepEqual(b.actions.kinds.map((k) => k.kind), KINDS);
   b.actions.kinds.forEach((k) => same(k, KIND));
@@ -67,7 +68,15 @@ test('a week with a cycle serves every field, with the risk, history, alerts and
   assert.deepEqual(b.rain_outlook.days.map((d) => d.status), ['rain', 'rain', 'dry', 'not_reported', 'dry']);
   assert.deepEqual([...new Set(b.history.map((a) => a.response))].sort(), ['not_poor', 'not_yet_reassessed', 'poor']);
   assert.equal(typeof b.history_coverage, 'string');
-  assert.equal(b.resistance_alerts[0].kind, 'discouraged');
+  assert.equal(JSON.stringify(b).includes('resistance_alerts'), false);
+  assert.equal(b.functional_leaves_target, 10);
+  const band = (n) => (n === null ? null : n >= 10 ? 'ok' : n >= 8 ? 'watch' : 'critical');
+  b.series.forEach((w) => assert.equal(w.canopy_status, band(w.functional_leaves), w.week));
+  b.group_usage.forEach((g) => assert.equal(g.count, b.history.filter((a) => a.frac_code === g.frac_code).length, g.frac_code));
+  assert.deepEqual(b.group_usage.map((g) => [g.frac_code, g.status]), [['M', 'discouraged'], ['D1', 'ok'], ['G2', 'ok']]);
+  assert.deepEqual(b.group_usage[0].alerts.map((a) => a.kind), ['discouraged']);
+  assert.ok(b.readings.some((r) => r.finding === 'Canopy critical'), 'the canopy reading matches the latest week');
+  assert.match(b.actions.summary, /suggested\.$/);
   assert.equal(b.actions.status, 'assessed');
   assert.equal(b.actions.kinds.find((k) => k.kind === 'mechanical').active, false);
 });
@@ -79,7 +88,7 @@ test('a week without a cycle serves the same fields, with the risk and action ki
   assert.deepEqual(b.risk, { status: 'not_yet_assessed', finding: null, result: null, conditions: [] });
   assert.equal(b.rain_outlook.status, 'weather_not_yet_checked');
   assert.ok(b.rain_outlook.days.every((d) => d.status === 'weather_not_yet_checked' && d.precipitation_mm === null));
-  assert.deepEqual([b.history, b.history_coverage, b.resistance_alerts], [[], null, []]);
+  assert.deepEqual([b.history, b.history_coverage, b.group_usage, b.actions.summary], [[], null, [], null]);
   assert.equal(b.actions.status, 'not_yet_assessed');
   assert.ok(b.actions.kinds.every((k) => !k.active && !k.options.length));
 });

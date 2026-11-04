@@ -46,7 +46,7 @@ describe('treatment screen', () => {
     await pending;
     const html = await show('L02');
     expect(html).not.toContain('Updating…');
-    expect(html).toContain('What changed: The recorded application moved the schedule.');
+    expect(html).toContain('What changed: The data suggests the suggestion changed after an application; a scan is suggested to verify.');
     expect(s.revision).not.toBe(base);
   });
 

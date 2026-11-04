@@ -3,6 +3,7 @@
   "week": "2026-W24",
   "window_weeks": 8,
   "functional_leaves_threshold": 8.0,
+  "functional_leaves_target": 10.0,
   "series": [
     {
       "week": "2026-W17",
@@ -10,7 +11,8 @@
       "yls": null,
       "functional_leaves": null,
       "leaves_at_shooting": null,
-      "rainfall_mm": null
+      "rainfall_mm": null,
+      "canopy_status": null
     },
     {
       "week": "2026-W18",
@@ -18,7 +20,8 @@
       "yls": null,
       "functional_leaves": null,
       "leaves_at_shooting": null,
-      "rainfall_mm": null
+      "rainfall_mm": null,
+      "canopy_status": null
     },
     {
       "week": "2026-W19",
@@ -26,7 +29,8 @@
       "yls": 10,
       "functional_leaves": 8,
       "leaves_at_shooting": 12,
-      "rainfall_mm": 8
+      "rainfall_mm": 8,
+      "canopy_status": "watch"
     },
     {
       "week": "2026-W20",
@@ -34,7 +38,8 @@
       "yls": 9,
       "functional_leaves": 8,
       "leaves_at_shooting": 12,
-      "rainfall_mm": 15
+      "rainfall_mm": 15,
+      "canopy_status": "watch"
     },
     {
       "week": "2026-W21",
@@ -42,7 +47,8 @@
       "yls": 8,
       "functional_leaves": 7,
       "leaves_at_shooting": 12,
-      "rainfall_mm": 20
+      "rainfall_mm": 20,
+      "canopy_status": "critical"
     },
     {
       "week": "2026-W22",
@@ -50,7 +56,8 @@
       "yls": 7,
       "functional_leaves": 7,
       "leaves_at_shooting": 11,
-      "rainfall_mm": 32
+      "rainfall_mm": 32,
+      "canopy_status": "critical"
     },
     {
       "week": "2026-W23",
@@ -58,7 +65,8 @@
       "yls": 6,
       "functional_leaves": 6,
       "leaves_at_shooting": 11,
-      "rainfall_mm": 40
+      "rainfall_mm": 40,
+      "canopy_status": "critical"
     },
     {
       "week": "2026-W24",
@@ -66,7 +74,8 @@
       "yls": 5,
       "functional_leaves": 6,
       "leaves_at_shooting": 11,
-      "rainfall_mm": 44
+      "rainfall_mm": 44,
+      "canopy_status": "critical"
     }
   ],
   "readings": [
@@ -83,6 +92,13 @@
       "text": "Functional leaves 6, below the 8-leaf threshold.",
       "source": null,
       "sample_fact": false
+    },
+    {
+      "rule": "R7 Canopy critical",
+      "finding": "Canopy critical",
+      "text": "Functional leaves 6, below the 8-leaf canopy band.",
+      "source": null,
+      "sample_fact": true
     }
   ],
   "risk": {
@@ -160,7 +176,9 @@
       "applied_on": "2026-05-12",
       "product_id": "u-chlorothalonil",
       "product": "Chlorothalonil",
-      "mode_of_action": "Multi-site contact (M)",
+      "mode_of_action": "Mode of action M",
+      "frac_code": "M",
+      "multisite": true,
       "source": "Sample source B",
       "response": "not_poor"
     },
@@ -168,7 +186,9 @@
       "applied_on": "2026-05-26",
       "product_id": "u-pyrimethanil",
       "product": "Pyrimethanil",
-      "mode_of_action": "Anilinopyrimidine (9)",
+      "mode_of_action": "Mode of action D1",
+      "frac_code": "D1",
+      "multisite": false,
       "source": "Sample source B",
       "response": "poor"
     },
@@ -176,25 +196,58 @@
       "applied_on": "2026-06-02",
       "product_id": "u-chlorothalonil",
       "product": "Chlorothalonil",
-      "mode_of_action": "Multi-site contact (M)",
+      "mode_of_action": "Mode of action M",
+      "frac_code": "M",
+      "multisite": true,
       "source": "Sample source B",
       "response": "not_yet_reassessed"
     }
   ],
   "history_coverage": "Application history covers only applications recorded in the scheduler since 2026-06-02, so earlier applications are not counted.",
-  "resistance_alerts": [
+  "group_usage": [
     {
-      "kind": "discouraged",
-      "group": "M",
+      "mode_of_action": "Mode of action M",
+      "frac_code": "M",
+      "multisite": true,
       "count": 2,
       "range_min": 2.0,
       "range_max": 4.0,
       "period": "crop cycle",
       "source": "Sample source B",
-      "alternatives": [
-        "9"
-      ],
-      "text": "M: 2 recorded applications, at the discouraged level of its cap per crop cycle."
+      "status": "discouraged",
+      "alerts": [
+        {
+          "kind": "discouraged",
+          "text": "M: 2 recorded applications, at the discouraged level of its cap per crop cycle.",
+          "alternatives": [
+            "D1"
+          ]
+        }
+      ]
+    },
+    {
+      "mode_of_action": "Mode of action D1",
+      "frac_code": "D1",
+      "multisite": false,
+      "count": 1,
+      "range_min": 3.0,
+      "range_max": 4.0,
+      "period": "crop cycle",
+      "source": null,
+      "status": "ok",
+      "alerts": []
+    },
+    {
+      "mode_of_action": "Mode of action G2",
+      "frac_code": "G2",
+      "multisite": false,
+      "count": 0,
+      "range_min": 2.0,
+      "range_max": 3.0,
+      "period": "crop cycle",
+      "source": null,
+      "status": "ok",
+      "alerts": []
     }
   ],
   "actions": {
@@ -233,6 +286,7 @@
           "Weekly monitoring"
         ]
       }
-    ]
+    ],
+    "summary": "The data suggests favourable to infection and disease is progressing; preventive treatment, a systemic fungicide, a contact fungicide and closer monitoring are suggested."
   }
 }
