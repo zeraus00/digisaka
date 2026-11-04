@@ -46,3 +46,6 @@
 .jr-row .jr-label { flex: 1; }
 .jr-indent { padding-left: calc(var(--mark-w, 1.4em) + 12px); } /* the mark column plus the row gap */
 .facts { display: grid; gap: 10px; } /* the rows, the Plant mobility label and its pills need air between them */
+.jr-pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.jr-pager button { padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; }
+.jr-pager button:disabled { opacity: .45; }
