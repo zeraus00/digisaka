@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionWord, actionChips, weekday, dayRain } from './insights.js';
+import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionWord, actionChips, weekday, dayRain, sprayBadge, fracHeading, usageLine } from './insights.js';
 
 describe('insights text', () => {
   it('words each canopy status, hides null and passes an unknown one through', () => {
@@ -40,5 +40,16 @@ describe('insights text', () => {
   it('names the weekday and the day rainfall', () => {
     expect(weekday('2026-06-08')).toBe('Mon');
     expect([dayRain({ status: 'dry' }), dayRain({ status: 'rain', precipitation_mm: 3.1 }), dayRain({ status: 'not_reported' })]).toEqual(['0 mm', '3.1 mm', '—']);
+  });
+  it('badges a spray from its group row and heads the FRAC card by the server status', () => {
+    const usage = [{ frac_code: 'M', status: 'discouraged' }, { frac_code: 'D1', status: 'ok' }, { frac_code: 'C', status: 'maxed' }];
+    expect(sprayBadge({ frac_code: 'M' }, usage)).toEqual({ label: 'Discouraged', tone: 'warn' });
+    expect(sprayBadge({ frac_code: 'C' }, usage).label).toBe('Maxed');
+    expect(sprayBadge({ frac_code: 'D1' }, usage).label).toBe('Applied');
+    expect(sprayBadge({ frac_code: 'Z' }, usage).label).toBe('Applied');
+    expect(fracHeading(usage)).toBe('Discouraged FRAC groups');
+    expect(fracHeading([{ status: 'ok' }, { status: null }])).toBe('FRAC history');
+    expect(usageLine({ count: 2, range_min: 2, range_max: 4, period: 'crop cycle' })).toBe('2 of 2 to 4 crop cycle');
+    expect(usageLine({ count: 1, range_min: null, range_max: null })).toBe('1 recorded, cap unknown');
   });
 });

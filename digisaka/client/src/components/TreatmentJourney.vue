@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue';
 import { useInsightsStore } from '../stores/insights.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import WeatherRisk from './WeatherRisk.vue';
+import SprayLog from './SprayLog.vue';
+import SuggestionUpdate from './SuggestionUpdate.vue';
 import '../styles/journey.css';
 
 // Scan step 4: Weather, Spray log, Fungicides (list, then details), then a link to the schedule on /treatment.
@@ -31,7 +33,16 @@ onMounted(() => {
 
     <template v-if="page === 0">
       <WeatherRisk :line="line" :week="week" />
-      <div class="jr-nav"><button type="button" @click="emit('back')">Back to results</button></div>
+      <div class="jr-nav"><button type="button" @click="emit('back')">Back to results</button><button class="primary" type="button" @click="page = 1">Continue to spray log</button></div>
+    </template>
+
+    <template v-else-if="page === 1">
+      <SprayLog>
+        <SuggestionUpdate :line="line" :week="week" :reschedule="reschedule">
+          <button class="jr-btn primary" type="button" @click="page = 2">Continue to fungicide options</button>
+        </SuggestionUpdate>
+      </SprayLog>
+      <div class="jr-nav"><button type="button" @click="page = 0">Back</button></div>
     </template>
   </section>
 </template>

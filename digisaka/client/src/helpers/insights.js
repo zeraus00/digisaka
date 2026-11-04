@@ -37,3 +37,14 @@ export const actionChips = (kinds) => {
 // A day of the 5-day strip: its weekday, and the rainfall it shows ("—" when the weather is not reported).
 export const weekday = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' });
 export const dayRain = (d) => (d.status === 'dry' ? '0 mm' : d.status === 'rain' && d.precipitation_mm != null ? `${d.precipitation_mm} mm` : '—');
+
+// Spray log wording. A group is "Discouraged" or "Maxed" only when the server says so; no status shows no pill.
+export const STATUS_LABEL = { ok: 'OK', discouraged: 'Discouraged', maxed: 'Maxed' };
+const TONE = { discouraged: 'warn', maxed: 'bad' };
+// The badge on a recorded spray comes from the group row with the same FRAC code.
+export function sprayBadge(spray, usage) {
+  const status = (usage ?? []).find((g) => g.frac_code === spray.frac_code)?.status;
+  return { label: STATUS_LABEL[status] && status !== 'ok' ? STATUS_LABEL[status] : 'Applied', tone: TONE[status] ?? 'ok' };
+}
+export const fracHeading = (usage) => ((usage ?? []).some((g) => g.status === 'discouraged' || g.status === 'maxed') ? 'Discouraged FRAC groups' : 'FRAC history');
+export const usageLine = (g) => (g.range_min == null || g.range_max == null ? `${g.count} recorded, cap unknown` : `${g.count} of ${g.range_min} to ${g.range_max} ${g.period}`);
