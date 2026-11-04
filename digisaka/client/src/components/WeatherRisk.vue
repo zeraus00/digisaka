@@ -29,7 +29,7 @@ const BADGE = { fired: 'bad', not_fired: 'ok' };
 
       <article class="jr-card">
         <h2>Weather risk signal</h2>
-        <p><b>{{ risk?.finding ?? 'Not assessed' }}</b> <span v-if="risk?.status" class="jr-pill" :class="BADGE[risk.result]">{{ risk.status }}</span></p>
+        <p><span class="jr-pill" :class="BADGE[risk?.result]">{{ risk?.finding ?? 'Not assessed' }}</span></p>
         <!-- TODO(contract): infection risk level -->
         <p class="jr-off">Infection risk level: Coming soon</p>
         <div class="jr-days" aria-label="Next 5 days">
