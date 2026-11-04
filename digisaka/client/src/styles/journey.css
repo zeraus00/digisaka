@@ -12,7 +12,7 @@
 .jr-off { opacity: .55; }
 .jr-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; background: #E3E5E8; color: #444; font: 800 12px var(--font-display); white-space: nowrap; }
 .jr-pill.ok { background: #E1F1E2; color: var(--forest); } .jr-pill.warn { background: #FCE7C8; color: #6B4A0B; } .jr-pill.bad { background: #FBE4E2; color: #A62A20; }
-.jr-row .jr-pill { align-self: center; } /* a flex item stretches to the row's height otherwise */
+.jr-row .jr-pill, .jr-check .jr-pill { align-self: center; } /* a flex item stretches to the row's height otherwise */
 .jr-pill.on { background: var(--forest); color: #fff; }
 .jr-rows { display: grid; gap: 6px; }
 .jr-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
