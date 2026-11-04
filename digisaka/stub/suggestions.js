@@ -68,13 +68,40 @@ const scheduleOf = (days) => days.map((d) => {
 const groupOf = (u) => (u.selectable === false || (u.checks ?? []).some((c) => c.result === 'fail') ? 'excluded' : u.excluded_from_schedule ? 'eligible' : 'recommended');
 const reasonOf = (u) => (u.selectable === false ? 'not_for_stage' : (u.checks ?? []).find((c) => c.result === 'fail')?.check ?? 'not_for_stage');
 
+// What a payload shows, as the diff reads it: unit tiers, alert ids, the line stage and the schedule.
+const tiersOf = (name) => Object.fromEntries((name ? PAYLOADS[name].selection.units : []).map((u) => [u.unit_id, groupOf(u)]));
+const alertIdsOf = (name) => new Set((name ? PAYLOADS[name].preview.alerts : []).map((a, i) => a.id ?? `${a.kind}-${i}`));
+const stageOf = (name, basis) => (name && basis === 'stage_confirmed' ? 2 : null);
+const planOf = (name) => JSON.stringify(scheduleOf(name ? PAYLOADS[name].preview.days : []));
+
+// The note on what changed, with the keys the live diff sets only when they apply (reschedule.describe_changes).
+function changesOf(prior, payload, trigger) {
+  const was = tiersOf(prior.payload), now = tiersOf(payload);
+  const moved = [...new Set([...Object.keys(was), ...Object.keys(now)])].sort()
+    .filter((u) => was[u] !== now[u]).map((u) => ({ unit_id: u, from: was[u] ?? null, to: now[u] ?? null }));
+  const oldIds = alertIdsOf(prior.payload), newIds = alertIdsOf(payload);
+  const added = [...newIds].filter((id) => !oldIds.has(id)).sort(), removed = [...oldIds].filter((id) => !newIds.has(id)).sort();
+  const [oldStage, newStage] = [stageOf(prior.payload, prior.basis), stageOf(payload, prior.basis)];
+  const diff = { trigger };
+  if (oldStage !== newStage) diff.stage = { basis: [prior.basis, prior.basis], stage: [oldStage, newStage] };
+  if (moved.length) diff.units_moved = moved;
+  if (added.length || removed.length) diff.alerts = { added, removed };
+  if (planOf(prior.payload) !== planOf(payload)) diff.plan_steps_changed = true;
+  const headline = diff.stage ? 'the line stage changed' : `the suggestion changed after ${trigger === 'application' ? 'an' : 'a'} ${trigger}`;
+  diff.summary = `The data suggests ${headline}; a scan is suggested to verify.`;
+  return diff;
+}
+
 // The suggestion a finished run leaves on the line: its payload, basis, and the note on what changed.
+// shortcut: the run keeps the prior payload unless it is a monitoring outcome, so a change shows only when the payload
+// flips between a plan and none; the live scheduler also diffs after an application removes a product from the plan.
 export function suggestionAfter(line, run, finishedAt) {
   const prior = line.suggestion ?? DEFAULT;
   const monitoring = run.plan.outcome === 'continue_monitoring';
+  const payload = monitoring ? null : prior.payload ?? DEFAULT.payload;
   return {
-    ...prior, payload: monitoring ? null : prior.payload ?? DEFAULT.payload, revision: run.cycle_id, trigger: run.trigger, created_at: new Date(finishedAt).toISOString(),
-    changes: { trigger: run.trigger, summary: `The data suggests the suggestion changed after ${run.trigger === 'application' ? 'an' : 'a'} ${run.trigger}; a scan is suggested to verify.` },
+    ...prior, payload, revision: run.cycle_id, trigger: run.trigger, created_at: new Date(finishedAt).toISOString(),
+    changes: line.suggestion ? changesOf(prior, payload, run.trigger) : null, // a first run has nothing to differ from
   };
 }
 

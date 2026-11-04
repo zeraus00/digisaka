@@ -106,8 +106,13 @@ test('recording a recommended unit with no alerts succeeds and asks for a resche
   t += 3000;
   const after = await suggestion('L02');
   assert.deepEqual([after.running, after.revision, after.trigger], [false, cycle, 'application']);
-  assert.match(after.changes.summary, /application/);
-  assert.deepEqual(Object.keys(after.changes).sort(), ['summary', 'trigger'], 'only the keys that apply; units_moved is a list when units moved');
+  // The stub's run ends in monitoring, so the plan goes: the diff names the stage, every unit moved and the plan, as the live one does.
+  const c = after.changes;
+  assert.deepEqual(Object.keys(c).sort(), ['alerts', 'plan_steps_changed', 'stage', 'summary', 'trigger', 'units_moved'].filter((k) => k in c));
+  assert.deepEqual([c.trigger, c.plan_steps_changed, c.summary], ['application', true, 'The data suggests the line stage changed; a scan is suggested to verify.']);
+  assert.deepEqual(c.stage, { basis: ['stage_confirmed', 'stage_confirmed'], stage: [2, null] });
+  assert.ok(c.units_moved.length && c.units_moved.every((m) => m.to === null && typeof m.unit_id === 'string' && ['recommended', 'eligible', 'excluded'].includes(m.from)));
+  assert.ok(Array.isArray(c.alerts?.added ?? []) && Array.isArray(c.alerts?.removed ?? []));
 });
 
 test('an excluded unit answers confirmation_required with its tier and alerts, then records once confirmed', async () => {
