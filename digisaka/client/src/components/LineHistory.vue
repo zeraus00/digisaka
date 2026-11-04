@@ -16,10 +16,11 @@ const suggestion = useSuggestionStore();
 const load = () => {
   history.load(props.line, props.week);
   insights.load(props.line, props.week);
-  if (props.line) suggestion.load(props.line); else suggestion.stop();
+  if (props.line) suggestion.load(props.line);
 };
 watch(() => [props.line, props.week], load, { immediate: true });
-onBeforeUnmount(() => { history.load('', ''); insights.load('', ''); suggestion.stop(); });
+// No suggestion.stop() here: Scan step 3 starts tracking its run as this step unmounts, and a stop would cancel it.
+onBeforeUnmount(() => { history.load('', ''); insights.load('', ''); });
 
 const phase = computed(() => [insights.phase, history.phase].find((p) => p === 'error') ?? [insights.phase, history.phase].find((p) => p === 'loading') ?? insights.phase);
 const error = computed(() => insights.error || history.error);
