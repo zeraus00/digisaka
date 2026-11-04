@@ -20,9 +20,11 @@
 .jr-days div { padding: 8px 4px; border: 1px solid var(--line); border-radius: var(--radius-sm); display: grid; gap: 2px; font-size: 13px; }
 .jr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .journey > header { margin-bottom: 16px; }
-.jr-steps { display: flex; list-style: none; padding: 0; margin: 0 0 16px; gap: 8px; }
-.jr-steps li { flex: 1; display: grid; justify-items: center; gap: 4px; font-size: 12px; color: var(--ink-soft); }
-.jr-steps li span { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--line); font-weight: 800; }
+.jr-steps { display: flex; list-style: none; padding: 0; margin: 0 0 16px; }
+.jr-steps li { position: relative; flex: 1; display: grid; justify-items: center; gap: 4px; font-size: 12px; color: var(--ink-soft); }
+.jr-steps li span { position: relative; z-index: 1; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--line); font-weight: 800; }
+.jr-steps li:not(:last-child)::after { content: ''; position: absolute; top: 13px; left: calc(50% + 18px); right: calc(-50% + 18px); height: 3px; background: var(--line); }
+.jr-steps li.done:not(:last-child)::after { background: var(--forest); }
 .jr-steps li.active span, .jr-steps li.done span { background: var(--forest); color: #fff; } .jr-steps li.active small { color: var(--forest); font-weight: 800; }
 .jr-nav { display: flex; gap: 8px; justify-content: space-between; margin-bottom: 16px; }
 .jr-nav button, .jr-nav a, .jr-btn { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; text-align: center; display: inline-block; }
