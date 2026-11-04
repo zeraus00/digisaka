@@ -50,5 +50,7 @@ export function sprayBadge(spray, usage) {
 // An ISO date as 'D Mon' ('2026-09-01' -> '1 Sep'); the month names are fixed so no locale writes 'Sept'.
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const dayMonth = (iso) => { const [, m, d] = (iso ?? '').split('-').map(Number); return m ? `${d} ${MONTHS[m - 1]}` : iso; };
+// The FRAC card lists only the discouraged or maxed groups when there are any; with none it lists every group.
+export const shownGroups = (usage) => { const u = usage ?? []; const flagged = u.filter((g) => g.status === 'discouraged' || g.status === 'maxed'); return flagged.length ? flagged : u; };
 export const fracHeading = (usage) => ((usage ?? []).some((g) => g.status === 'discouraged' || g.status === 'maxed') ? 'Discouraged FRAC groups' : 'FRAC history');
 export const usageLine = (g) => (g.range_min == null || g.range_max == null ? `${g.count} recorded, cap unknown` : `${g.count} of ${g.range_min} to ${g.range_max} ${g.period}`);

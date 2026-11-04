@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionMark, conditionReading, dayMonth, actionChips, weekday, dayRain, sprayBadge, fracHeading, usageLine } from './insights.js';
+import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText, conditionMark, conditionReading, dayMonth, shownGroups, actionChips, weekday, dayRain, sprayBadge, fracHeading, usageLine } from './insights.js';
 
 describe('insights text', () => {
   it('words each canopy status, hides null and passes an unknown one through', () => {
@@ -31,6 +31,10 @@ describe('insights text', () => {
     expect([conditionMark('met'), conditionMark('not_met'), conditionMark('cannot_check'), conditionMark('x')]).toEqual([['check', 'Passed'], ['x', 'Not passed'], ['', 'Cannot be checked'], ['x', 'x']]);
     expect([conditionReading([84]), conditionReading([5, 3]), conditionReading(null)]).toEqual(['84', '', '']);
     expect([dayMonth('2026-09-01'), dayMonth('2026-05-12'), dayMonth(null)]).toEqual(['1 Sep', '12 May', null]);
+    const g = (frac_code, status) => ({ frac_code, status });
+    expect(shownGroups([g('M', 'ok'), g('D1', 'discouraged'), g('3', 'maxed')]).map((x) => x.frac_code)).toEqual(['D1', '3']);
+    expect(shownGroups([g('M', 'ok'), g('D1', null)]).map((x) => x.frac_code)).toEqual(['M', 'D1']);
+    expect(shownGroups(null)).toEqual([]);
   });
   it('turns the Treatment chip on for either fungicide kind', () => {
     const chips = (kinds) => Object.fromEntries(actionChips(kinds));
