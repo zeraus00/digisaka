@@ -52,7 +52,7 @@ onMounted(() => {
 
     <template v-else-if="page === 1">
       <SprayLog>
-        <SuggestionUpdate :line="line" :week="week" :reschedule="reschedule">
+        <SuggestionUpdate :line="line" :week="week" :reschedule="reschedule" :link="false">
           <button class="jr-btn primary" type="button" @click="page = 2">Continue to fungicide options</button>
         </SuggestionUpdate>
       </SprayLog>

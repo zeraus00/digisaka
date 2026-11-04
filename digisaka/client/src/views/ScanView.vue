@@ -242,7 +242,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
         <p class="hint">This is an AI-assisted assessment and not a confirmed diagnosis. Results should be verified by an agricultural specialist before treatment decisions.</p>
       </section>
 
-      <SuggestionUpdate :line="scan.line" :week="scan.week" :reschedule="reschedule" :link="false" />
+      <SuggestionUpdate :line="scan.line" :week="scan.week" :reschedule="reschedule" :show-done="false" />
       <button class="primary wide" @click="step = 4">Continue to weather risk</button>
       <EvidenceCharts v-if="update === 'ready'" :cycle-id="suggestion.revision ?? ''" />
       <div class="nav"><button :disabled="update === 'updating'" @click="step = 2">Back</button><button v-if="update !== 'updating'" @click="startOver">New scan</button></div>
