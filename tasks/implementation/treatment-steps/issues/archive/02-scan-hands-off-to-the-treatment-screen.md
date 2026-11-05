@@ -15,7 +15,7 @@
 
 **Blocked by:** 01: The treatment screen gets four step tabs.
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] Helper tests: a matching line and week with a started run follows that run; a different line or week, or no run, loads; the back link shows only for a matching line and week at Results
 - [ ] Scan store tests: `step` is kept across routes; a new line or week and "New scan" reset it to 1

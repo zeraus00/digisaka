@@ -14,7 +14,7 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] Helper tests: each valid `step` returns itself; missing, unknown and repeated values return Schedule
 - [ ] `treatment.screen.test.js` rendered per `?step=`: each existing check moves to the step that holds it, with the Title Case wording ("Fungicide Options"); the bare path selects Schedule and omits the options list; each `?step=` shows its heading, four tabs named Weather, Spray Log, Fungicides, Schedule, and only its own tab selected; the banner and "What changed" render on two different steps; the monitoring card and the confirm-step reason check still pass on their step
