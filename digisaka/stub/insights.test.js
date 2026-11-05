@@ -95,6 +95,13 @@ test('a week without a cycle serves the same fields, with the risk and action ki
   assert.ok(b.actions.kinds.every((k) => !k.active && !k.options.length));
 });
 
+test('a line with nothing recorded has no readings: an empty series and no readings, weather kept', async () => {
+  const b = await insights('L01', '2026-W24');
+  assert.deepEqual(b.readings, []);
+  b.series.forEach((w) => assert.deepEqual([w.yli, w.yls, w.functional_leaves, w.leaves_at_shooting, w.canopy_status], [null, null, null, null, null], w.week));
+  assert.ok(b.series.some((w) => w.rainfall_mm !== null), 'rainfall is the weather feed, not the line');
+});
+
 test('the week decides which: L03 has a cycle in W24 and none in W23', async () => {
   assert.equal((await insights('L03', '2026-W24')).risk.status, 'assessed');
   assert.equal((await insights('L03', '2026-W23')).risk.status, 'not_yet_assessed');

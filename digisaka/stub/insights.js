@@ -17,7 +17,13 @@ export function insightsRoutes(store, { settleAll }) {
       if (!line) return fail(404, 'unknown_line', `No line ${params.id}`);
       if (!isValidWeek(params.week)) return fail(422, 'invalid_week', `${params.week} is not a week key`);
       const frozen = line.cycles.some((c) => c.week === params.week) ? PAYLOADS.cycle : PAYLOADS.none;
-      return ok({ ...frozen, line_id: params.id, week: params.week });
+      const body = { ...frozen, line_id: params.id, week: params.week };
+      // A line with nothing recorded has no readings, as on the scheduler; the weather (rainfall) is not the line's.
+      if (line.weeks.length === 0) {
+        body.series = frozen.series.map((w) => ({ ...w, yli: null, yls: null, functional_leaves: null, leaves_at_shooting: null, leaf_wetness_hours: null, canopy_status: null }));
+        body.readings = [];
+      }
+      return ok(body);
     }),
   }];
 }
