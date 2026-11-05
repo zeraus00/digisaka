@@ -36,16 +36,16 @@ const lineAlerts = computed(() => orderAlerts(sug.value?.alerts ?? []));
 const detailId = ref(''), optionPage = ref(1);
 const detail = computed(() => store.units.find((u) => u.unit_id === detailId.value) ?? null);
 const productId = ref(''), appliedOn = ref(todayIso());
-// A new line starts with no product chosen.
-const load = () => { productId.value = ''; detailId.value = ''; insights.load(lineId.value, week.value); return store.load(lineId.value); };
-onMounted(load);
-watch(lineId, load);
-watch(week, () => insights.load(lineId.value, week.value));
 // The open step lives in `?step=`; a tab rewrites it in place so back leaves the screen.
 const step = computed(() => stepOf(route.query.step));
 const open = (id) => router.replace({ query: { ...route.query, step: id } });
 const visited = ref([]);
 watch(step, (id) => { if (!visited.value.includes(id)) visited.value.push(id); }, { immediate: true });
+// A new line starts with no product chosen.
+const load = () => { productId.value = ''; detailId.value = ''; visited.value = [step.value]; insights.load(lineId.value, week.value); return store.load(lineId.value); };
+onMounted(load);
+watch(lineId, load);
+watch(week, () => insights.load(lineId.value, week.value));
 const heading = computed(() => (step.value === 'fungicides' && detail.value ? 'Fungicide Details' : STEPS.find((s) => s.id === step.value).title));
 onBeforeUnmount(() => store.stop());
 watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value, old, next); });
