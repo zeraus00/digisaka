@@ -17,7 +17,7 @@ const title = computed(() => route.meta.title || 'Toka AI');
 const MENU = [
   { to: '/', label: 'Dashboard', icon: 'home' },
   { to: '/scan', label: 'Disease Detection', icon: 'scan' },
-  { to: '/history', label: 'Diagnosis History', icon: 'history' },
+  // Diagnosis History (/history) is hidden from the navigation for now; the route and the Dashboard links stay.
   { to: '/schedule', label: 'Treatment Schedule', icon: 'calendar' },
 ];
 
