@@ -112,7 +112,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
   <div class="toggle" role="group" aria-label="Trend view" @keydown="onKey">
     <button v-for="(v, i) in views" :key="v.id" :ref="(el) => (buttons[i] = el)" type="button" :class="['tbtn', { on: view === v.id }]"
             :aria-pressed="view === v.id" :aria-label="v.iconOnly ? v.name : undefined" :disabled="!available.includes(v.id)" @click="pick(v.id)">
-      <Icon :name="v.icon" :size="18" /><span v-if="!v.iconOnly">{{ v.name }}</span><Icon v-if="view === v.id" name="check" :size="14" />
+      <Icon :name="v.icon" :size="18" /><span v-if="!v.iconOnly">{{ v.name }}</span><Icon v-if="view === v.id" class="chk" name="check" :size="14" />
     </button>
   </div>
   <p class="sr-only" aria-live="polite">{{ liveText }}</p>
@@ -271,6 +271,9 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .toggle { display: flex; flex-wrap: wrap; gap: 6px; }
 .tbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; justify-content: center; }
 .tbtn.on { background: var(--forest); color: #fff; border-color: var(--forest); font-weight: 700; }
+/* the chart rule `svg { width: 100%; margin-top }` also hits the icons (a child root takes the parent's scope) */
+.tbtn svg { width: 18px; height: 18px; margin: 0; }
+.tbtn svg.chk { width: 14px; height: 14px; }
 .tbtn:disabled { opacity: .45; cursor: not-allowed; }
 .tbtn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
 .leaves { stroke: var(--forest-deep); stroke-width: 2; }
