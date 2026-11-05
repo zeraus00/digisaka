@@ -12,10 +12,10 @@
 
 **Blocked by:** 01 (the stub route).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Store tests (after the dev clock store tests): load adopts the mode when the route answers; unavailable on 404, 401 and 500; no request outside a dev build; set PUTs and adopts the answer; an error shows its message; a second call while busy is ignored
-- [ ] One contract test in `stub-contract/` drives the run-mode store against the in-process stub: load, set Fail, read back (the route is stub-only, so nothing else checks its shape)
-- [ ] `DevBar` render test (SSR, stores preset): date group only, run-mode group only, both, neither renders nothing, warn style on a non-Normal mode
-- [ ] Client tests and the build pass
-- [ ] By hand in the stub app (use the `run` skill): the select sets each mode; Fail then a scan shows the failed card and Retry recovers; the warn style while not Normal; two-row chip at 390px
+- [x] Store tests (after the dev clock store tests): load adopts the mode when the route answers; unavailable on 404, 401 and 500; no request outside a dev build; set PUTs and adopts the answer; an error shows its message; a second call while busy is ignored
+- [x] One contract test in `stub-contract/` drives the run-mode store against the in-process stub: load, set Fail, read back (the route is stub-only, so nothing else checks its shape)
+- [x] `DevBar` render test (SSR, stores preset): date group only, run-mode group only, both, neither renders nothing, warn style on a non-Normal mode
+- [x] Client tests and the build pass
+- [x] By hand in the stub app (use the `run` skill): the select sets each mode; Fail then a scan shows the failed card and Retry recovers; the warn style while not Normal; two-row chip at 390px

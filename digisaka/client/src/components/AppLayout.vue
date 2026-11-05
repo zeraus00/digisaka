@@ -3,8 +3,9 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useDevClockStore } from '../stores/devClock.js';
+import { useRunModeStore } from '../stores/runMode.js';
 import Icon from './Icon.vue';
-import DevDateBar from './DevDateBar.vue';
+import DevBar from './DevBar.vue';
 import { useAccountMenu } from './useAccountMenu.js';
 import bananaLeaf from '../assets/bananaleaf1.png';
 import sidebarBananaLeaf from '../assets/bananaleaf2.png';
@@ -20,7 +21,7 @@ const MENU = [
   { to: '/schedule', label: 'Treatment Schedule', icon: 'calendar' },
 ];
 
-onMounted(() => useDevClockStore().load());
+onMounted(() => { useDevClockStore().load(); useRunModeStore().load(); });
 
 const { menuOpen, narrow, account, avatar, toggleMenu, closeMenu } = useAccountMenu(route);
 function signOut() { closeMenu(); auth.signOut(); router.push('/login'); }
@@ -71,7 +72,7 @@ function signOut() { closeMenu(); auth.signOut(); router.push('/login'); }
         </RouterView>
       </main>
     </div>
-    <DevDateBar />
+    <DevBar />
   </div>
 </template>
 
