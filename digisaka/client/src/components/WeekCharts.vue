@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
 import Icon from './Icon.vue';
-import { diseaseCaption, rainfallCaption, linePath, niceMax, TREND_VIEWS, leavesLines, leavesCaption, availableViews, resolveView, nextView, missingTextFor } from '../helpers/evidence.js';
+import { diseaseCaption, rainfallCaption, linePath, niceMax, TREND_VIEWS, leavesLines, leavesCaption, axisTop, availableViews, resolveView, nextView, missingTextFor } from '../helpers/evidence.js';
 
 // Weekly YLS/YLI and rainfall as plain SVG. With `disease` and `rainfall` (a cycle's evidence) the compared
 // weeks are highlighted and captioned; without them it is a plain look at recent weeks.
@@ -82,20 +82,21 @@ const onKey = async (e) => {
 };
 watch(view, () => { hoveredPoint.value = null; }); // a hidden chart keeps no tooltip
 
-// All view: one chart, YLS/YLI on a fixed 0-12 left axis, rainfall bars on a right mm axis.
+// All view: one chart, YLS/YLI/leaves on a 0-12 left axis (taller only when a value needs it), rainfall bars on a right mm axis.
 const RR = 34;
 const xA = (i) => (weeks.value.length < 2 ? (L + W - RR) / 2 : L + (i * (W - L - RR)) / (weeks.value.length - 1));
-const yA = (v) => { const t = v / 12; return T + (lowerIsWorse.value ? 1 - t : t) * (H - T - B); };
+const topA = computed(() => axisTop(weeks.value.flatMap((w) => [w.yls, w.yli, w.leaves])));
+const yA = (v) => { const t = v / topA.value; return T + (lowerIsWorse.value ? 1 - t : t) * (H - T - B); };
 const yRA = (v) => T + (1 - v / rainTop.value) * (H - T - B);
 const barWA = computed(() => Math.min(24, ((W - L - RR) / Math.max(weeks.value.length, 1)) * 0.6));
 const ptsA = (key) => weeks.value.map((w, i) => (w[key] == null ? null : { x: xA(i), y: yA(w[key]) }));
 const ylsA = computed(() => ptsA('yls'));
 const yliA = computed(() => ptsA('yli'));
 const tri = (p) => `${p.x},${p.y - 4} ${p.x - 3.6},${p.y + 3} ${p.x + 3.6},${p.y + 3}`;
-const lv = (v) => Math.min(v, 12);
-const leavesA = computed(() => weeks.value.map((w, i) => (w.leaves == null ? null : { x: xA(i), y: yA(lv(w.leaves)) })));
-// Leaves view: same 0-12 scale, higher is up; reference labels sit in the right margin.
-const yL = (v) => T + (1 - lv(v) / 12) * (H - T - B);
+const leavesA = computed(() => weeks.value.map((w, i) => (w.leaves == null ? null : { x: xA(i), y: yA(w.leaves) })));
+// Leaves view: same 0-12 scale (taller only when needed), higher is up.
+const topL = computed(() => axisTop([...weeks.value.map((w) => w.leaves), props.leaves?.critical, props.leaves?.target]));
+const yL = (v) => T + (1 - v / topL.value) * (H - T - B);
 const leavesL = computed(() => weeks.value.map((w, i) => (w.leaves == null ? null : { x: x(i), y: yL(w.leaves) })));
 const refLines = computed(() => leavesLines(props.leaves));
 const lCap = computed(() => leavesCaption(weeks.value));
@@ -120,7 +121,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
   <figure v-if="view === 'all'">
     <svg :viewBox="`0 0 ${W} ${H}`" role="group" aria-label="YLS, YLI and rainfall by week" @pointerleave="clearChartHover('disease'); clearChartHover('rainfall'); clearChartHover('leaves')">
       <g class="axis">
-        <template v-for="t in [0, 6, 12]" :key="t"><line :x1="L" :x2="W - RR" :y1="yA(t)" :y2="yA(t)" /><text :x="L - 6" :y="yA(t) + 3" text-anchor="end">{{ t }}</text></template>
+        <template v-for="t in [0, topA / 2, topA]" :key="t"><line :x1="L" :x2="W - RR" :y1="yA(t)" :y2="yA(t)" /><text :x="L - 6" :y="yA(t) + 3" text-anchor="end">{{ t }}</text></template>
         <template v-if="drawn.rain"><text v-for="t in [0, rainTop / 2, rainTop]" :key="`r${t}`" :x="W - RR + 6" :y="yRA(t) + 3">{{ t }} mm</text></template>
         <text v-for="(w, i) in weeks" :key="w.week" :x="xA(i)" :y="H - 10" text-anchor="middle">{{ label(w.week) }}</text>
       </g>
@@ -188,7 +189,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
     <figcaption>Functional leaves by week — count 8 weeks after shooting</figcaption>
     <svg :viewBox="`0 0 ${W} ${H}`" role="group" aria-label="Functional leaves by week" @pointerleave="clearChartHover('leaves')">
       <g class="axis">
-        <template v-for="t in [0, 6, 12]" :key="t"><line :x1="L" :x2="W - R" :y1="yL(t)" :y2="yL(t)" /><text :x="L - 6" :y="yL(t) + 3" text-anchor="end">{{ t }}</text></template>
+        <template v-for="t in [0, topL / 2, topL]" :key="t"><line :x1="L" :x2="W - R" :y1="yL(t)" :y2="yL(t)" /><text :x="L - 6" :y="yL(t) + 3" text-anchor="end">{{ t }}</text></template>
         <text v-for="(w, i) in weeks" :key="w.week" :x="x(i)" :y="H - 10" text-anchor="middle">{{ label(w.week) }}</text>
       </g>
       <template v-for="r in refLines" :key="r.kind">

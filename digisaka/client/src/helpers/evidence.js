@@ -112,6 +112,9 @@ export function missingTextFor(view, weeks, views = TREND_VIEWS) {
 
 // Join the Line Insights series to chart weeks by week: each week gets `leaves` (the count) and `canopy` (the served
 // status), and the served reference values come along. A week the series lacks, or no data yet, gives no leaves.
+// Top of a 0-12 axis that grows, in steps of two, only when a value would go over it.
+export const axisTop = (values) => Math.max(12, 2 * Math.ceil(Math.max(0, ...values.filter((v) => v != null)) / 2));
+
 export function joinLeaves(weeks, data) {
   const bySeries = new Map((data?.series ?? []).map((s) => [s.week, s]));
   return {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, availableViews, resolveView, nextView, missingTextFor, joinLeaves, leavesLines, leavesCaption, linePath, niceMax, visibleWeeks } from './evidence.js';
+import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, availableViews, resolveView, nextView, missingTextFor, axisTop, joinLeaves, leavesLines, leavesCaption, linePath, niceMax, visibleWeeks } from './evidence.js';
 
 const weeks = [
   { week: '2026-W22', yls: 7, yli: 4, rainfall_mm: 10 },
@@ -173,6 +173,15 @@ describe('trend views', () => {
     expect(missingTextFor('disease', weeks)).toBe('Missing weeks — YLI: 2026-W23.');
     expect(missingTextFor('rain', weeks)).toBe('Missing weeks — Rainfall: 2026-W24.');
     expect(missingTextFor('all', noRain)).toBe('Missing weeks — YLI: 2026-W23.');
+  });
+});
+
+describe('axisTop', () => {
+  it('stays at 12 and grows in steps of two only when a value needs it', () => {
+    expect(axisTop([7, null, 12])).toBe(12);
+    expect(axisTop([13])).toBe(14);
+    expect(axisTop([14.5, 3])).toBe(16);
+    expect(axisTop([])).toBe(12);
   });
 });
 
