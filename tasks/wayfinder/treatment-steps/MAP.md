@@ -23,14 +23,18 @@ A decided spec, ready for `/to-tickets`, and an approved prototype for a `/treat
 ## Decisions so far
 
 - Destination and the ticket cut: decided at charting.
+- [Where the steps live](tickets/0001-where-the-steps-live.md): one home, `/treatment/:lineId/:week` with free tabs Weather, Spray log, Fungicides, Schedule; `?step=` via `router.replace`, default Schedule; scan hands off with `?step=weather`; `TreatmentJourney` removed; the fungicide list moves to Fungicides; the outcome banner sits above the tabs.
+- [The scan hand-off](tickets/0002-the-scan-hand-off.md): `/treatment` tracks the scan's run (`suggestion.track`) when the scan store matches the route, else loads; Spray log mounts `SuggestionUpdate` only for that entry, without the done card; `step` moves into the scan store so "Back to scan results" and browser back land on Results.
+- [Prototype of the step tabs](tickets/0003-prototype-of-the-step-tabs.md): approved; icon-only pill tabs (Schedule reuses `calendar`, three new icons), Title Case page and step titles, one row on a phone, the line summary stays beside the first three steps.
+- [How the steps are tested](tickets/0004-how-the-steps-are-tested.md): pure helpers for `?step=` and the scan entry with unit tests; a scan store test for `step`; `treatment.screen.test.js` rendered per `?step=`; twelve named tests; the hand-off order and entry points checked by hand in the stub app.
 
 ## Not yet specified
 
-- Whether `InsightsSummary`, shown beside Weather, Spray log and Fungicides today, stays on every one of those tabs or moves to the line header. Sharpens once the prototype shows the tabs side by side.
+Nothing left that is unsharp: the line summary placement was decided on the prototype.
 
 ## Out of scope
 
 - The "Coming soon" tiles (humidity, infection risk level, price, label and registration) and leaf wetness: the scan trend toggle follow-ups.
 - Monitoring decided by the KG.
 - A product deep link (`&unit=`) and per-step child routes: no named need (YAGNI).
-- Revising the fungicide list's or the record form's own design: they move as they are.
+- Revising the fungicide list's or the record form's own design, or the line summary panel: they move as they are.
