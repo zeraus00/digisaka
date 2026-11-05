@@ -68,7 +68,7 @@ onMounted(() => {
     </template>
 
     <template v-else-if="page === 3 && unit">
-      <section class="jr-layout"><div><FungicideDetails :unit="unit" /></div></section>
+      <FungicideDetails :unit="unit" />
       <div class="jr-nav"><button type="button" @click="page = 2">Back to options</button><RouterLink class="jr-btn primary" :to="scheduleLink">Continue to schedule</RouterLink></div>
     </template>
   </section>

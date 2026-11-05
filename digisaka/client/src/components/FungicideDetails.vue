@@ -14,7 +14,7 @@ const checks = computed(() => (props.unit.checks ?? []).map((c) => ({ ...c, labe
 </script>
 
 <template>
-  <section class="jr-layout">
+  <section class="fd-layout">
     <div>
       <article class="jr-card">
         <div class="jr-row"><div><h2>{{ titleCase(unit.label) }}</h2><span class="jr-hint">Product information</span></div><span class="jr-pill" :class="tier === 'excluded' ? 'bad' : 'ok'">{{ GROUP_LABEL[tier] }}</span></div>
@@ -41,3 +41,9 @@ const checks = computed(() => (props.unit.checks ?? []).map((c) => ({ ...c, labe
     </aside>
   </section>
 </template>
+
+<style scoped>
+/* Sits inside cards of any width, so wrap on its own width, not the viewport's: the aside drops below when the card is narrow. */
+.fd-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; align-items: start; }
+.fd-layout > * { min-width: 0; }
+</style>
