@@ -1,18 +1,25 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
 import FungicideOptions from '../components/FungicideOptions.vue';
 import FungicideDetails from '../components/FungicideDetails.vue';
+import Icon from '../components/Icon.vue';
+import WeatherRisk from '../components/WeatherRisk.vue';
+import SprayLog from '../components/SprayLog.vue';
+import InsightsSummary from '../components/InsightsSummary.vue';
 import ScheduleCalendar from '../components/ScheduleCalendar.vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
+import { useInsightsStore } from '../stores/insights.js';
+import { STEPS, stepOf } from '../helpers/treatmentStep.js';
+import '../styles/journey.css';
 import { outcomeReasonText } from '../helpers/messages.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
 import { reasonText } from '../helpers/checks.js';
 import { todayIso, keepIfEdited } from '../helpers/today.js';
 
-const route = useRoute(), store = useSuggestionStore();
+const route = useRoute(), router = useRouter(), store = useSuggestionStore(), insights = useInsightsStore();
 const lineId = computed(() => String(route.params.lineId));
 const week = computed(() => String(route.params.week));
 
@@ -30,9 +37,16 @@ const detailId = ref(''), optionPage = ref(1);
 const detail = computed(() => store.units.find((u) => u.unit_id === detailId.value) ?? null);
 const productId = ref(''), appliedOn = ref(todayIso());
 // A new line starts with no product chosen.
-const load = () => { productId.value = ''; detailId.value = ''; return store.load(lineId.value); };
+const load = () => { productId.value = ''; detailId.value = ''; insights.load(lineId.value, week.value); return store.load(lineId.value); };
 onMounted(load);
 watch(lineId, load);
+watch(week, () => insights.load(lineId.value, week.value));
+// The open step lives in `?step=`; a tab rewrites it in place so back leaves the screen.
+const step = computed(() => stepOf(route.query.step));
+const open = (id) => router.replace({ query: { ...route.query, step: id } });
+const visited = ref([]);
+watch(step, (id) => { if (!visited.value.includes(id)) visited.value.push(id); }, { immediate: true });
+const heading = computed(() => (step.value === 'fungicides' && detail.value ? 'Fungicide Details' : STEPS.find((s) => s.id === step.value).title));
 onBeforeUnmount(() => store.stop());
 watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value, old, next); });
 // The scheduler sends a practice id as the label (PracFungicideSpraying); read it as words.
@@ -52,8 +66,8 @@ const lastApplied = computed(() => {
 </script>
 
 <template>
-  <div class="page narrow">
-    <PageHeader title="Treatment suggestion" :subtitle="`Line ${lineId} · ${week}`" />
+  <div class="page" :class="{ narrow: step === 'schedule' }">
+    <PageHeader title="Treatment Suggestion" :subtitle="`Line ${lineId} · ${week}`" />
     <p v-if="store.phase === 'loading'" class="empty">Loading…</p>
     <p v-else-if="store.phase === 'error'" class="error">{{ store.error }} <button class="mark" type="button" @click="load">Try again</button></p>
     <p v-else-if="store.phase === 'notfound'" class="empty">This line has no treatment suggestion yet. A scan is suggested to start one.</p>
@@ -68,9 +82,31 @@ const lastApplied = computed(() => {
       <p v-if="sug.basis && sug.outcome !== 'human_review_required'" class="meta basis">{{ BASIS[sug.basis] }}</p>
       <p v-if="sug.changes?.summary" class="meta changes">What changed: {{ sug.changes.summary }}</p>
 
+    </template>
+
+    <ol class="tabs" role="tablist" aria-label="Treatment review steps">
+      <li v-for="s in STEPS" :key="s.id">
+        <button type="button" role="tab" :aria-selected="step === s.id" :aria-label="s.label" :title="s.label" :class="{ done: step !== s.id && visited.includes(s.id) }" @click="open(s.id)">
+          <Icon :name="s.icon" :size="22" /><span v-if="step !== s.id && visited.includes(s.id)" class="chk" aria-hidden="true">✓</span>
+        </button>
+      </li>
+    </ol>
+    <h2 class="step-title">{{ heading }}</h2>
+
+    <div role="tabpanel" :aria-label="heading">
+      <template v-if="step === 'weather'">
+        <WeatherRisk :line="lineId" :week="week" />
+        <div class="btns go"><button type="button" @click="open('spray')">Continue to Spray Log</button></div>
+      </template>
+      <template v-else-if="step === 'spray'">
+        <SprayLog />
+        <div class="btns go"><button type="button" @click="open('fungicides')">Continue to Fungicides</button></div>
+      </template>
+      <template v-else-if="store.phase === 'ready' && sug">
+        <div v-if="step === 'fungicides'" class="jr-layout">
+          <div>
       <section class="prop-card">
-        <h3>Products</h3>
-        <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.join(', ') }} on {{ lastApplied.on }}.</p>
+                <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.join(', ') }} on {{ lastApplied.on }}.</p>
         <section v-if="lineAlerts.length" class="ack notes">
           <h4>Alerts</h4>
           <ul><li v-for="a in lineAlerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
@@ -86,6 +122,11 @@ const lastApplied = computed(() => {
         </section>
       </section>
 
+          </div>
+          <InsightsSummary />
+        </div>
+        <div v-if="step === 'fungicides'" class="btns go"><button type="button" @click="open('schedule')">Continue to Schedule</button></div>
+        <template v-else>
       <section class="prop-card">
         <h3>Record an application</h3>
         <p class="meta">You can record any product; those that need confirmation ask first.</p>
@@ -111,7 +152,9 @@ const lastApplied = computed(() => {
       <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" />
 
       <EvidenceCharts :cycle-id="sug.revision" :line="lineId" :week="week" />
-    </template>
+        </template>
+      </template>
+    </div>
     <p class="disclaimer">AI-assisted scheduling should be verified by an agricultural specialist before treatment decisions.</p>
   </div>
 </template>
@@ -159,4 +202,13 @@ const lastApplied = computed(() => {
 
 .banner.ok { background: #D5E9DB; } .banner .updating { margin-left: auto; font: 700 13px var(--font-body); }
 .meta.reason, .meta.basis, .meta.changes { margin: 0 0 8px; } .meta ~ .prop-card { margin-top: 16px; }
+
+.tabs { display: flex; gap: 6px; list-style: none; padding: 4px; margin: 14px 0 12px; background: #E6ECE7; border-radius: 999px; }
+.tabs li { flex: 1; display: flex; }
+.tabs button { position: relative; flex: 1; display: grid; place-items: center; min-height: 44px; border: 0; border-radius: 999px; background: none; color: var(--ink-soft); cursor: pointer; }
+.tabs button[aria-selected=true] { background: var(--forest); color: #fff; }
+.tabs button:focus-visible { outline: 3px solid #1B6FD6; outline-offset: 2px; }
+.tabs .chk { position: absolute; top: 4px; right: 8px; font: 800 11px var(--font-display); color: var(--forest); }
+.step-title { font: 800 20px var(--font-display); color: var(--forest); margin-bottom: 12px; }
+.btns.go { margin: 0 0 16px; } .btns.go button { flex: none; padding: 12px 18px; }
 </style>

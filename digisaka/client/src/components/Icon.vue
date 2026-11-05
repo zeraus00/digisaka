@@ -20,6 +20,9 @@ const PATHS = {
   'trend-lines': '<path d="M3 17l5-6 4 3 8-9"/><path d="M3 20l5-3 4 1 8-6" stroke-dasharray="2 2.5"/>',
   'trend-drop': '<path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.500 6-11 6-11z"/>',
   'trend-leaf': '<path d="M5 19C5 10 10 5 20 4c0 10-5 15-14 15z"/><path d="M5 19l8-8"/>',
+  weather: '<path d="M7 15a4 4 0 01-.6-7.95A5.5 5.5 0 0117 8.2 3.4 3.4 0 0117.4 15H7z"/><path d="M8.5 18l-1 2.5M12.5 18l-1 2.5M16.5 18l-1 2.5"/>',
+  spray: '<path d="M7 3c2 2.8 3.6 4.8 3.6 7a3.6 3.6 0 01-7.2 0C3.4 7.8 5 5.8 7 3z"/><path d="M14 7h7M14 11h7M13 15h8M5 19h16"/>',
+  fungicides: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 001.8 3h10.4a2 2 0 001.8-3l-5-9V3"/><path d="M7.4 15h9.2"/>',
   alert: '<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>',
 };
 const props = defineProps({ name: { type: String, required: true }, size: { type: [Number, String], default: 20 } });
