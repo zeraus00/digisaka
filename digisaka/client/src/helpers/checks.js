@@ -72,6 +72,15 @@ export const titleCase = (s) => (s ?? '').replace(/(^|\s)(\p{L})/gu, (_, sp, c) 
 export const sentenceCase = (s) => (s ?? '').charAt(0).toUpperCase() + (s ?? '').slice(1);
 
 // The facts a unit card shows, read from the unit's `facts`. An empty fact is null (or []): the component says "Unknown".
+// A bound the KG does not hold is null: say what is known, and "Unknown" (null) when neither is.
+function intervalText(iv) {
+  const lo = iv?.min_days ?? null, hi = iv?.max_days ?? null;
+  if (lo == null && hi == null) return null;
+  if (lo == null) return `Up to ${hi} days`;
+  if (hi == null) return `At least ${lo} days`;
+  return lo === hi ? `${lo} days` : `${lo} to ${hi} days`;
+}
+
 export function unitFacts(unit) {
   const p = unit.facts?.product ?? null;
   const moa = p?.mode_of_action ?? null;
@@ -87,7 +96,7 @@ export function unitFacts(unit) {
     mobility: (p?.plant_mobility ?? []).map(sentenceCase),
     rate: unit.facts?.application_rates?.[0]?.text ?? null,
     rainfast: unit.facts?.weather_requirement?.rainfast_period ?? null,
-    interval: unit.facts?.application_interval ? `${unit.facts.application_interval.min_days} to ${unit.facts.application_interval.max_days} days` : null,
+    interval: intervalText(unit.facts?.application_interval),
   };
 }
 

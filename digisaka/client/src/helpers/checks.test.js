@@ -77,3 +77,10 @@ describe('unit facts and reasons', () => {
     expect(planFor(days, { unit_id: 'zz' })).toBeNull();
   });
 });
+
+describe('unitFacts interval', () => {
+  const iv = (min_days, max_days) => unitFacts({ unit_id: 'u', label: 'x', facts: { application_interval: { min_days, max_days } } }).interval;
+  it('handles missing bounds', () => {
+    expect([iv(null, null), iv(7, null), iv(null, 14), iv(7, 7)]).toEqual([null, 'At least 7 days', 'Up to 14 days', '7 days']);
+  });
+});
