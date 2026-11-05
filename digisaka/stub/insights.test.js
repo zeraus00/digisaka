@@ -102,6 +102,12 @@ test('a line with nothing recorded has no readings: an empty series and no readi
   assert.ok(b.series.some((w) => w.rainfall_mm !== null), 'rainfall is the weather feed, not the line');
 });
 
+test('the series ends at the asked week, across a year boundary too', async () => {
+  const weeks = async (line, week) => (await insights(line, week)).series.map((w) => w.week);
+  assert.deepEqual((await weeks('L02', '2026-W23')).slice(-2), ['2026-W22', '2026-W23']);
+  assert.deepEqual((await weeks('L02', '2026-W02')).slice(-4), ['2025-W51', '2025-W52', '2026-W01', '2026-W02']);
+});
+
 test('the week decides which: L03 has a cycle in W24 and none in W23', async () => {
   assert.equal((await insights('L03', '2026-W24')).risk.status, 'assessed');
   assert.equal((await insights('L03', '2026-W23')).risk.status, 'not_yet_assessed');
