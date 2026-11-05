@@ -8,12 +8,13 @@ const SCENARIOS = ['healthy', 'not_leaf', 'referral', 'rescan', 'unavailable'];
 const scenarioOf = (name) => SCENARIOS.find((s) => String(name).toLowerCase().includes(s)) ?? 'stage2';
 const CHECKLIST = ['Dark streaks on the leaf underside', 'Yellow halo around the spots'];
 
-// What a line's rescheduling run ends in, decided by the line. L06 fails on its first scan run only.
+// What a line's rescheduling run ends in, decided by the line. L06 fails on its first scan run only; L08's run never settles.
 const PLANS = {
   L04: { outcome: 'awaiting_decision' },
   L05: { outcome: 'human_review_required', reason: 'missing_feed_value' },
   L06: { outcome: 'continue_monitoring', reason: 'disease_not_worsening', failFirst: true },
   L07: { outcome: 'human_review_required', reason: 'gate_e_rejected' },
+  L08: { outcome: 'continue_monitoring', reason: 'disease_not_worsening', stuck: true },
 };
 const DEFAULT_PLAN = { outcome: 'continue_monitoring', reason: 'disease_not_worsening' };
 const FAILURE_REASON = 'The weather feed did not respond in time.';
@@ -40,7 +41,7 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
 
   // A rescheduling run takes cycleMs, then is done or failed. Settling is lazy, on the next read.
   const settle = (run) => {
-    if (run.status !== 'running' || now() - run.startedAt < cycleMs) return run;
+    if (run.status !== 'running' || run.plan.stuck || now() - run.startedAt < cycleMs) return run;
     const l = line(run.line_id);
     if (run.plan.failFirst && run.trigger === 'scan' && run.attempts === 1) {
       Object.assign(run, { status: 'failed', failure_reason: FAILURE_REASON });
