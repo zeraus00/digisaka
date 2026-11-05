@@ -24,7 +24,7 @@ const chips = computed(() => actionChips(data.value?.actions?.kinds));
       <div class="jr-row"><span>Progression</span><b>{{ progression?.finding ?? 'Not assessed' }}</b></div>
       <div class="jr-row"><span>Last treatment</span><b>{{ last?.product ?? 'None recorded' }}</b></div>
     </div>
-    <div class="jr-chips"><span v-for="[label, on] in chips" :key="label" class="jr-pill" :class="{ on }">{{ on ? '✓ ' : '' }}{{ label }}</span></div>
+    <div class="jr-chips"><span v-for="[label, on] in chips" :key="label" class="jr-pill" :class="{ on }">{{ label }}</span></div>
     <p v-if="data.actions?.summary" class="jr-hint">{{ data.actions.summary }}</p>
     <p class="jr-hint">These indicators are context, not a confirmed diagnosis. Verify findings with an agricultural specialist before treatment decisions.</p>
   </aside>
