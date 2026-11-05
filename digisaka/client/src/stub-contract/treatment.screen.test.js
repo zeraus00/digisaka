@@ -138,6 +138,20 @@ describe('treatment screen', () => {
       expect(done).not.toContain('did not change it');
     });
 
+    it('a first run that fails or times out still shows its card while no suggestion has been read', async () => {
+      scanned();
+      const s = useSuggestionStore();
+      await s.load('L04', wait);
+      await useInsightsStore().load('L04', '2026-W24');
+      s.phase = 'loading'; s.updating = false;
+      s.tracked = 'timeout';
+      expect(await show('L04', 'spray')).toContain('Check again');
+      s.tracked = 'failed';
+      expect(await show('L04', 'spray')).toContain('The update failed');
+      s.tracked = '';
+      expect(await show('L04', 'spray')).toContain('Updating the treatment suggestion');
+    });
+
     it('shows Back to scan results at Results only, and no update card for another entry', async () => {
       const s = useSuggestionStore();
       await s.load('L04', wait);
