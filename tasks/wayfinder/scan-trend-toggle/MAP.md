@@ -23,10 +23,16 @@ A decided spec, ready for `/to-tickets`, for a toggle row on the weekly charts (
 ## Decisions so far
 
 - Destination, the settled design above and the ticket cut: decided at charting.
+- [Where the weekly leaves come from](tickets/0001-where-the-weekly-leaves-come-from.md): client join with the insights series (it covers every shown week and serves the critical and target values); `EvidenceCharts` loads insights for the scan's line and week; no API change.
+- [Where the toggle shows, what it remembers, and its icons](tickets/0002-where-the-toggle-shows-what-it-remembers-and-its-icons.md): both screens get the toggle (it lives in `WeekCharts`); nothing is remembered (All on each mount); the icons are inline SVG in `Icon.vue`.
+- [Leaves reference lines and empty views](tickets/0004-leaves-reference-lines-and-empty-views.md): critical and target lines on the Leaves view only (dashed and dotted); an empty series disables its button and is left out of All; the caption words the served `canopy_status`, no client comparison.
+- [The canopy bar beside the Leaves chart](tickets/0006-the-canopy-bar-beside-the-leaves-chart.md): the bar stays unchanged on Line insights on every view; the Leaves caption keeps its own sentence wording of the served status.
+- [The All chart on a phone](tickets/0003-the-all-chart-on-a-phone.md): combined dual-axis chart; series told apart by line style and marker shape (YLS solid circle, YLI dashed triangle, Leaves dotted square); no stacked fallback.
+- [How the toggle is tested](tickets/0005-how-the-toggle-is-tested.md): pure view-logic helpers with unit tests plus render-to-string tests with an `initialView` prop; no new dependency; clicks, keys and hover checked by hand in the stub app; twelve named tests.
 
 ## Not yet specified
 
-- **The canopy bar on Line insights.** If Line insights gets the toggle, does its canopy bar (`canopy-bar`, threshold, target, leaves count) stay beside the new Leaves chart or give way to it? Waits on [Where the toggle shows, what it remembers, and its icons](tickets/0002-where-the-toggle-shows-what-it-remembers-and-its-icons.md).
+Nothing left that is unsharp: the canopy bar question is now a ticket.
 
 ## Out of scope
 
