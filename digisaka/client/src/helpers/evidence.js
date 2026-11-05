@@ -74,3 +74,37 @@ export function visibleWeeks({ weeks, disease, rainfall }) {
   const used = new Set([...(disease.compared_weeks ?? []), ...(rainfall.recent_weeks ?? []), ...(rainfall.previous_weeks ?? [])]);
   return weeks.filter((w, i) => i >= weeks.length - 3 || used.has(w.week));
 }
+
+// Trend toggle: a view is data (id, name, icon, the week fields it draws); ticket-02 adds a Leaves entry.
+export const TREND_VIEWS = [
+  { id: 'all', name: 'All trends', icon: 'trend-all', iconOnly: true, keys: ['yls', 'yli', 'rainfall_mm'] },
+  { id: 'disease', name: 'YLS/YLI', icon: 'trend-lines', keys: ['yls', 'yli'] },
+  { id: 'rain', name: 'Rainfall', icon: 'trend-drop', keys: ['rainfall_mm'] },
+];
+const SERIES_NAME = { yls: 'YLS', yli: 'YLI', rainfall_mm: 'Rainfall' };
+const hasValue = (weeks, key) => weeks.some((w) => w[key] != null);
+
+// Ids of the views that have at least one value in the shown weeks.
+export const availableViews = (weeks, views = TREND_VIEWS) => views.filter((v) => v.keys.some((k) => hasValue(weeks, k))).map((v) => v.id);
+
+// The picked view, or All when it has gone empty.
+export const resolveView = (pick, weeks, views = TREND_VIEWS) => (availableViews(weeks, views).includes(pick) ? pick : 'all');
+
+// The next enabled view left (-1) or right (+1) of `current`, wrapping; `current` when it is the only one.
+export function nextView(current, step, weeks, views = TREND_VIEWS) {
+  const ok = availableViews(weeks, views);
+  const ids = views.map((v) => v.id);
+  for (let n = 1; n <= ids.length; n++) {
+    const id = ids[(ids.indexOf(current) + step * n + ids.length * n) % ids.length];
+    if (ok.includes(id)) return id;
+  }
+  return current;
+}
+
+// "Missing weeks" line for the series a view draws; All lists only series that exist.
+export function missingTextFor(view, weeks, views = TREND_VIEWS) {
+  const missing = missingWeeks(weeks);
+  const keys = views.find((v) => v.id === view).keys.filter((k) => hasValue(weeks, k));
+  const parts = keys.filter((k) => missing[k].length).map((k) => `${SERIES_NAME[k]}: ${missing[k].join(', ')}`);
+  return parts.length ? `Missing weeks — ${parts.join('; ')}.` : '';
+}

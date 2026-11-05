@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, linePath, niceMax, visibleWeeks } from './evidence.js';
+import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, availableViews, resolveView, nextView, missingTextFor, linePath, niceMax, visibleWeeks } from './evidence.js';
 
 const weeks = [
   { week: '2026-W22', yls: 7, yli: 4, rainfall_mm: 10 },
@@ -146,5 +146,32 @@ describe('the chip and the caption with the deciding condition', () => {
     const caption = rainfallCaption(ev({ rainfall: rain('not_computable', wetnessMissing) }));
     expect(caption).toBe('Rain over the last 2 weeks: 84 mm, up from 52 mm. Could not check: Leaf wetness above 6 hours (leaf wetness for 2026-W24).');
     expect(caption).not.toContain('rainfall or leaf-wetness');
+  });
+});
+
+describe('trend views', () => {
+  const noRain = weeks.map((w) => ({ ...w, rainfall_mm: null }));
+  const noYls = weeks.map((w) => ({ ...w, yls: null, yli: null }));
+  it('lists views with a value', () => {
+    expect(availableViews(weeks)).toEqual(['all', 'disease', 'rain']);
+    expect(availableViews(noRain)).toEqual(['all', 'disease']);
+    expect(availableViews(noYls)).toEqual(['all', 'rain']);
+  });
+  it('falls back to All when the pick is empty', () => {
+    expect(resolveView('rain', noRain)).toBe('all');
+    expect(resolveView('rain', weeks)).toBe('rain');
+  });
+  it('arrow keys wrap and skip disabled views', () => {
+    expect(nextView('rain', 1, weeks)).toBe('all');
+    expect(nextView('all', -1, weeks)).toBe('rain');
+    expect(nextView('disease', 1, noRain)).toBe('all');
+    expect(nextView('all', -1, noRain)).toBe('disease');
+    expect(nextView('all', 1, noYls)).toBe('rain');
+  });
+  it('missing-weeks line lists only the series the view draws', () => {
+    expect(missingTextFor('all', weeks)).toBe('Missing weeks — YLI: 2026-W23; Rainfall: 2026-W24.');
+    expect(missingTextFor('disease', weeks)).toBe('Missing weeks — YLI: 2026-W23.');
+    expect(missingTextFor('rain', weeks)).toBe('Missing weeks — Rainfall: 2026-W24.');
+    expect(missingTextFor('all', noRain)).toBe('Missing weeks — YLI: 2026-W23.');
   });
 });

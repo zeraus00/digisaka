@@ -1,14 +1,16 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
-import { diseaseCaption, rainfallCaption, missingWeeks, linePath, niceMax } from '../helpers/evidence.js';
+import Icon from './Icon.vue';
+import { diseaseCaption, rainfallCaption, linePath, niceMax, TREND_VIEWS, availableViews, resolveView, nextView, missingTextFor } from '../helpers/evidence.js';
 
 // Weekly YLS/YLI and rainfall as plain SVG. With `disease` and `rainfall` (a cycle's evidence) the compared
 // weeks are highlighted and captioned; without them it is a plain look at recent weeks.
-const props = defineProps({ weeks: { type: Array, required: true }, disease: { type: Object, default: null }, rainfall: { type: Object, default: null } });
+const props = defineProps({ weeks: { type: Array, required: true }, disease: { type: Object, default: null }, rainfall: { type: Object, default: null },
+  initialView: { type: String, default: 'all' } }); // initialView: tests only; the row always starts on All
 
 const W = 320, H = 150, L = 34, R = 10, T = 10, B = 28, RAIN_L = 46;
 const hoveredPoint = ref(null);
-const diseaseTooltipText = ref(null), rainfallTooltipText = ref(null);
+const allTooltipText = ref(null), diseaseTooltipText = ref(null), rainfallTooltipText = ref(null);
 const tooltipWidth = ref(0);
 const weeks = computed(() => props.weeks);
 const label = (w) => `W${w.slice(-2)}`;
@@ -32,7 +34,7 @@ const pointText = computed(() => activePoint.value
   : '');
 watch(pointText, async (text) => {
   await nextTick();
-  const element = activePoint.value?.chart === 'rainfall' ? rainfallTooltipText.value : diseaseTooltipText.value;
+  const element = view.value === 'all' ? allTooltipText.value : activePoint.value?.chart === 'rainfall' ? rainfallTooltipText.value : diseaseTooltipText.value;
   tooltipWidth.value = text && element
     ? element.getComputedTextLength() + 12
     : 0;
@@ -61,20 +63,84 @@ const barW = computed(() => Math.min(24, ((W - RAIN_L - R) / Math.max(weeks.valu
 const group = (w) => (!props.rainfall || props.rainfall.recent_weeks.includes(w) ? 'recent' : props.rainfall.previous_weeks.includes(w) ? 'previous' : 'other');
 const minLine = computed(() => (props.rainfall?.min_total_mm > 0 ? props.rainfall.min_total_mm / Math.max(props.rainfall.window_weeks, 1) : 0));
 
-const missing = computed(() => missingWeeks(weeks.value));
-const missingText = computed(() => {
-  const parts = [['YLS', 'yls'], ['YLI', 'yli'], ['Rainfall', 'rainfall_mm']].filter(([, k]) => missing.value[k].length).map(([n, k]) => `${n}: ${missing.value[k].join(', ')}`);
-  return parts.length ? `Missing weeks — ${parts.join('; ')}.` : '';
-});
+const views = TREND_VIEWS;
+const available = computed(() => availableViews(weeks.value));
+const picked = ref(props.initialView);
+const view = computed(() => resolveView(picked.value, weeks.value));
+const missingText = computed(() => missingTextFor(view.value, weeks.value));
+const drawn = computed(() => ({ yls: ylsPts.value.some(Boolean), yli: yliPts.value.some(Boolean), rain: weeks.value.some((w) => w.rainfall_mm != null) }));
+const pick = (id) => { picked.value = id; };
+const buttons = ref([]);
+const onKey = async (e) => {
+  const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+  if (!step) return;
+  e.preventDefault();
+  picked.value = nextView(view.value, step, weeks.value);
+  await nextTick();
+  buttons.value[views.findIndex((v) => v.id === view.value)]?.focus();
+};
+watch(view, () => { hoveredPoint.value = null; }); // a hidden chart keeps no tooltip
+
+// All view: one chart, YLS/YLI on a fixed 0-12 left axis, rainfall bars on a right mm axis.
+const RR = 34;
+const xA = (i) => (weeks.value.length < 2 ? (L + W - RR) / 2 : L + (i * (W - L - RR)) / (weeks.value.length - 1));
+const yA = (v) => { const t = v / 12; return T + (lowerIsWorse.value ? 1 - t : t) * (H - T - B); };
+const yRA = (v) => T + (1 - v / rainTop.value) * (H - T - B);
+const barWA = computed(() => Math.min(24, ((W - L - RR) / Math.max(weeks.value.length, 1)) * 0.6));
+const ptsA = (key) => weeks.value.map((w, i) => (w[key] == null ? null : { x: xA(i), y: yA(w[key]) }));
+const ylsA = computed(() => ptsA('yls'));
+const yliA = computed(() => ptsA('yli'));
+const tri = (p) => `${p.x},${p.y - 4} ${p.x - 3.6},${p.y + 3} ${p.x + 3.6},${p.y + 3}`;
+const liveText = computed(() => `Showing ${views.find((v) => v.id === view.value).name}`);
 const dCap = computed(() => (props.disease ? diseaseCaption({ weeks: weeks.value, disease: props.disease }) : ''));
 const rCap = computed(() => (props.rainfall ? rainfallCaption({ rainfall: props.rainfall }) : ''));
 const dLabel = computed(() => dCap.value || 'YLS and YLI by week');
 const rLabel = computed(() => rCap.value || 'Rainfall by week');
-const cell = (v) => (v == null ? '—' : v);</script>
+</script>
 
 <template>
   <div>
-  <figure>
+  <div class="toggle" role="group" aria-label="Trend view" @keydown="onKey">
+    <button v-for="(v, i) in views" :key="v.id" :ref="(el) => (buttons[i] = el)" type="button" :class="['tbtn', { on: view === v.id }]"
+            :aria-pressed="view === v.id" :aria-label="v.iconOnly ? v.name : undefined" :disabled="!available.includes(v.id)" @click="pick(v.id)">
+      <Icon :name="v.icon" :size="18" /><span v-if="!v.iconOnly">{{ v.name }}</span><Icon v-if="view === v.id" name="check" :size="14" />
+    </button>
+  </div>
+  <p class="sr-only" aria-live="polite">{{ liveText }}</p>
+
+  <figure v-if="view === 'all'">
+    <svg :viewBox="`0 0 ${W} ${H}`" role="group" aria-label="YLS, YLI and rainfall by week" @pointerleave="clearChartHover('disease'); clearChartHover('rainfall')">
+      <g class="axis">
+        <template v-for="t in [0, 6, 12]" :key="t"><line :x1="L" :x2="W - RR" :y1="yA(t)" :y2="yA(t)" /><text :x="L - 6" :y="yA(t) + 3" text-anchor="end">{{ t }}</text></template>
+        <template v-if="drawn.rain"><text v-for="t in [0, rainTop / 2, rainTop]" :key="`r${t}`" :x="W - RR + 6" :y="yRA(t) + 3">{{ t }} mm</text></template>
+        <text v-for="(w, i) in weeks" :key="w.week" :x="xA(i)" :y="H - 10" text-anchor="middle">{{ label(w.week) }}</text>
+      </g>
+      <template v-for="(w, i) in weeks" :key="`b${w.week}`">
+        <rect v-if="w.rainfall_mm != null" class="bar faint" :x="xA(i) - barWA / 2" :y="yRA(w.rainfall_mm)" :width="barWA" :height="yRA(0) - yRA(w.rainfall_mm)"
+              @pointerenter="hoverPoint('rainfall', w, 'Rainfall', w.rainfall_mm, xA(i), yRA(w.rainfall_mm))"
+              @pointerleave="clearHover('rainfall', `rainfall-${w.week}-Rainfall`)"><title>{{ w.week }} · Rainfall: {{ w.rainfall_mm }} mm</title></rect>
+      </template>
+      <path class="yli dashed" :d="linePath(yliA)" />
+      <path class="yls" :d="linePath(ylsA)" />
+      <template v-for="(w, i) in weeks" :key="w.week">
+        <circle v-if="ylsA[i]" :cx="ylsA[i].x" :cy="ylsA[i].y" r="3" class="dot yls-dot"
+                @pointerenter="hoverPoint('disease', w, 'YLS', w.yls, ylsA[i].x, ylsA[i].y)" @pointerleave="clearHover('disease', `disease-${w.week}-YLS`)"><title>{{ w.week }} · YLS: {{ w.yls }}</title></circle>
+        <polygon v-if="yliA[i]" :points="tri(yliA[i])" class="dot yli-dot"
+                 @pointerenter="hoverPoint('disease', w, 'YLI', w.yli, yliA[i].x, yliA[i].y)" @pointerleave="clearHover('disease', `disease-${w.week}-YLI`)"><title>{{ w.week }} · YLI: {{ w.yli }}</title></polygon>
+      </template>
+      <g v-if="activePoint" class="tooltip" aria-hidden="true">
+        <rect :x="tooltipX - tooltipWidth / 2" :y="tooltipY - 9" :width="tooltipWidth" height="18" rx="4" />
+        <text ref="allTooltipText" :x="tooltipX" :y="tooltipY + 2.5">{{ pointText }}</text>
+      </g>
+    </svg>
+    <p class="key">
+      <span v-if="drawn.yls"><svg class="ks" viewBox="0 0 24 10"><line x1="1" x2="23" y1="5" y2="5" class="yls" /><circle cx="12" cy="5" r="3" class="dot" /></svg>YLS</span>
+      <span v-if="drawn.yli"><svg class="ks" viewBox="0 0 24 10"><line x1="1" x2="23" y1="5" y2="5" class="yli dashed" /><polygon points="12,1.500 8.400,8.500 15.600,8.500" class="dot yli-dot" /></svg>YLI</span>
+      <span v-if="drawn.rain"><i class="sw faintsw"></i>Rainfall (mm, right axis)</span>
+    </p>
+  </figure>
+
+  <figure v-if="view === 'disease'">
     <figcaption>Leaf-spot stage (YLS) by week <small>— {{ lowerIsWorse ? 'lower = disease on a younger leaf' : 'higher = disease on a younger leaf' }}, so worsening goes down</small></figcaption>
     <svg :viewBox="`0 0 ${W} ${H}`" role="group" :aria-label="dLabel" @pointerleave="clearChartHover('disease')">
       <g class="axis">
@@ -105,7 +171,7 @@ const cell = (v) => (v == null ? '—' : v);</script>
     <p v-else class="cap soft">YLI (lighter line) is shown for context.</p>
   </figure>
 
-  <figure>
+  <figure v-if="view === 'rain'">
     <figcaption>Rainfall by week (mm)</figcaption>
     <svg :viewBox="`0 0 ${W} ${H}`" role="group" :aria-label="rLabel" @pointerleave="clearChartHover('rainfall')">
       <g class="axis">
@@ -131,13 +197,6 @@ const cell = (v) => (v == null ? '—' : v);</script>
   </figure>
 
   <p v-if="missingText" class="cap soft">{{ missingText }}</p>
-  <details>
-    <summary>Show the numbers</summary>
-    <table>
-      <thead><tr><th>Week</th><th>YLS</th><th>YLI</th><th>Rain (mm)</th></tr></thead>
-      <tbody><tr v-for="w in weeks" :key="w.week"><td>{{ w.week }}</td><td>{{ cell(w.yls) }}</td><td>{{ cell(w.yli) }}</td><td>{{ cell(w.rainfall_mm) }}</td></tr></tbody>
-    </table>
-  </details>
   </div>
 </template>
 
@@ -171,7 +230,17 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .sw.recent { background: var(--teal); }
 .sw.previous { background: var(--leaf-soft); }
 .sw.minsw { background: var(--danger); }
-details { margin-top: 10px; font-size: .85rem; }
-table { border-collapse: collapse; margin-top: 6px; }
-th, td { padding: 3px 12px 3px 0; text-align: left; }
+@media (forced-colors: active) { .tbtn.on { outline: 2px solid; } }
+.toggle { display: flex; flex-wrap: wrap; gap: 6px; }
+.tbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; justify-content: center; }
+.tbtn.on { background: var(--forest); color: #fff; border-color: var(--forest); font-weight: 700; }
+.tbtn:disabled { opacity: .45; cursor: not-allowed; }
+.tbtn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.dashed { stroke-dasharray: 5 3; }
+.bar.faint { fill: var(--teal); opacity: .25; }
+.faintsw { background: var(--teal); opacity: .25; }
+.key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .8rem; color: var(--ink-soft); margin: 4px 0 0; }
+.key span { display: inline-flex; align-items: center; gap: 4px; }
+.ks { width: 24px; height: 10px; margin: 0; display: inline-block; }
+.ks line { stroke-width: 2; }
 </style>
