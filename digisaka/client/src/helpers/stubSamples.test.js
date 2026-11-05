@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { SAMPLE_SCENARIOS, sampleFile, defaultSamples, addDefaultSamples } from './stubSamples.js';
+import { SAMPLE_SCENARIOS, sampleFile, defaultSamples, addDefaultSamples, lineLabel } from './stubSamples.js';
 import { useScanStore } from '../stores/scan.js';
 
 // The stub's own rule (stub/scheduler.js scenarioOf), restated so a rename on either side fails here.
@@ -60,5 +60,15 @@ describe('addDefaultSamples', () => {
     expect(s.leaves).toHaveLength(0);
     addDefaultSamples(s, true);
     expect(s.leaves).toHaveLength(3);
+  });
+});
+
+describe('lineLabel', () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it('names the stub scenario only on the stub stack', () => {
+    expect(lineLabel('L06')).toBe('L06');
+    vi.stubEnv('VITE_STUB_SAMPLES', '1');
+    expect(lineLabel('L06')).toBe('L06 · Response not poor · scan run fails, Retry works');
+    expect(lineLabel('L99')).toBe('L99');
   });
 });

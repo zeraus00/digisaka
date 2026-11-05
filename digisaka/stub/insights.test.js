@@ -95,11 +95,15 @@ test('a week without a cycle serves the same fields, with the risk and action ki
   assert.ok(b.actions.kinds.every((k) => !k.active && !k.options.length));
 });
 
-test('a line with nothing recorded has no readings: an empty series and no readings, weather kept', async () => {
-  const b = await insights('L01', '2026-W24');
-  assert.deepEqual(b.readings, []);
-  b.series.forEach((w) => assert.deepEqual([w.yli, w.yls, w.functional_leaves, w.leaves_at_shooting, w.canopy_status], [null, null, null, null, null], w.week));
-  assert.ok(b.series.some((w) => w.rainfall_mm !== null), 'rainfall is the weather feed, not the line');
+test('the series and readings come from the line\'s weekly records, blank where the line has none', async () => {
+  const feed = await insights('L12', '2026-W24');
+  assert.deepEqual([feed.series.at(-1).yls, feed.series.at(-1).functional_leaves, feed.series.at(-1).canopy_status], [7, null, null], 'a missing feed value is null');
+  assert.ok(feed.readings.length);
+  const early = await insights('L10', '2026-W22'); // L10 has one week of history, W24
+  assert.deepEqual(early.readings, []);
+  early.series.forEach((w) => assert.deepEqual([w.yli, w.yls, w.functional_leaves, w.rainfall_mm, w.canopy_status], [null, null, null, null, null], w.week));
+  const one = await insights('L10', '2026-W24');
+  assert.deepEqual(one.series.map((w) => w.yls).filter((v) => v !== null), [9]);
 });
 
 test('the series ends at the asked week, across a year boundary too', async () => {

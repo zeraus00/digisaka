@@ -15,7 +15,7 @@ import { groupLeaves } from '../helpers/groups.js';
 import { isoWeekOf, weekStart, weekEnd } from '../helpers/week.js';
 import { REFERRAL_TEXT } from '../helpers/messages.js';
 import { todayIso, fromIso } from '../helpers/today.js';
-import { samplesEnabled, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
+import { samplesEnabled, lineLabel, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
 const scan = useScanStore(), farm = useFarmStore(), cycle = useCycleStore(), suggestion = useSuggestionStore();
 const router = useRouter();
@@ -98,7 +98,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
         <label>Line
           <select :value="scan.line" @change="setLine">
             <option v-if="!farm.lines.length" value="">No lines available</option>
-            <option v-for="l in farm.lines" :key="l" :value="l">{{ l }}</option>
+            <option v-for="l in farm.lines" :key="l" :value="l">{{ lineLabel(l) }}</option>
           </select>
         </label>
         <p class="hint">Week {{ scan.week }} ({{ weekRange }})</p>

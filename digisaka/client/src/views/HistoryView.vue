@@ -1,4 +1,5 @@
 <script setup>
+import { lineLabel } from '../helpers/stubSamples.js';
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
@@ -23,7 +24,7 @@ const open = (l, p) => router.push(`/treatment/${encodeURIComponent(l.line_id)}/
       <div class="card static">
         <span class="thumb">🌱</span>
         <span class="body">
-          <span class="name">Line {{ l.line_id }}</span>
+          <span class="name">Line {{ lineLabel(l.line_id) }}</span>
           <span class="line soft">{{ cycleText(l) }}</span>
           <span v-if="l.error" class="error">{{ l.error }}</span>
         </span>

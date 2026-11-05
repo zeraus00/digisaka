@@ -26,8 +26,8 @@ test('every scheduler request needs a Practitioner token', async () => {
   assert.equal((await get('/lines', as('both@digisaka.test'))).status, 200);
 });
 
-test('lists the eight seed lines', async () => {
-  assert.deepEqual((await (await get('/lines')).json()).lines, ['L01', 'L02', 'L03', 'L04', 'L05', 'L06', 'L07']);
+test('lists the 21 seed lines', async () => {
+  assert.deepEqual((await (await get('/lines')).json()).lines, Array.from({ length: 21 }, (_, i) => `L${String(i + 1).padStart(2, '0')}`));
 });
 
 test('line status carries the scenario for each seed line', async () => {
@@ -44,10 +44,10 @@ test('line status carries the scenario for each seed line', async () => {
   assert.equal(l5.latest_cycle.week, '2026-W24');
 });
 
-test('history is the last three weeks up to the week, with gaps as null', async () => {
+test('history is the last three weeks up to the week, from the weekly dataset', async () => {
   const h = await (await get('/lines/L04/weeks/2026-W24/history')).json();
   assert.deepEqual(h.weeks.map((w) => w.week), ['2026-W22', '2026-W23', '2026-W24']);
-  assert.equal(h.weeks[0].yli, null);
+  assert.deepEqual(h.weeks.at(-1), { week: '2026-W24', yls: 7, yli: 6, rainfall_mm: 30 });
   const early = await (await get('/lines/L04/weeks/2026-W21/history')).json();
   assert.deepEqual(early.weeks.map((w) => w.week), ['2026-W20', '2026-W21']);
 });
@@ -67,7 +67,7 @@ test('errors use the scheduler codes', async () => {
 test('evidence has weeks, disease and rainfall; a cycle without it is unknown_evidence', async () => {
   const ev = await (await get('/cycles/c-L03-24/evidence')).json();
   assert.equal(ev.cycle_id, 'c-L03-24');
-  assert.deepEqual(ev.weeks.at(-1), { week: '2026-W24', yls: 5, yli: 3, rainfall_mm: 44 });
+  assert.deepEqual(ev.weeks.at(-1), { week: '2026-W24', yls: 7, yli: 6, rainfall_mm: 30 });
   assert.equal(ev.disease.worsening, true);
   assert.equal(ev.disease.falling, true);
   assert.deepEqual(ev.disease.level, { yls: 5, below: 8, critical_below: 6, verdict: 'critical' });

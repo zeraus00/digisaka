@@ -27,14 +27,16 @@ export function insightsRoutes(store, { settleAll }) {
       if (!line) return fail(404, 'unknown_line', `No line ${params.id}`);
       if (!isValidWeek(params.week)) return fail(422, 'invalid_week', `${params.week} is not a week key`);
       const frozen = line.cycles.some((c) => c.week === params.week) ? PAYLOADS.cycle : PAYLOADS.none;
-      // The series is the window ending at the asked week, as on the scheduler; the frozen values are relabelled to it.
+      // The series is the window of weeks ending at the asked week, read from the line's weekly records (the dataset
+      // copy in the seed); the readings text stays the frozen copy's, and is blank when the asked week has no record.
       const last = frozen.series.length - 1;
-      const body = { ...frozen, line_id: params.id, week: params.week, series: frozen.series.map((w, i) => ({ ...w, week: shiftWeek(params.week, i - last) })) };
-      // A line with nothing recorded has no readings, as on the scheduler; the weather (rainfall) is not the line's.
-      if (line.weeks.length === 0) {
-        body.series = body.series.map((w) => ({ ...w, yli: null, yls: null, functional_leaves: null, leaves_at_shooting: null, leaf_wetness_hours: null, canopy_status: null }));
-        body.readings = [];
-      }
+      const record = (week) => line.records.find((r) => r.week === week);
+      const series = frozen.series.map((_, i) => {
+        const week = shiftWeek(params.week, i - last), r = record(week);
+        const leaves = r?.functional_leaves ?? null;
+        return { week, yli: r?.yli ?? null, yls: r?.yls ?? null, functional_leaves: leaves, leaves_at_shooting: r?.leaves_at_shooting ?? null, rainfall_mm: r?.rainfall_mm ?? null, leaf_wetness_hours: r?.leaf_wetness_hours ?? null, canopy_status: leaves === null ? null : leaves >= frozen.functional_leaves_target ? 'ok' : leaves >= frozen.functional_leaves_threshold ? 'watch' : 'critical' };
+      });
+      const body = { ...frozen, line_id: params.id, week: params.week, series, readings: record(params.week) ? frozen.readings : [] };
       return ok(body);
     }),
   }];

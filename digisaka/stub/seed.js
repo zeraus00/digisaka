@@ -1,7 +1,14 @@
+import { readFileSync } from 'node:fs';
+
 // Fixed seed for the stub scheduler. "Today" is 2026-W24, matching the app. Each line is a named
 // scenario; the data decides what happens, nothing is switched. Weekly values are null where the
 // real feed would have a gap. `evidence` is the rules' reading of a cycle, null for a cycle with no trend stage.
 const wk = (week, yls, yli, rainfall_mm) => ({ week, yls, yli, rainfall_mm });
+
+// The scheduler's synthetic weekly dataset (L01 to L21, weeks up to the app's W24), copied from its demo data:
+// `payloads/synthetic-weekly.json`. A line's chart weeks and Line Insights readings come from it; `name` is not served.
+const WEEKLY = JSON.parse(readFileSync(new URL('./payloads/synthetic-weekly.json', import.meta.url), 'utf8'));
+const weekly = (id) => ({ name: WEEKLY[id].name, weeks: WEEKLY[id].weeks.map((r) => wk(r.week, r.yls, r.yli, r.rainfall_mm)), records: WEEKLY[id].weeks });
 
 // The infection-risk rule's conditions as the scheduler lists them: all met, for a verdict of yes.
 const spreadConditions = () => [
@@ -15,10 +22,10 @@ const seed = () => ({
   diagnoses: {}, uploads: {}, runs: {}, scanRuns: {}, nextId: 1,
   lines: {
     // Nothing recorded yet.
-    L01: { weeks: [], cycles: [], applications: [], leaves: 0 },
+    L01: { ...weekly('L01'), cycles: [], applications: [], leaves: 0 },
     // A suggestion with an application recorded against it.
     L02: {
-      weeks: [wk('2026-W20', 9, 5, 10), wk('2026-W21', 8, 5, 14), wk('2026-W22', 7, 4, 20), wk('2026-W23', 6, 4, 28)],
+      ...weekly('L02'),
       cycles: [{
         cycle_id: 'c-L02-23', week: '2026-W23', status: 'done', outcome: 'suggested', outcome_reason: null,
         evidence: {
@@ -32,7 +39,7 @@ const seed = () => ({
     },
     // A suggestion with a flagged pick: recording it asks for a confirmation.
     L03: {
-      weeks: [wk('2026-W20', 9, 5, 15), wk('2026-W21', 8, 5, 20), wk('2026-W22', 7, 4, 32), wk('2026-W23', 6, 4, 40), wk('2026-W24', 5, 3, 44)],
+      ...weekly('L03'),
       cycles: [{
         cycle_id: 'c-L03-24', week: '2026-W24', status: 'done', outcome: 'suggested', outcome_reason: null,
         evidence: {
@@ -46,7 +53,7 @@ const seed = () => ({
     },
     // Ready to scan this week (the default demo line); last week had a gap in the YLI reading.
     L04: {
-      weeks: [wk('2026-W20', 9, 5, 18), wk('2026-W21', 9, 6, 22), wk('2026-W22', 8, null, 30), wk('2026-W23', 8, 5, 26), wk('2026-W24', null, null, 12)],
+      ...weekly('L04'),
       cycles: [{
         cycle_id: 'c-L04-23', week: '2026-W23', status: 'done', outcome: 'continue_monitoring', outcome_reason: 'disease_not_worsening',
         evidence: {
@@ -59,21 +66,23 @@ const seed = () => ({
     },
     // The rules could not decide: human review, no evidence for the cycle, and a draft with a blocking alert.
     L05: {
-      weeks: [wk('2026-W21', 8, 4, 12), wk('2026-W22', null, null, 18), wk('2026-W23', 6, 3, null), wk('2026-W24', 5, 3, null)],
+      ...weekly('L05'),
       cycles: [{ cycle_id: 'c-L05-24', week: '2026-W24', status: 'done', outcome: 'human_review_required', outcome_reason: 'missing_feed_value', evidence: null }],
       applications: [], leaves: 7,
       suggestion: { payload: 'stressed', basis: 'no_confirmed_stage' },
     },
     // Monitoring so far; closing its next week fails (ticket 03).
     L06: {
-      weeks: [wk('2026-W21', 9, 6, 20), wk('2026-W22', 9, 6, 22), wk('2026-W23', 9, 5, 25)],
+      ...weekly('L06'),
       cycles: [{ cycle_id: 'c-L06-23', week: '2026-W23', status: 'done', outcome: 'continue_monitoring', outcome_reason: 'disease_not_worsening', evidence: null }],
       // A fresh-line draft recorded from the scheduler (payload `real`): only Cannot-Check Alerts to acknowledge.
       applications: [], leaves: 6,
       suggestion: { payload: 'monitoring', basis: 'stage_confirmed' },
     },
     // Nothing recorded; a verified scan starts a run.
-    L07: { weeks: [], cycles: [], applications: [], leaves: 0 },
+    L07: { ...weekly('L07'), cycles: [], applications: [], leaves: 0 },
+    // L08 to L21: weekly data only. A verified scan starts a run that ends in monitoring, like any line without a plan.
+    ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => `L${String(i + 8).padStart(2, '0')}`).map((id) => [id, { ...weekly(id), cycles: [], applications: [], leaves: 0 }])),
   },
 });
 
