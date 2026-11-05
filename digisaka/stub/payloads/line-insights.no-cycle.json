@@ -12,6 +12,7 @@
       "functional_leaves": null,
       "leaves_at_shooting": null,
       "rainfall_mm": null,
+      "leaf_wetness_hours": null,
       "canopy_status": null
     },
     {
@@ -21,6 +22,7 @@
       "functional_leaves": null,
       "leaves_at_shooting": null,
       "rainfall_mm": null,
+      "leaf_wetness_hours": null,
       "canopy_status": null
     },
     {
@@ -30,6 +32,7 @@
       "functional_leaves": null,
       "leaves_at_shooting": null,
       "rainfall_mm": null,
+      "leaf_wetness_hours": null,
       "canopy_status": null
     },
     {
@@ -39,6 +42,7 @@
       "functional_leaves": 8,
       "leaves_at_shooting": 12,
       "rainfall_mm": 18,
+      "leaf_wetness_hours": 28.0,
       "canopy_status": "watch"
     },
     {
@@ -48,6 +52,7 @@
       "functional_leaves": 8,
       "leaves_at_shooting": 12,
       "rainfall_mm": 22,
+      "leaf_wetness_hours": 31.5,
       "canopy_status": "watch"
     },
     {
@@ -57,6 +62,7 @@
       "functional_leaves": 7,
       "leaves_at_shooting": 11,
       "rainfall_mm": 30,
+      "leaf_wetness_hours": 35.0,
       "canopy_status": "critical"
     },
     {
@@ -66,6 +72,7 @@
       "functional_leaves": 7,
       "leaves_at_shooting": 11,
       "rainfall_mm": 26,
+      "leaf_wetness_hours": 33.0,
       "canopy_status": "critical"
     },
     {
@@ -75,6 +82,7 @@
       "functional_leaves": null,
       "leaves_at_shooting": null,
       "rainfall_mm": 12,
+      "leaf_wetness_hours": null,
       "canopy_status": null
     }
   ],

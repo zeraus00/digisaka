@@ -6,7 +6,7 @@ import { useInsightsStore } from './insights.js';
 const json = (status, body) => ({ status, ok: status < 400, json: async () => body });
 const payload = (line, week) => ({
   line_id: line, week,
-  series: [{ week: '2026-W22', yls: 7, functional_leaves: 7 }, { week: '2026-W23', yls: 6, functional_leaves: null }, { week: '2026-W24', yls: null, functional_leaves: null }],
+  series: [{ week: '2026-W22', yls: 7, functional_leaves: 7, leaf_wetness_hours: 30.5 }, { week: '2026-W23', yls: 6, functional_leaves: null, leaf_wetness_hours: 28 }, { week: '2026-W24', yls: null, functional_leaves: null, leaf_wetness_hours: null }],
   history: [{ applied_on: '2026-05-12', product: 'A' }, { applied_on: '2026-06-02', product: 'B' }, { applied_on: '2026-05-26', product: 'C' }],
 });
 let fetchMock;
@@ -29,6 +29,7 @@ describe('insights store', () => {
     expect(s.latest('yls')).toMatchObject({ week: '2026-W23', yls: 6 });
     expect(s.latest('functional_leaves')).toMatchObject({ week: '2026-W22' });
     expect(s.latest('rainfall_mm')).toBeNull();
+    expect(s.latest('leaf_wetness_hours')).toMatchObject({ week: '2026-W23', leaf_wetness_hours: 28 });
     expect(s.lastTreatment.product).toBe('B');
   });
   it('getters are empty before a load', () => {

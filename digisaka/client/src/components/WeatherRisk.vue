@@ -10,6 +10,7 @@ const props = defineProps({ line: { type: String, required: true }, week: { type
 const insights = useInsightsStore();
 const data = computed(() => insights.data);
 const rainfall = computed(() => data.value?.series.find((w) => w.week === props.week)?.rainfall_mm ?? null);
+const wetness = computed(() => data.value?.series.find((w) => w.week === props.week)?.leaf_wetness_hours ?? null);
 const risk = computed(() => data.value?.risk);
 const days = computed(() => data.value?.rain_outlook?.days ?? []);
 const BADGE = { fired: 'bad', not_fired: 'ok' };
@@ -22,9 +23,9 @@ const BADGE = { fired: 'bad', not_fired: 'ok' };
     <div>
       <div class="jr-metrics jr-card">
         <article class="jr-metric"><span>Recorded rainfall</span><strong>{{ rainfall == null ? '—' : `${rainfall} mm` }}</strong><small>{{ rainfall == null ? 'No rainfall value recorded for this week' : `Week ${Number(week.split('W').pop())}` }}</small></article>
-        <!-- TODO(contract): humidity, leaf wetness -->
+        <!-- TODO(contract): humidity -->
         <article class="jr-metric jr-off"><span>Humidity</span><strong>Coming soon</strong><small>The scheduler does not provide this yet</small></article>
-        <article class="jr-metric jr-off"><span>Leaf wetness</span><strong>Coming soon</strong><small>The scheduler does not provide this yet</small></article>
+        <article class="jr-metric"><span>Leaf wetness</span><strong>{{ wetness == null ? '—' : `${wetness} h` }}</strong><small>{{ wetness == null ? 'No leaf wetness value recorded for this week' : `Week ${Number(week.split('W').pop())}` }}</small></article>
       </div>
 
       <article class="jr-card">
