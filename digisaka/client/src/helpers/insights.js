@@ -26,7 +26,8 @@ export function rainOutlookText(outlook) {
 // A condition's result as an icon name (none when it cannot be checked, which is written out instead) with its spoken form, and the reading it was judged on (shown only when there is one number).
 const CONDITION = { met: ['check', 'Passed'], not_met: ['x', 'Not passed'], cannot_check: ['', 'Cannot be checked'] };
 export const conditionMark = (result) => CONDITION[result] ?? [result, result];
-export const conditionReading = (input) => (input?.length === 1 ? String(input[0]) : '');
+// Leaf wetness has its own tile, so its condition shows no number (matched by label: the response carries no rule id).
+export const conditionReading = (input, label) => (input?.length === 1 && !/^leaf wetness/i.test(label ?? '') ? String(input[0]) : '');
 
 // The Treatment chip is on when either fungicide kind is active; the other chips follow their own kind.
 export const TREATMENT_KINDS = ['systemic_fungicide', 'contact_fungicide'];

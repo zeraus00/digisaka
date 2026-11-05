@@ -47,7 +47,7 @@ const BADGE = { fired: 'bad', not_fired: 'ok' };
           <li v-for="c in risk.conditions" :key="c.label" class="jr-row">
             <span class="jr-mark" :class="c.result" role="img" :aria-label="conditionMark(c.result)[1]"><Icon v-if="conditionMark(c.result)[0]" :name="conditionMark(c.result)[0]" :size="16" /></span>
             <span class="jr-label">{{ c.label }}</span>
-            <b>{{ c.result === 'cannot_check' ? conditionMark(c.result)[1] : conditionReading(c.input) }}</b>
+            <b>{{ c.result === 'cannot_check' ? conditionMark(c.result)[1] : conditionReading(c.input, c.label) }}</b>
           </li>
         </ul>
         <div v-for="r in data.readings" :key="r.rule" class="jr-indent"><b>{{ r.finding }}</b><p class="jr-hint">{{ r.text }}<template v-if="r.source"> · {{ r.source }}</template></p></div>

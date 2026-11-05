@@ -30,6 +30,8 @@ describe('insights text', () => {
   it('words a condition result and passes an unknown one through', () => {
     expect([conditionMark('met'), conditionMark('not_met'), conditionMark('cannot_check'), conditionMark('x')]).toEqual([['check', 'Passed'], ['x', 'Not passed'], ['', 'Cannot be checked'], ['x', 'x']]);
     expect([conditionReading([84]), conditionReading([5, 3]), conditionReading(null)]).toEqual(['84', '', '']);
+    expect(conditionReading([34], 'Leaf wetness above 6 hours')).toBe('');
+    expect(conditionReading([84], 'Rain over 0 mm in the last 2 weeks')).toBe('84');
     expect([dayMonth('2026-09-01'), dayMonth('2026-05-12'), dayMonth(null)]).toEqual(['1 Sep', '12 May', null]);
     const g = (frac_code, status) => ({ frac_code, status });
     expect(shownGroups([g('M', 'ok'), g('D1', 'discouraged'), g('3', 'maxed')]).map((x) => x.frac_code)).toEqual(['D1', '3']);
