@@ -5,6 +5,7 @@ import { useInsightsStore } from '../stores/insights.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import WeekCharts from './WeekCharts.vue';
 import { outcomeReasonText } from '../helpers/messages.js';
+import { joinLeaves } from '../helpers/evidence.js';
 import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText } from '../helpers/insights.js';
 
 // A line's insights for the week, so the practitioner sees the state of the line while choosing what to scan.
@@ -25,6 +26,7 @@ onBeforeUnmount(() => { history.load('', ''); insights.load('', ''); });
 const phase = computed(() => [insights.phase, history.phase].find((p) => p === 'error') ?? [insights.phase, history.phase].find((p) => p === 'loading') ?? insights.phase);
 const error = computed(() => insights.error || history.error);
 const data = computed(() => insights.data);
+const chart = computed(() => joinLeaves(history.weeks, insights.data));
 const yls = computed(() => insights.latest('yls'));
 const yli = computed(() => insights.latest('yli'));
 const shooting = computed(() => insights.latest('leaves_at_shooting'));
@@ -119,7 +121,7 @@ const result = computed(() => {
           <p class="disclaimer">These indicators are context, not a confirmed diagnosis. Verify findings with an agricultural specialist before treatment decisions.</p>
         </div>
       </div>
-      <WeekCharts :weeks="history.weeks" />
+      <WeekCharts :weeks="chart.weeks" :leaves="chart.refs" />
     </template>
   </section>
 </template>

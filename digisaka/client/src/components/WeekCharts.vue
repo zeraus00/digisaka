@@ -1,16 +1,17 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
 import Icon from './Icon.vue';
-import { diseaseCaption, rainfallCaption, linePath, niceMax, TREND_VIEWS, availableViews, resolveView, nextView, missingTextFor } from '../helpers/evidence.js';
+import { diseaseCaption, rainfallCaption, linePath, niceMax, TREND_VIEWS, leavesLines, leavesCaption, availableViews, resolveView, nextView, missingTextFor } from '../helpers/evidence.js';
 
 // Weekly YLS/YLI and rainfall as plain SVG. With `disease` and `rainfall` (a cycle's evidence) the compared
 // weeks are highlighted and captioned; without them it is a plain look at recent weeks.
 const props = defineProps({ weeks: { type: Array, required: true }, disease: { type: Object, default: null }, rainfall: { type: Object, default: null },
+  leaves: { type: Object, default: null }, // served {critical, target} for the Leaves view
   initialView: { type: String, default: 'all' } }); // initialView: tests only; the row always starts on All
 
 const W = 320, H = 150, L = 34, R = 10, T = 10, B = 28, RAIN_L = 46;
 const hoveredPoint = ref(null);
-const allTooltipText = ref(null), diseaseTooltipText = ref(null), rainfallTooltipText = ref(null);
+const allTooltipText = ref(null), leavesTooltipText = ref(null), diseaseTooltipText = ref(null), rainfallTooltipText = ref(null);
 const tooltipWidth = ref(0);
 const weeks = computed(() => props.weeks);
 const label = (w) => `W${w.slice(-2)}`;
@@ -34,7 +35,7 @@ const pointText = computed(() => activePoint.value
   : '');
 watch(pointText, async (text) => {
   await nextTick();
-  const element = view.value === 'all' ? allTooltipText.value : activePoint.value?.chart === 'rainfall' ? rainfallTooltipText.value : diseaseTooltipText.value;
+  const element = view.value === 'all' ? allTooltipText.value : activePoint.value?.chart === 'leaves' ? leavesTooltipText.value : activePoint.value?.chart === 'rainfall' ? rainfallTooltipText.value : diseaseTooltipText.value;
   tooltipWidth.value = text && element
     ? element.getComputedTextLength() + 12
     : 0;
@@ -68,7 +69,7 @@ const available = computed(() => availableViews(weeks.value));
 const picked = ref(props.initialView);
 const view = computed(() => resolveView(picked.value, weeks.value));
 const missingText = computed(() => missingTextFor(view.value, weeks.value));
-const drawn = computed(() => ({ yls: ylsPts.value.some(Boolean), yli: yliPts.value.some(Boolean), rain: weeks.value.some((w) => w.rainfall_mm != null) }));
+const drawn = computed(() => ({ yls: ylsPts.value.some(Boolean), yli: yliPts.value.some(Boolean), rain: weeks.value.some((w) => w.rainfall_mm != null), leaves: weeks.value.some((w) => w.leaves != null) }));
 const pick = (id) => { picked.value = id; };
 const buttons = ref([]);
 const onKey = async (e) => {
@@ -91,6 +92,14 @@ const ptsA = (key) => weeks.value.map((w, i) => (w[key] == null ? null : { x: xA
 const ylsA = computed(() => ptsA('yls'));
 const yliA = computed(() => ptsA('yli'));
 const tri = (p) => `${p.x},${p.y - 4} ${p.x - 3.6},${p.y + 3} ${p.x + 3.6},${p.y + 3}`;
+const lv = (v) => Math.min(v, 12);
+const leavesA = computed(() => weeks.value.map((w, i) => (w.leaves == null ? null : { x: xA(i), y: yA(lv(w.leaves)) })));
+// Leaves view: same 0-12 scale, higher is up; reference labels sit in the right margin.
+const yL = (v) => T + (1 - lv(v) / 12) * (H - T - B);
+const leavesL = computed(() => weeks.value.map((w, i) => (w.leaves == null ? null : { x: xA(i), y: yL(w.leaves) })));
+const refLines = computed(() => leavesLines(props.leaves));
+const lCap = computed(() => leavesCaption(weeks.value));
+const sq = (p) => ({ x: p.x - 3, y: p.y - 3 });
 const liveText = computed(() => `Showing ${views.find((v) => v.id === view.value).name}`);
 const dCap = computed(() => (props.disease ? diseaseCaption({ weeks: weeks.value, disease: props.disease }) : ''));
 const rCap = computed(() => (props.rainfall ? rainfallCaption({ rainfall: props.rainfall }) : ''));
@@ -109,7 +118,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
   <p class="sr-only" aria-live="polite">{{ liveText }}</p>
 
   <figure v-if="view === 'all'">
-    <svg :viewBox="`0 0 ${W} ${H}`" role="group" aria-label="YLS, YLI and rainfall by week" @pointerleave="clearChartHover('disease'); clearChartHover('rainfall')">
+    <svg :viewBox="`0 0 ${W} ${H}`" role="group" aria-label="YLS, YLI and rainfall by week" @pointerleave="clearChartHover('disease'); clearChartHover('rainfall'); clearChartHover('leaves')">
       <g class="axis">
         <template v-for="t in [0, 6, 12]" :key="t"><line :x1="L" :x2="W - RR" :y1="yA(t)" :y2="yA(t)" /><text :x="L - 6" :y="yA(t) + 3" text-anchor="end">{{ t }}</text></template>
         <template v-if="drawn.rain"><text v-for="t in [0, rainTop / 2, rainTop]" :key="`r${t}`" :x="W - RR + 6" :y="yRA(t) + 3">{{ t }} mm</text></template>
@@ -121,8 +130,11 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
               @pointerleave="clearHover('rainfall', `rainfall-${w.week}-Rainfall`)"><title>{{ w.week }} · Rainfall: {{ w.rainfall_mm }} mm</title></rect>
       </template>
       <path class="yli dashed" :d="linePath(yliA)" />
+      <path class="leaves dotted" :d="linePath(leavesA)" />
       <path class="yls" :d="linePath(ylsA)" />
       <template v-for="(w, i) in weeks" :key="w.week">
+        <rect v-if="leavesA[i]" v-bind="sq(leavesA[i])" width="6" height="6" class="dot leaves-dot"
+              @pointerenter="hoverPoint('leaves', w, 'Leaves', w.leaves, leavesA[i].x, leavesA[i].y)" @pointerleave="clearHover('leaves', `leaves-${w.week}-Leaves`)"><title>{{ w.week }} · Leaves: {{ w.leaves }}</title></rect>
         <circle v-if="ylsA[i]" :cx="ylsA[i].x" :cy="ylsA[i].y" r="3" class="dot yls-dot"
                 @pointerenter="hoverPoint('disease', w, 'YLS', w.yls, ylsA[i].x, ylsA[i].y)" @pointerleave="clearHover('disease', `disease-${w.week}-YLS`)"><title>{{ w.week }} · YLS: {{ w.yls }}</title></circle>
         <polygon v-if="yliA[i]" :points="tri(yliA[i])" class="dot yli-dot"
@@ -136,6 +148,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
     <p class="key">
       <span v-if="drawn.yls"><svg class="ks" viewBox="0 0 24 10"><line x1="1" x2="23" y1="5" y2="5" class="yls" /><circle cx="12" cy="5" r="3" class="dot" /></svg>YLS</span>
       <span v-if="drawn.yli"><svg class="ks" viewBox="0 0 24 10"><line x1="1" x2="23" y1="5" y2="5" class="yli dashed" /><polygon points="12,1.500 8.400,8.500 15.600,8.500" class="dot yli-dot" /></svg>YLI</span>
+      <span v-if="drawn.leaves"><svg class="ks" viewBox="0 0 24 10"><line x1="1" x2="23" y1="5" y2="5" class="leaves dotted" /><rect x="9" y="2" width="6" height="6" class="dot leaves-dot" /></svg>Leaves</span>
       <span v-if="drawn.rain"><i class="sw faintsw"></i>Rainfall (mm, right axis)</span>
     </p>
   </figure>
@@ -169,6 +182,30 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
     <p class="sr-only" aria-live="polite">{{ activePoint?.chart === 'disease' ? pointText : '' }}</p>
     <p v-if="dCap" class="cap">{{ dCap }} <span class="soft">YLI (lighter line) is shown for context and is not part of the decision.</span></p>
     <p v-else class="cap soft">YLI (lighter line) is shown for context.</p>
+  </figure>
+
+  <figure v-if="view === 'leaves'">
+    <figcaption>Functional leaves by week — count 8 weeks after shooting</figcaption>
+    <svg :viewBox="`0 0 ${W} ${H}`" role="group" aria-label="Functional leaves by week" @pointerleave="clearChartHover('leaves')">
+      <g class="axis">
+        <template v-for="t in [0, 6, 12]" :key="t"><line :x1="L" :x2="W - RR" :y1="yL(t)" :y2="yL(t)" /><text :x="L - 6" :y="yL(t) + 3" text-anchor="end">{{ t }}</text></template>
+        <text v-for="(w, i) in weeks" :key="w.week" :x="xA(i)" :y="H - 10" text-anchor="middle">{{ label(w.week) }}</text>
+      </g>
+      <g v-for="r in refLines" :key="r.kind" class="ref">
+        <line :class="['refline', r.kind]" :x1="L" :x2="W - RR" :y1="yL(r.value)" :y2="yL(r.value)" />
+        <text :x="W - RR + 4" :y="yL(r.value) + 3">{{ r.label }}</text>
+      </g>
+      <path class="leaves" :d="linePath(leavesL)" />
+      <template v-for="(w, i) in weeks" :key="w.week">
+        <rect v-if="leavesL[i]" v-bind="sq(leavesL[i])" width="6" height="6" class="dot leaves-dot"
+              @pointerenter="hoverPoint('leaves', w, 'Leaves', w.leaves, leavesL[i].x, leavesL[i].y)" @pointerleave="clearHover('leaves', `leaves-${w.week}-Leaves`)"><title>{{ w.week }} · Leaves: {{ w.leaves }}</title></rect>
+      </template>
+      <g v-if="activePoint?.chart === 'leaves'" class="tooltip" aria-hidden="true">
+        <rect :x="tooltipX - tooltipWidth / 2" :y="tooltipY - 9" :width="tooltipWidth" height="18" rx="4" />
+        <text ref="leavesTooltipText" :x="tooltipX" :y="tooltipY + 2.5">{{ pointText }}</text>
+      </g>
+    </svg>
+    <p class="cap">{{ lCap }}</p>
   </figure>
 
   <figure v-if="view === 'rain'">
@@ -236,6 +273,13 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .tbtn.on { background: var(--forest); color: #fff; border-color: var(--forest); font-weight: 700; }
 .tbtn:disabled { opacity: .45; cursor: not-allowed; }
 .tbtn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.leaves { stroke: var(--forest-deep); stroke-width: 2; }
+.dotted { stroke-dasharray: 1.5 3.5; }
+.leaves-dot { fill: var(--forest-deep); }
+.ref text { fill: var(--ink-soft); font-size: 8px; }
+.refline { stroke-width: 1; }
+.refline.critical { stroke: var(--danger); stroke-dasharray: 4 3; }
+.refline.target { stroke: var(--forest); stroke-dasharray: 1.5 3; }
 .dashed { stroke-dasharray: 5 3; }
 .bar.faint { fill: var(--teal); opacity: .25; }
 .faintsw { background: var(--teal); opacity: .25; }
