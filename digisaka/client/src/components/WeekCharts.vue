@@ -110,9 +110,9 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
 <template>
   <div>
   <div class="toggle" role="group" aria-label="Trend view" @keydown="onKey">
-    <button v-for="(v, i) in views" :key="v.id" :ref="(el) => (buttons[i] = el)" type="button" :class="['tbtn', { on: view === v.id }]"
+    <button v-for="(v, i) in views" :key="v.id" :ref="(el) => (buttons[i] = el)" type="button" :class="['tbtn', { on: view === v.id, 'icon-only': v.iconOnly }]"
             :aria-pressed="view === v.id" :aria-label="v.iconOnly ? v.name : undefined" :disabled="!available.includes(v.id)" @click="pick(v.id)">
-      <Icon :name="v.icon" :size="18" /><span v-if="!v.iconOnly">{{ v.name }}</span><Icon v-if="view === v.id" class="chk" name="check" :size="14" />
+      <Icon :name="v.icon" :size="18" /><span v-if="!v.iconOnly">{{ v.name }}</span><Icon v-if="view === v.id && !v.iconOnly" class="chk" name="check" :size="14" />
     </button>
   </div>
   <p class="sr-only" aria-live="polite">{{ liveText }}</p>
@@ -268,14 +268,15 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .sw.previous { background: var(--leaf-soft); }
 .sw.minsw { background: var(--danger); }
 @media (forced-colors: active) { .tbtn.on { outline: 2px solid; } }
-.toggle { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-.tbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; justify-content: center; }
-.tbtn.on { background: var(--forest); color: #fff; border-color: var(--forest); font-weight: 700; }
+.toggle { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.tbtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 14px; border: 1.5px solid #9aa3a0; border-radius: 999px; background: #fff; color: var(--ink); font: 700 14px inherit; font-family: inherit; cursor: pointer; }
+.tbtn.icon-only { padding: 0; width: 44px; }
+.tbtn.on { background: var(--forest); color: #fff; border-color: var(--forest); }
 /* the chart rule `svg { width: 100%; margin-top }` also hits the icons (a child root takes the parent's scope) */
-.tbtn svg { width: 18px; height: 18px; margin: 0; }
-.tbtn svg.chk { width: 14px; height: 14px; }
+.tbtn svg { width: 20px; height: 20px; margin: 0; }
+.tbtn svg.chk { width: 12px; height: 12px; }
 .tbtn:disabled { opacity: .45; cursor: not-allowed; }
-.tbtn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.tbtn:focus-visible { outline: 3px solid #1b6fd6; outline-offset: 2px; }
 .leaves { stroke: var(--forest-deep); stroke-width: 2; }
 .dotted { stroke-dasharray: 1.5 3.5; }
 .leaves-dot { fill: var(--forest-deep); }
