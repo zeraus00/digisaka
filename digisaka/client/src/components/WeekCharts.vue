@@ -268,7 +268,7 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .sw.previous { background: var(--leaf-soft); }
 .sw.minsw { background: var(--danger); }
 @media (forced-colors: active) { .tbtn.on { outline: 2px solid; } }
-.toggle { display: flex; flex-wrap: wrap; gap: 6px; }
+.toggle { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
 .tbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; justify-content: center; }
 .tbtn.on { background: var(--forest); color: #fff; border-color: var(--forest); font-weight: 700; }
 /* the chart rule `svg { width: 100%; margin-top }` also hits the icons (a child root takes the parent's scope) */
