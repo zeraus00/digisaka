@@ -23,13 +23,17 @@ A decided spec, ready for `/to-tickets`, for a stub-only **run mode** (Normal, F
 ## Decisions so far
 
 - Destination and the ticket cut: decided at charting.
+- [What the run mode does](tickets/0001-what-the-run-mode-does.md): stub-only `GET|PUT /api/v1/scheduler/dev/run-mode`, shown when it answers; one mode for the stub, kept until changed, reset restores Normal; scan runs only; Fail fails the first attempt (Retry succeeds); Stuck holds until the mode changes; L08 removed, L06 kept.
+- [The dev bar and the dev timeout](tickets/0002-the-dev-bar-and-the-dev-timeout.md): `DevDateBar` becomes `DevBar` with a date group and a "Scan runs" select, each shown when its own store answers (new `stores/runMode.js`); no new layout; `VITE_STUB_POLL_LIMIT=10` in the stub compose file only shortens the follow.
+- [How the run mode is tested and documented](tickets/0003-how-the-run-mode-is-tested-and-documented.md): stub route and settle tests (L08's test replaced), a `runMode` store test, one contract test (the route has no live check), an SSR `DevBar` test, a poll-limit reader test; README and `CLAUDE.md` stub sections updated; five hand checks on the stub app.
 
 ## Not yet specified
 
-- Whether the page-level "Loading…" above the tabs (shown when a first run never reads a suggestion; wave 2 review finding 1 of treatment-steps) must be fixed for the modes to be usable on a fresh line. Depends on which lines a mode applies to ([What the run mode does](tickets/0001-what-the-run-mode-does.md)).
+Nothing: the one patch was ruled out of scope by [What the run mode does](tickets/0001-what-the-run-mode-does.md).
 
 ## Out of scope
 
+- The page-level "Loading…" above the tabs on a fresh line (treatment-steps wave 2 review finding 1): it predates this map; the run mode only makes it easier to reach.
 - Any change to the real scheduler or its API (the scheduler repo has no run-mode route and gets none).
 - Shortening production polling.
 - A mount-based test library (tests stay SSR, `renderScreen`).
