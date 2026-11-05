@@ -34,6 +34,11 @@ describe('DevBar', () => {
   it('renders nothing with neither group available', async () => {
     expect(await render({}, {})).not.toContain('Development tools');
   });
+  it('has a minimize toggle, open by default', async () => {
+    const html = await render({}, { available: true });
+    expect(html).toContain('Minimize development tools');
+    expect(html).toContain('Scan runs');
+  });
   it('warns on a mode other than Normal', async () => {
     expect(await render({}, { available: true, mode: 'fail' })).toContain('class="warn"');
     expect(await render({}, { available: true, mode: 'normal' })).not.toContain('class="warn"');
