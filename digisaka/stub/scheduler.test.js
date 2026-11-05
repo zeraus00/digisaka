@@ -70,8 +70,8 @@ test('evidence has weeks, disease and rainfall; a cycle without it is unknown_ev
   assert.deepEqual(ev.weeks.at(-1), { week: '2026-W24', yls: 7, yli: 6, rainfall_mm: 30 });
   assert.equal(ev.disease.worsening, true);
   assert.equal(ev.disease.falling, true);
-  assert.deepEqual(ev.disease.level, { yls: 5, below: 8, critical_below: 6, verdict: 'critical' });
-  assert.equal(ev.rainfall.recent_total_mm, 84);
+  assert.deepEqual(ev.disease.level, { yls: 7, below: 8, critical_below: 6, verdict: 'below' });
+  assert.equal(ev.rainfall.recent_total_mm, 55);
   assert.deepEqual(ev.rainfall.conditions.map((c) => [c.id, c.verdict, c.missing]), [['c1', 'met', null], ['c2', 'met', null], ['c3', 'met', null]]);
   assert.ok(ev.rainfall.conditions.every((c) => typeof c.label === 'string'));
   const none = await get('/cycles/c-L05-24/evidence');

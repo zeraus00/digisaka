@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { shiftWeek } from './insights.js';
 
 // Fixed seed for the stub scheduler. "Today" is 2026-W24, matching the app. Each line is a named
 // scenario; the data decides what happens, nothing is switched. Weekly values are null where the
@@ -10,12 +11,29 @@ const wk = (week, yls, yli, rainfall_mm) => ({ week, yls, yli, rainfall_mm });
 const WEEKLY = JSON.parse(readFileSync(new URL('./payloads/synthetic-weekly.json', import.meta.url), 'utf8'));
 const weekly = (id) => ({ name: WEEKLY[id].name, weeks: WEEKLY[id].weeks.map((r) => wk(r.week, r.yls, r.yli, r.rainfall_mm)), records: WEEKLY[id].weeks });
 
-// The infection-risk rule's conditions as the scheduler lists them: all met, for a verdict of yes.
-const spreadConditions = () => [
-  { id: 'c1', label: 'Rainfall rising over two weeks', verdict: 'met', missing: null },
-  { id: 'c2', label: 'Rainfall above 0 mm over two weeks', verdict: 'met', missing: null },
-  { id: 'c3', label: 'Leaf wetness above 6 hours', verdict: 'met', missing: null },
-];
+// The rules' reading of a cycle, derived from the line's weekly records at the cycle's week: YLS over the three weeks
+// ending there (a lower leaf number is worse), and rainfall over the two weeks before the two before those.
+// shortcut: a missing record counts as 0 mm and breaks the trend; the seeded lines have no gaps at their cycle weeks.
+const evidenceAt = (id, week) => {
+  const records = WEEKLY[id].weeks;
+  const at = (n) => records.find((r) => r.week === shiftWeek(week, n));
+  const yls = [-2, -1, 0].map((n) => at(n)?.yls);
+  let run = 0;
+  for (let i = 2; i > 0 && yls[i] < yls[i - 1]; i--) run++;
+  const mm = (ns) => ns.reduce((t, n) => t + (at(n)?.rainfall_mm ?? 0), 0);
+  const recent = mm([-1, 0]), previous = mm([-3, -2]), wet = at(0)?.leaf_wetness_hours;
+  const met = (ok) => (ok ? 'met' : 'not_met');
+  const conditions = [
+    { id: 'c1', label: 'Rainfall rising over two weeks', verdict: met(recent > previous), missing: null },
+    { id: 'c2', label: 'Rainfall above 0 mm over two weeks', verdict: met(recent > 0), missing: null },
+    { id: 'c3', label: 'Leaf wetness above 6 hours', verdict: met(wet > 6), missing: null },
+  ];
+  const level = yls[2];
+  return {
+    disease: { worsening_direction: 'lower', consecutive_weeks: run, compared_weeks: [-2, -1, 0].map((n) => shiftWeek(week, n)), worsening: run >= 2, falling: run >= 2, level: { yls: level, below: 8, critical_below: 6, verdict: level < 6 ? 'critical' : level < 8 ? 'below' : 'not_below' } },
+    rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: [-1, 0].map((n) => shiftWeek(week, n)), previous_weeks: [-3, -2].map((n) => shiftWeek(week, n)), recent_total_mm: recent, previous_total_mm: previous, favourable: conditions.every((c) => c.verdict === 'met'), conditions },
+  };
+};
 
 const seed = () => ({
   // Filled while the stub runs: scans (diagnoses), closed-week cycles (runs) and id counters.
@@ -28,10 +46,7 @@ const seed = () => ({
       ...weekly('L02'),
       cycles: [{
         cycle_id: 'c-L02-23', week: '2026-W23', status: 'done', outcome: 'suggested', outcome_reason: null,
-        evidence: {
-          disease: { worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W21', '2026-W22', '2026-W23'], worsening: true, falling: true, level: { yls: 6, below: 8, critical_below: 6, verdict: 'below' } },
-          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W22', '2026-W23'], previous_weeks: ['2026-W20', '2026-W21'], recent_total_mm: 48, previous_total_mm: 24, favourable: true, conditions: spreadConditions() },
-        },
+        evidence: evidenceAt('L02', '2026-W23'),
       }],
       applications: [{ application_id: 'app-L02-1', product_id: 'u-chlorothalonil', applied_on: '2026-06-02', recorded_by: 'stub-practitioner', recorded_at: '2026-06-02T09:00:00.000Z' }],
       suggestion: { payload: 'clean', basis: 'stage_confirmed' },
@@ -42,24 +57,18 @@ const seed = () => ({
       ...weekly('L03'),
       cycles: [{
         cycle_id: 'c-L03-24', week: '2026-W24', status: 'done', outcome: 'suggested', outcome_reason: null,
-        evidence: {
-          disease: { worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W22', '2026-W23', '2026-W24'], worsening: true, falling: true, level: { yls: 5, below: 8, critical_below: 6, verdict: 'critical' } },
-          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W23', '2026-W24'], previous_weeks: ['2026-W21', '2026-W22'], recent_total_mm: 84, previous_total_mm: 52, favourable: true, conditions: spreadConditions() },
-        },
+        evidence: evidenceAt('L03', '2026-W24'),
       }],
       applications: [],
       suggestion: { payload: 'draft', basis: 'stage_confirmed' },
       leaves: 15,
     },
-    // Ready to scan this week (the default demo line); last week had a gap in the YLI reading.
+    // Ready to scan this week (the default demo line); its last cycle found the disease not worsening, with no evidence kept (the dataset shows the disease worsening at W23).
     L04: {
       ...weekly('L04'),
       cycles: [{
         cycle_id: 'c-L04-23', week: '2026-W23', status: 'done', outcome: 'continue_monitoring', outcome_reason: 'disease_not_worsening',
-        evidence: {
-          disease: { worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W21', '2026-W22', '2026-W23'], worsening: false, falling: false, level: { yls: 8, below: 8, critical_below: 6, verdict: 'not_below' } },
-          rainfall: { window_weeks: 2, min_total_mm: 0, recent_weeks: ['2026-W22', '2026-W23'], previous_weeks: ['2026-W20', '2026-W21'], recent_total_mm: 56, previous_total_mm: 40, favourable: true, conditions: spreadConditions() },
-        },
+        evidence: null,
       }],
       applications: [], leaves: 9,
       suggestion: { payload: 'real', basis: 'all_healthy_images' },

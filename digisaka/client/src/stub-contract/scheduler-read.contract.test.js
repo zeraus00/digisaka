@@ -49,7 +49,7 @@ describe('evidence store against the stub', () => {
     await s.load('c-L03-24');
     expect(s.phase).toBe('ready');
     expect(diseaseCaption(s.evidence)).toBe('YLS fell two weeks in a row (9 to 8 to 7).');
-    expect(rainfallCaption(s.evidence)).toBe('Rain over the last 2 weeks: 84 mm, up from 52 mm.');
+    expect(rainfallCaption(s.evidence)).toBe('Rain over the last 2 weeks: 55 mm, up from 22 mm.');
     expect(s.evidence.rainfall.conditions.map((c) => c.verdict)).toEqual(['met', 'met', 'met']);
   });
   it('a cycle without trend evidence is the none state', async () => {
