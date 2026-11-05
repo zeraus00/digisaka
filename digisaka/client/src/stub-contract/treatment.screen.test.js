@@ -3,6 +3,8 @@ import { describe, it, expect } from 'vitest';
 import { useStub, CYCLE_MS } from './harness.js';
 import { renderScreen } from './screens.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
+import { useScanStore } from '../stores/scan.js';
+import { useInsightsStore } from '../stores/insights.js';
 import TreatmentDetailView from '../views/TreatmentDetailView.vue';
 
 const ctx = useStub();
@@ -111,5 +113,44 @@ describe('treatment screen', () => {
   it('a line with no finished run says a scan is suggested', async () => {
     await useSuggestionStore().load('L01', wait);
     expect(await show('L01')).toContain('A scan is suggested to start one');
+  });
+
+  describe('entered from a scan', () => {
+    const scanned = (step = 3) => { const sc = useScanStore(); sc.line = 'L04'; sc.week = '2026-W24'; sc.step = step; sc.leaves = [{ reschedule: { cycle_id: 'c1' } }]; return sc; };
+
+    it('Spray Log shows the update while updating and on failure with Retry, and nothing once done', async () => {
+      scanned();
+      const s = useSuggestionStore();
+      await s.load('L04', wait);
+      await useInsightsStore().load('L04', '2026-W24');
+      s.updating = true;
+      expect(await show('L04', 'spray')).toContain('Updating the treatment suggestion');
+      s.updating = false; s.tracked = 'failed';
+      const failed = await show('L04', 'spray');
+      expect(failed).toContain('The update failed');
+      expect(failed).toContain('Retry');
+      s.tracked = 'timeout';
+      expect(await show('L04', 'spray')).toContain('Check again');
+      s.tracked = 'ready';
+      const done = await show('L04', 'spray');
+      expect(done).not.toContain('updated');
+      expect(done).not.toContain('Updating the treatment suggestion');
+      expect(done).not.toContain('did not change it');
+    });
+
+    it('shows Back to scan results at Results only, and no update card for another entry', async () => {
+      const s = useSuggestionStore();
+      await s.load('L04', wait);
+      await useInsightsStore().load('L04', '2026-W24');
+      s.updating = true;
+      expect(await show('L04', 'spray')).not.toContain('Updating the treatment suggestion');
+      expect(await show('L04')).not.toContain('Back to scan results');
+      scanned(2);
+      expect(await show('L04')).not.toContain('Back to scan results');
+      scanned(3);
+      expect(await show('L04')).toContain('Back to scan results');
+      expect(await show('L05')).not.toContain('Back to scan results');
+      expect(await show('L05', 'spray')).not.toContain('Updating the treatment suggestion');
+    });
   });
 });

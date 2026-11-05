@@ -21,7 +21,7 @@ const path = (line, week) => `/api/v1/scheduler/lines/${encodeURIComponent(line)
 let nextId = 1;
 
 export const useScanStore = defineStore('scan', {
-  state: () => ({ line: '', week: isoWeekOf(today()), leaves: [], notice: '', assessing: false, log: [] }),
+  state: () => ({ line: '', week: isoWeekOf(today()), leaves: [], notice: '', assessing: false, log: [], step: 1 }),
   getters: {
     weekOk: (s) => isValidWeek(s.week),
     // The newest run a scan of this line-week started, or null when none did.
@@ -34,10 +34,12 @@ export const useScanStore = defineStore('scan', {
     followToday(oldWeek, newWeek) {
       if (!this.leaves.length && this.week === oldWeek) this.week = newWeek;
     },
+    // `step` is the scan screen's step (1 Select Leaves, 2 Bulk Assess, 3 Results); it lives here so a return from the treatment screen opens on Results.
     select(line, week) {
       if (line === this.line && week === this.week) return;
-      this.line = line; this.week = week; this.leaves = []; this.notice = ''; this.log = [];
+      this.line = line; this.week = week; this.leaves = []; this.notice = ''; this.log = []; this.step = 1;
     },
+    newScan() { this.leaves = []; this.log = []; this.step = 1; },
     addFiles(files) {
       this.notice = '';
       for (const file of files) {

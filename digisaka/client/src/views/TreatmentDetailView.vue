@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
 import FungicideOptions from '../components/FungicideOptions.vue';
@@ -8,9 +8,12 @@ import FungicideDetails from '../components/FungicideDetails.vue';
 import Icon from '../components/Icon.vue';
 import WeatherRisk from '../components/WeatherRisk.vue';
 import SprayLog from '../components/SprayLog.vue';
+import SuggestionUpdate from '../components/SuggestionUpdate.vue';
 import InsightsSummary from '../components/InsightsSummary.vue';
 import ScheduleCalendar from '../components/ScheduleCalendar.vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
+import { useScanStore } from '../stores/scan.js';
+import { entryOf, showBackToScan } from '../helpers/scanEntry.js';
 import { useInsightsStore } from '../stores/insights.js';
 import { STEPS, stepOf } from '../helpers/treatmentStep.js';
 import '../styles/journey.css';
@@ -19,7 +22,7 @@ import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
 import { reasonText } from '../helpers/checks.js';
 import { todayIso, keepIfEdited } from '../helpers/today.js';
 
-const route = useRoute(), router = useRouter(), store = useSuggestionStore(), insights = useInsightsStore();
+const route = useRoute(), router = useRouter(), store = useSuggestionStore(), insights = useInsightsStore(), scan = useScanStore();
 const lineId = computed(() => String(route.params.lineId));
 const week = computed(() => String(route.params.week));
 
@@ -42,7 +45,14 @@ const open = (id) => router.replace({ query: { ...route.query, step: id } });
 const visited = ref([]);
 watch(step, (id) => { if (!visited.value.includes(id)) visited.value.push(id); }, { immediate: true });
 // A new line starts with no product chosen.
-const load = () => { productId.value = ''; detailId.value = ''; visited.value = [step.value]; insights.load(lineId.value, week.value); return store.load(lineId.value); };
+// A scan of this line and week with a started run is followed, not started again; the Spray Log tab shows that update.
+const entry = computed(() => entryOf({ scan, line: lineId.value, week: week.value }));
+const fromScan = computed(() => entry.value.kind === 'follow');
+const backToScan = computed(() => showBackToScan({ scan, line: lineId.value, week: week.value }));
+const load = () => {
+  productId.value = ''; detailId.value = ''; visited.value = [step.value]; insights.load(lineId.value, week.value);
+  return fromScan.value ? store.track(lineId.value, entry.value.cycleId) : store.load(lineId.value);
+};
 onMounted(load);
 watch(lineId, load);
 watch(week, () => insights.load(lineId.value, week.value));
@@ -67,6 +77,7 @@ const lastApplied = computed(() => {
 
 <template>
   <div class="page" :class="{ narrow: step === 'schedule' }">
+    <RouterLink v-if="backToScan" class="back-scan" to="/scan">← Back to scan results</RouterLink>
     <PageHeader title="Treatment Suggestion" :subtitle="`Line ${lineId} · ${week}`" />
     <p v-if="store.phase === 'loading'" class="empty">Loading…</p>
     <p v-else-if="store.phase === 'error'" class="error">{{ store.error }} <button class="mark" type="button" @click="load">Try again</button></p>
@@ -99,7 +110,9 @@ const lastApplied = computed(() => {
         <div class="btns go"><button type="button" @click="open('spray')">Continue to Spray Log</button></div>
       </template>
       <template v-else-if="step === 'spray'">
-        <SprayLog />
+        <SprayLog>
+          <SuggestionUpdate v-if="fromScan" :line="lineId" :week="week" :reschedule="scan.reschedule" :link="false" :show-done="false" />
+        </SprayLog>
         <div class="btns go"><button type="button" @click="open('fungicides')">Continue to Fungicides</button></div>
       </template>
       <template v-else-if="store.phase === 'ready' && sug">
@@ -211,4 +224,5 @@ const lastApplied = computed(() => {
 .tabs .chk { position: absolute; top: 4px; right: 8px; font: 800 11px var(--font-display); color: var(--forest); }
 .step-title { font: 800 20px var(--font-display); color: var(--forest); margin-bottom: 12px; }
 .btns.go { margin: 0 0 16px; } .btns.go button { flex: none; padding: 12px 18px; }
+.back-scan { display: inline-block; margin-bottom: 8px; color: var(--forest); font-weight: 700; }
 </style>

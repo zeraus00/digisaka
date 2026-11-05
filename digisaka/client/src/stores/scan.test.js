@@ -150,3 +150,22 @@ describe('followToday', () => {
     expect(t.week).toBe('2026-W22');
   });
 });
+
+describe('step', () => {
+  it('starts at 1, is kept as set, and resets for a new line or week and for a new scan', () => {
+    const s = ready('a');
+    expect(s.step).toBe(1);
+    s.step = 3;
+    s.select('L04', '2026-W24');
+    expect(s.step).toBe(3);
+    s.select('L05', '2026-W24');
+    expect(s.step).toBe(1);
+    s.step = 3; s.select('L05', '2026-W23');
+    expect(s.step).toBe(1);
+    s.addFiles([file('b')]); s.step = 3;
+    s.newScan();
+    expect(s.step).toBe(1);
+    expect(s.leaves).toEqual([]);
+    expect(s.log).toEqual([]);
+  });
+});
