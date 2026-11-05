@@ -48,7 +48,8 @@ async function retry() {
       <button class="primary" :disabled="cycle.busy" @click="retry">Retry</button>
     </template>
     <template v-else-if="update === 'timeout' || update === 'error'">
-      <h2>{{ update === 'timeout' ? 'This is taking too long' : 'Could not load the suggestion' }}</h2>
+      <h2>{{ update === 'timeout' ? 'The update is taking longer than expected' : 'Could not load the suggestion' }}</h2>
+      <p v-if="update === 'timeout'" class="hint">It may still finish. Check again in a moment.</p>
       <button class="primary" @click="track">Check again</button>
     </template>
     <template v-else-if="showDone">

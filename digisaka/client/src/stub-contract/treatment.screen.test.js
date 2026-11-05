@@ -130,7 +130,9 @@ describe('treatment screen', () => {
       expect(failed).toContain('The update failed');
       expect(failed).toContain('Retry');
       s.tracked = 'timeout';
-      expect(await show('L04', 'spray')).toContain('Check again');
+      const slow = await show('L04', 'spray');
+      expect(slow).toContain('The update is taking longer than expected');
+      expect(slow).toContain('Check again');
       s.tracked = 'ready';
       const done = await show('L04', 'spray');
       expect(done).not.toContain('updated');
