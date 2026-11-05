@@ -100,11 +100,12 @@ export function unitFacts(unit) {
   };
 }
 
-// Why a unit is excluded: three codes have their own sentence, a failed check is named, and an unknown code is shown as served.
+// Why a unit is excluded or only listed for reference: four codes have their own sentence, a failed check is named, and an unknown code is shown as served.
 const REASON = {
   rotation: 'Fails: Rotation. Its mode of action was used too recently.',
   no_interval: 'No application interval is known for this product.',
   not_for_stage: 'Not for the line\'s current growth stage.',
+  monitoring_advised: 'The data suggests treatment is not due yet; monitoring is advised.',
 };
 export const reasonText = (code) => (code == null ? null : REASON[code] ?? (CHECK_LABEL[code] ? `Fails: ${CHECK_LABEL[code]}` : code));
 

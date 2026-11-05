@@ -13,7 +13,15 @@ const clean = load('clean'), stressed = load('stressed'), real = load('real');
 const draft = structuredClone(stressed);
 Object.assign(draft.selection, { approvable: true, blockers: [] });
 draft.preview.alerts = draft.preview.alerts.filter((a) => a.kind !== 'cap_exceeded');
-const PAYLOADS = { clean, stressed, draft, real };
+// A Continue Monitoring run lists the stage's options for reference: no unit is scheduled (all `eligible`, no days, no
+// alerts) and the last one fails a check, so it is `excluded` with that check as its reason.
+const monitoring = structuredClone(clean);
+monitoring.selection.units = monitoring.selection.units.map((u, i, all) => ({
+  ...u, excluded_from_schedule: true,
+  checks: i === all.length - 1 ? [...(u.checks ?? []), { check: 'group_cap', level: 'error', detail: null, result: 'fail' }] : u.checks,
+}));
+Object.assign(monitoring.preview, { days: [], alerts: [] });
+const PAYLOADS = { clean, stressed, draft, real, monitoring };
 
 export const TODAY = '2026-06-08';
 const DAY = 86400000;
@@ -94,11 +102,11 @@ function changesOf(prior, payload, trigger) {
 
 // The suggestion a finished run leaves on the line: its payload, basis, and the note on what changed.
 // shortcut: the run keeps the prior payload unless it is a monitoring outcome, so a change shows only when the payload
-// flips between a plan and none; the live scheduler also diffs after an application removes a product from the plan.
+// flips between a plan and the monitoring list; the live scheduler also diffs after an application removes a product from the plan.
 export function suggestionAfter(line, run, finishedAt) {
   const prior = line.suggestion ?? DEFAULT;
   const monitoring = run.plan.outcome === 'continue_monitoring';
-  const payload = monitoring ? null : prior.payload ?? DEFAULT.payload;
+  const payload = monitoring ? 'monitoring' : prior.payload === 'monitoring' ? DEFAULT.payload : prior.payload ?? DEFAULT.payload;
   return {
     ...prior, payload, revision: run.cycle_id, trigger: run.trigger, created_at: new Date(finishedAt).toISOString(),
     changes: line.suggestion ? changesOf(prior, payload, run.trigger) : null, // a first run has nothing to differ from
@@ -136,11 +144,12 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     for (const u of frozen?.selection.units ?? []) {
       const g = groupOf(u);
       const mine = alerts.filter((a) => a.unit_id === u.unit_id);
+      const reason = g === 'excluded' ? reasonOf(u) : cur.payload === 'monitoring' ? 'monitoring_advised' : null;
       // Only the contract's fields: the scheduler's unit has a lower-case `label` and no payload extras (found in the live run).
       groups[g].push({
         unit_id: u.unit_id, product_id: productOf(u.unit_id), label: u.product.toLowerCase(), practice_id: u.practice ?? u.unit_id.split('|')[0], rank: groups[g].length + 1,
         checks: (u.checks ?? []).map((c) => ({ check: c.check, level: c.level, detail: c.detail ?? null, result: c.result })), alerts: mine,
-        needs_confirmation: g === 'excluded' || mine.length > 0, reason: g === 'excluded' ? reasonOf(u) : null, facts: factsOf(u),
+        needs_confirmation: reason !== null || mine.length > 0, reason, facts: factsOf(u),
       });
     }
     const basisAlert = BASIS_TEXT[cur.basis] ? [{ id: 'stage_basis', unit_id: null, kind: 'stage_basis', level: 'info', text: BASIS_TEXT[cur.basis], cause: null, blocks_approval: false }] : [];
@@ -194,9 +203,9 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
         if (recorded(line, body)) return fail(409, 'application_already_recorded', 'The application was already recorded');
         const stale = body.revision !== now_.revision;
         if (stale || (hit.unit.needs_confirmation && body.confirmed !== true)) {
-          return { status: 409, body: { error: 'confirmation_required', detail: stale ? 'the suggestion changed; confirm to record against the current one' : 'the application needs confirming', revision: now_.revision, tier: hit.tier, alerts: hit.unit.alerts } };
+          return { status: 409, body: { error: 'confirmation_required', detail: stale ? 'the suggestion changed; confirm to record against the current one' : 'the application needs confirming', revision: now_.revision, tier: hit.tier, reason: hit.unit.reason, alerts: hit.unit.alerts } };
         }
-        const application = { application_id: `app-${store.data.nextId++}`, product_id: body.product_id, applied_on: body.applied_on, recorded_by: PRACTITIONER, recorded_at: new Date(now()).toISOString(), confirmation: { tier: hit.tier, alerts: hit.unit.alerts, revision: now_.revision, confirmed: body.confirmed === true } };
+        const application = { application_id: `app-${store.data.nextId++}`, product_id: body.product_id, applied_on: body.applied_on, recorded_by: PRACTITIONER, recorded_at: new Date(now()).toISOString(), confirmation: { tier: hit.tier, reason: hit.unit.reason, alerts: hit.unit.alerts, revision: now_.revision, confirmed: body.confirmed === true } };
         line.applications.push(application);
         const week = [...line.cycles].sort((a, b) => b.week.localeCompare(a.week)).at(0).week;
         const run = startRun(params.id, week, 'application');

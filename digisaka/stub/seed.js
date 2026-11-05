@@ -70,7 +70,7 @@ const seed = () => ({
       cycles: [{ cycle_id: 'c-L06-23', week: '2026-W23', status: 'done', outcome: 'continue_monitoring', outcome_reason: 'disease_not_worsening', evidence: null }],
       // A fresh-line draft recorded from the scheduler (payload `real`): only Cannot-Check Alerts to acknowledge.
       applications: [], leaves: 6,
-      suggestion: { payload: null, basis: 'stage_confirmed' },
+      suggestion: { payload: 'monitoring', basis: 'stage_confirmed' },
     },
     // Nothing recorded; a verified scan starts a run.
     L07: { weeks: [], cycles: [], applications: [], leaves: 0 },
