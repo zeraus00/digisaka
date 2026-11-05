@@ -8,13 +8,12 @@ const SCENARIOS = ['healthy', 'not_leaf', 'referral', 'rescan', 'unavailable'];
 const scenarioOf = (name) => SCENARIOS.find((s) => String(name).toLowerCase().includes(s)) ?? 'stage2';
 const CHECKLIST = ['Dark streaks on the leaf underside', 'Yellow halo around the spots'];
 
-// What a line's rescheduling run ends in, decided by the line. L06 fails on its first scan run only; L08's run never settles.
+// What a line's rescheduling run ends in, decided by the line. L06 fails on its first scan run only. The dev run mode (`store.data.runMode`) fails or sticks the scan run of any line.
 const PLANS = {
   L04: { outcome: 'awaiting_decision' },
   L05: { outcome: 'human_review_required', reason: 'missing_feed_value' },
   L06: { outcome: 'continue_monitoring', reason: 'disease_not_worsening', failFirst: true },
   L07: { outcome: 'human_review_required', reason: 'gate_e_rejected' },
-  L08: { outcome: 'continue_monitoring', reason: 'disease_not_worsening', stuck: true },
 };
 const DEFAULT_PLAN = { outcome: 'continue_monitoring', reason: 'disease_not_worsening' };
 const FAILURE_REASON = 'The weather feed did not respond in time.';
@@ -41,9 +40,9 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
 
   // A rescheduling run takes cycleMs, then is done or failed. Settling is lazy, on the next read.
   const settle = (run) => {
-    if (run.status !== 'running' || run.plan.stuck || now() - run.startedAt < cycleMs) return run;
+    if (run.status !== 'running' || (run.stuck && store.data.runMode === 'stuck') || now() - run.startedAt < cycleMs) return run;
     const l = line(run.line_id);
-    if (run.plan.failFirst && run.trigger === 'scan' && run.attempts === 1) {
+    if ((run.plan.failFirst || run.failFirst) && run.trigger === 'scan' && run.attempts === 1) {
       Object.assign(run, { status: 'failed', failure_reason: FAILURE_REASON });
       return run;
     }
@@ -66,6 +65,8 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
     const base = `c-${lineId}-${week.slice(6)}`;
     const cycle_id = taken(base) ? `${base}-${store.data.nextId++}` : base;
     store.data.runs[cycle_id] = { cycle_id, line_id: lineId, week, trigger, status: 'running', outcome: null, outcome_reason: null, failure_reason: null, startedAt: now(), attempts: 1, plan: PLANS[lineId] ?? DEFAULT_PLAN };
+    // The run mode applies to scan runs only; a stuck run settles as normal once the mode changes.
+    if (trigger === 'scan') Object.assign(store.data.runs[cycle_id], { failFirst: store.data.runMode === 'fail', stuck: store.data.runMode === 'stuck' });
     return store.data.runs[cycle_id];
   };
   // A verified scan reschedules the line once per line-week; further scans of that week leave the stage as it was.

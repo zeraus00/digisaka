@@ -174,6 +174,19 @@ test('a bad dev date is 400 validation_error and the token is needed', async () 
   assert.equal((await fetch(base + B + '/dev/today')).status, 401);
 });
 
+test('the dev run mode defaults to normal, reads back each mode, refuses others and needs the token', async () => {
+  assert.deepEqual((await call('GET', '/dev/run-mode')).body, { mode: 'normal' });
+  for (const mode of ['fail', 'stuck', 'normal']) {
+    assert.deepEqual((await call('PUT', '/dev/run-mode', { mode })).body, { mode });
+    assert.equal((await call('GET', '/dev/run-mode')).body.mode, mode);
+  }
+  for (const body of [{ mode: 'slow' }, {}]) {
+    const bad = await call('PUT', '/dev/run-mode', body);
+    assert.deepEqual([bad.status, bad.body.error], [400, 'validation_error']);
+  }
+  assert.equal((await fetch(base + B + '/dev/run-mode')).status, 401);
+});
+
 test('the set date moves the stub\'s future check', async () => {
   const s = await suggestion('L02');
   const body = { product_id: s.groups.recommended[0].product_id, applied_on: '2026-06-12', revision: s.revision, confirmed: true };

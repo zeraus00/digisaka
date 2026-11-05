@@ -13,10 +13,10 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Route tests: default `normal`; each mode set and read back; a bad value answers 400; no token answers 401
-- [ ] Settle tests on a default-plan line: Fail fails the first scan run and Retry succeeds; Stuck stays running past the cycle time; setting Normal lets it settle done; with Fail set, an application run settles done; reset restores Normal
-- [ ] The L08 test is replaced by the Stuck test; the L06 test stays; the seed-line tests expect seven lines; `scheduler-read.contract.test.js` expects seven lines (`lines: 7`)
-- [ ] Stub and client tests pass; the two pre-existing insights failures are noted
-- [ ] By hand with `curl` on the running stub: set Stuck, scan a line, the run stays running; set Normal, the run settles
+- [x] Route tests: default `normal`; each mode set and read back; a bad value answers 400; no token answers 401
+- [x] Settle tests on a default-plan line: Fail fails the first scan run and Retry succeeds; Stuck stays running past the cycle time; setting Normal lets it settle done; with Fail set, an application run settles done; reset restores Normal
+- [x] The L08 test is replaced by the Stuck test; the L06 test stays; the seed-line tests expect seven lines; `scheduler-read.contract.test.js` expects seven lines (`lines: 7`)
+- [x] Stub and client tests pass; the two pre-existing insights failures are noted
+- [x] By hand with `curl` on the running stub: set Stuck, scan a line, the run stays running; set Normal, the run settles

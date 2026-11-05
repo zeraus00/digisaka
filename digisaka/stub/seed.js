@@ -74,7 +74,6 @@ const seed = () => ({
     },
     // Nothing recorded; a verified scan starts a run.
     L07: { weeks: [], cycles: [], applications: [], leaves: 0 },
-    L08: { weeks: [], cycles: [], applications: [], leaves: 0 }, // its scan run never settles: the client's follow times out
   },
 });
 

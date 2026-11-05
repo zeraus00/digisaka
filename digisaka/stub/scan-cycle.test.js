@@ -136,8 +136,36 @@ test('state survives until reset, which restores the seed', async () => {
   assert.equal((await verify('L04')).body.reschedule.cycle_id, 'c-L04-24');
 });
 
-test('L08 run never settles: it stays running however long the client waits', async () => {
-  const id = (await verify('L08')).body.reschedule.cycle_id;
+const mode = (m) => call('PUT', `${B}/dev/run-mode`, { mode: m });
+
+test('Stuck: the scan run stays running however long the client waits, until the mode changes', async () => {
+  await mode('stuck');
+  const id = (await verify('L04')).body.reschedule.cycle_id;
   t += 10 * 60_000;
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'running');
+  await mode('normal');
+  assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'done');
+});
+
+test('Fail: the first scan run fails on any line and Retry succeeds; an application run is not failed', async () => {
+  await mode('fail');
+  const id = (await verify('L04')).body.reschedule.cycle_id;
+  t += 3000;
+  assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'failed');
+  assert.equal((await call('POST', `${B}/cycles/${id}/retry`)).status, 202);
+  t += 3000;
+  assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'done');
+  await verify('L02');
+  t += 3000;
+  const s = (await call('GET', `${B}/lines/L02/suggestion`)).body;
+  const u = s.groups.recommended.find((x) => !x.needs_confirmation);
+  const r = await call('POST', `${B}/lines/L02/applications`, { product_id: u.product_id, applied_on: '2026-06-05', revision: s.revision, confirmed: false });
+  t += 3000;
+  assert.equal((await call('GET', `${B}/cycles/${r.body.reschedule.cycle_id}`)).body.status, 'done');
+});
+
+test('reset puts the run mode back to Normal', async () => {
+  await mode('stuck');
+  await fetch(`${base}/__stub/reset`, { method: 'POST' });
+  assert.equal((await call('GET', `${B}/dev/run-mode`)).body.mode, 'normal');
 });

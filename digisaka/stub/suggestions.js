@@ -177,6 +177,15 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
       }),
     },
     { method: 'DELETE', path: `${BASE}/dev/today`, handle: authed(() => { delete store.data.devToday; return todayView(); }) },
+    { method: 'GET', path: `${BASE}/dev/run-mode`, handle: authed(() => ok({ mode: store.data.runMode ?? 'normal' })) },
+    {
+      method: 'PUT', path: `${BASE}/dev/run-mode`,
+      handle: authed(({ body }) => {
+        if (!['normal', 'fail', 'stuck'].includes(body?.mode)) return fail(400, 'validation_error', 'mode: must be normal, fail or stuck');
+        store.data.runMode = body.mode;
+        return ok({ mode: body.mode });
+      }),
+    },
     {
       method: 'GET', path: `${BASE}/lines/:id/suggestion`,
       handle: authed(({ params }) => {
