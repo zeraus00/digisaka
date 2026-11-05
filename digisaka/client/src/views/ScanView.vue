@@ -244,7 +244,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
 
       <SuggestionUpdate :line="scan.line" :week="scan.week" :reschedule="reschedule" :show-done="false" />
       <button class="primary wide" @click="step = 4">Continue to weather risk</button>
-      <EvidenceCharts v-if="update === 'ready'" :cycle-id="suggestion.revision ?? ''" />
+      <EvidenceCharts v-if="update === 'ready'" :cycle-id="suggestion.revision ?? ''" :line="scan.line" :week="scan.week" />
       <div class="nav"><button :disabled="update === 'updating'" @click="step = 2">Back</button><button v-if="update !== 'updating'" @click="startOver">New scan</button></div>
     </template>
     </template>

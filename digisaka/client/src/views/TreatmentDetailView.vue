@@ -108,7 +108,7 @@ const lastApplied = computed(() => {
 
       <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" />
 
-      <EvidenceCharts :cycle-id="sug.revision" />
+      <EvidenceCharts :cycle-id="sug.revision" :line="lineId" :week="week" />
     </template>
     <p class="disclaimer">AI-assisted scheduling should be verified by an agricultural specialist before treatment decisions.</p>
   </div>

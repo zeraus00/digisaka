@@ -1,17 +1,22 @@
 <script setup>
 import { computed, watch, onBeforeUnmount } from 'vue';
 import { useEvidenceStore } from '../stores/evidence.js';
-import { conditionDetail, levelText, spreadChipText, verdictText, visibleWeeks } from '../helpers/evidence.js';
+import { useInsightsStore } from '../stores/insights.js';
+import { conditionDetail, levelText, spreadChipText, verdictText, visibleWeeks, joinLeaves } from '../helpers/evidence.js';
 import WeekCharts from './WeekCharts.vue';
 
 // What the rules looked at for one cycle: the last weeks of YLS/YLI and rainfall, with the verdicts.
-const props = defineProps({ cycleId: { type: String, default: '' } });
+const props = defineProps({ cycleId: { type: String, default: '' }, line: { type: String, default: '' }, week: { type: String, default: '' } });
 const store = useEvidenceStore();
+// Leaves are not in the evidence; they come from the insights for the scan's line and week. A failed read only leaves them out.
+const insights = useInsightsStore();
+watch(() => [props.line, props.week], () => insights.load(props.line, props.week), { immediate: true });
 const load = () => (props.cycleId ? store.load(props.cycleId) : store.reset());
 watch(() => props.cycleId, load, { immediate: true });
-onBeforeUnmount(() => store.reset());
+onBeforeUnmount(() => { store.reset(); insights.load('', ''); });
 const ev = computed(() => (store.phase === 'ready' ? store.evidence : null));
 const weeks = computed(() => (ev.value ? visibleWeeks(ev.value) : []));
+const chart = computed(() => joinLeaves(weeks.value, insights.data));
 </script>
 
 <template>
@@ -25,7 +30,7 @@ const weeks = computed(() => (ev.value ? visibleWeeks(ev.value) : []));
         <span class="chip" :class="String(ev.disease.falling)">YLS is falling: {{ verdictText(ev.disease.falling) }}</span>
         <span class="chip" :class="String(ev.rainfall.favourable)">{{ spreadChipText(ev.rainfall.favourable, conditionDetail(ev.rainfall)) }}</span>
       </div>
-      <WeekCharts :weeks="weeks" :disease="ev.disease" :rainfall="ev.rainfall" />
+      <WeekCharts :weeks="chart.weeks" :leaves="chart.refs" :disease="ev.disease" :rainfall="ev.rainfall" />
     </template>
   </section>
 </template>
