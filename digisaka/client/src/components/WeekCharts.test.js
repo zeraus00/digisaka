@@ -62,6 +62,7 @@ describe('WeekCharts trend toggle', () => {
     expect(html).toContain('8 critical');
     expect(html).toContain('10 target');
     const bare = await render({ weeks: withLeaves, leaves: { critical: null, target: 10 }, initialView: 'leaves' });
-    expect(bare).not.toContain('critical</text>');
+    expect(bare).not.toContain('refline critical');
+    expect(bare).toContain('refline target');
   });
 });

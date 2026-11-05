@@ -96,7 +96,7 @@ const lv = (v) => Math.min(v, 12);
 const leavesA = computed(() => weeks.value.map((w, i) => (w.leaves == null ? null : { x: xA(i), y: yA(lv(w.leaves)) })));
 // Leaves view: same 0-12 scale, higher is up; reference labels sit in the right margin.
 const yL = (v) => T + (1 - lv(v) / 12) * (H - T - B);
-const leavesL = computed(() => weeks.value.map((w, i) => (w.leaves == null ? null : { x: xA(i), y: yL(w.leaves) })));
+const leavesL = computed(() => weeks.value.map((w, i) => (w.leaves == null ? null : { x: x(i), y: yL(w.leaves) })));
 const refLines = computed(() => leavesLines(props.leaves));
 const lCap = computed(() => leavesCaption(weeks.value));
 const sq = (p) => ({ x: p.x - 3, y: p.y - 3 });
@@ -188,13 +188,12 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
     <figcaption>Functional leaves by week — count 8 weeks after shooting</figcaption>
     <svg :viewBox="`0 0 ${W} ${H}`" role="group" aria-label="Functional leaves by week" @pointerleave="clearChartHover('leaves')">
       <g class="axis">
-        <template v-for="t in [0, 6, 12]" :key="t"><line :x1="L" :x2="W - RR" :y1="yL(t)" :y2="yL(t)" /><text :x="L - 6" :y="yL(t) + 3" text-anchor="end">{{ t }}</text></template>
-        <text v-for="(w, i) in weeks" :key="w.week" :x="xA(i)" :y="H - 10" text-anchor="middle">{{ label(w.week) }}</text>
+        <template v-for="t in [0, 6, 12]" :key="t"><line :x1="L" :x2="W - R" :y1="yL(t)" :y2="yL(t)" /><text :x="L - 6" :y="yL(t) + 3" text-anchor="end">{{ t }}</text></template>
+        <text v-for="(w, i) in weeks" :key="w.week" :x="x(i)" :y="H - 10" text-anchor="middle">{{ label(w.week) }}</text>
       </g>
-      <g v-for="r in refLines" :key="r.kind" class="ref">
-        <line :class="['refline', r.kind]" :x1="L" :x2="W - RR" :y1="yL(r.value)" :y2="yL(r.value)" />
-        <text :x="W - RR + 4" :y="yL(r.value) + 3">{{ r.label }}</text>
-      </g>
+      <template v-for="r in refLines" :key="r.kind">
+        <line :class="['refline', r.kind]" :x1="L" :x2="W - R" :y1="yL(r.value)" :y2="yL(r.value)" />
+      </template>
       <path class="leaves" :d="linePath(leavesL)" />
       <template v-for="(w, i) in weeks" :key="w.week">
         <rect v-if="leavesL[i]" v-bind="sq(leavesL[i])" width="6" height="6" class="dot leaves-dot"
@@ -205,6 +204,10 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
         <text ref="leavesTooltipText" :x="tooltipX" :y="tooltipY + 2.5">{{ pointText }}</text>
       </g>
     </svg>
+    <p class="key">
+      <span v-if="drawn.leaves"><svg class="ks" viewBox="0 0 24 10"><line x1="1" x2="23" y1="5" y2="5" class="leaves" /><rect x="9" y="2" width="6" height="6" class="dot leaves-dot" /></svg>Leaves</span>
+      <span v-for="r in refLines" :key="r.kind"><svg class="ks" viewBox="0 0 24 10"><line x1="1" x2="23" y1="5" y2="5" :class="['refline', r.kind]" /></svg>{{ r.label }}</span>
+    </p>
     <p class="cap">{{ lCap }}</p>
   </figure>
 
@@ -280,8 +283,7 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .leaves { stroke: #8a6d1f; stroke-width: 2.5; }
 .dotted { stroke-dasharray: 1 4; }
 .leaves-dot { fill: #8a6d1f; }
-.ref text { fill: var(--ink-soft); font-size: 8px; }
-.refline { stroke-width: 1; }
+.refline { stroke-width: 1.5; }
 .refline.critical { stroke: var(--danger); stroke-dasharray: 4 3; }
 .refline.target { stroke: var(--forest); stroke-dasharray: 1.5 3; }
 .dashed { stroke-dasharray: 5 3; }
