@@ -13,7 +13,7 @@
 
 **Blocked by:** 01: The weekly charts get a trend toggle.
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] Helper tests: the leaves join (matched by week; a missing week or an unloaded series gives no leaves; status and both reference values carried); the caption sentences for ok, watch and critical, the count-only and no-count cases, and a count below the threshold with served status ok gives the ok sentence; a null threshold or target draws no line and the labels read "8 critical" and "10 target"; the missing-weeks line lists Leaves only when drawn
 - [ ] Render tests: the Leaves button is disabled and All's key omits Leaves when no week has a count; the Leaves view shows its heading, caption and reference lines

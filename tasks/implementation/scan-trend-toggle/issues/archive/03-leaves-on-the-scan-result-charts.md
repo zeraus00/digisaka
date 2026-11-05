@@ -11,7 +11,7 @@
 
 **Blocked by:** 02: The Leaves view on Line insights.
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] Store test: the evidence component asks the insights store for the scan's line and week (API mocked, as in the existing insights store test), and a failed read leaves the other views working
 - [ ] By hand in the stub app: step 1 to step 3 shows leaves at step 3; the Leaves view, All with the leaves line and the caption; a week outside the insights series has no leaves; changing the line or week and rescanning loads the new insights
