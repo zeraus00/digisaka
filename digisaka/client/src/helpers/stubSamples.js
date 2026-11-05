@@ -57,3 +57,12 @@ export const defaultSamples = () => DEFAULT_SET.map(sampleFile);
 export function addDefaultSamples(scan, enabled = samplesEnabled()) {
   if (enabled && scan.line && !scan.leaves.length) scan.addFiles(defaultSamples());
 }
+
+// Document scenarios for the stub's Knowledge Maintenance: the title decides the path (stub/km.js pathOf).
+export const DOC_TEXT = 'Black Sigatoka (Pseudocercospora fijiensis) causes dark streaks on banana leaves. Mancozeb is a protectant fungicide. Propiconazole is a systemic fungicide.';
+export const DOC_SCENARIOS = [
+  { label: 'Happy path', title: 'Sigatoka field guide' },
+  { label: 'Extraction fails', title: 'Sigatoka field guide fail' },
+  { label: 'Commit fails, then retry', title: 'Sigatoka field guide commit-fail' },
+  { label: 'Slow', title: 'Sigatoka field guide slow' },
+];
