@@ -25,6 +25,7 @@ describe('Weather step leaf wetness tile', () => {
   });
   it('shows a dash and the no-value line when the week has none; humidity stays coming soon', async () => {
     const html = await render('2026-W24');
+    expect(html).toMatch(/Leaf wetness<\/span><strong>—<\/strong>/);
     expect(html).toContain('No leaf wetness value recorded for this week');
     expect(html).toMatch(/Humidity<\/span><strong>Coming soon/);
     expect(html).not.toMatch(/Leaf wetness<\/span><strong>Coming soon/);

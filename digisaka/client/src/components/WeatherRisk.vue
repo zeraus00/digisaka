@@ -9,8 +9,9 @@ import { rainOutlookText, conditionMark, conditionReading, weekday, dayRain } fr
 const props = defineProps({ line: { type: String, required: true }, week: { type: String, required: true } });
 const insights = useInsightsStore();
 const data = computed(() => insights.data);
-const rainfall = computed(() => data.value?.series.find((w) => w.week === props.week)?.rainfall_mm ?? null);
-const wetness = computed(() => data.value?.series.find((w) => w.week === props.week)?.leaf_wetness_hours ?? null);
+const thisWeek = computed(() => data.value?.series.find((w) => w.week === props.week));
+const rainfall = computed(() => thisWeek.value?.rainfall_mm ?? null);
+const wetness = computed(() => thisWeek.value?.leaf_wetness_hours ?? null);
 const risk = computed(() => data.value?.risk);
 const days = computed(() => data.value?.rain_outlook?.days ?? []);
 const BADGE = { fired: 'bad', not_fired: 'ok' };
