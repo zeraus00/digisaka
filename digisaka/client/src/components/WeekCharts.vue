@@ -277,9 +277,9 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .tbtn svg.chk { width: 12px; height: 12px; }
 .tbtn:disabled { opacity: .45; cursor: not-allowed; }
 .tbtn:focus-visible { outline: 3px solid #1b6fd6; outline-offset: 2px; }
-.leaves { stroke: var(--forest-deep); stroke-width: 2; }
-.dotted { stroke-dasharray: 1.5 3.5; }
-.leaves-dot { fill: var(--forest-deep); }
+.leaves { stroke: #8a6d1f; stroke-width: 2.5; }
+.dotted { stroke-dasharray: 1 4; }
+.leaves-dot { fill: #8a6d1f; }
 .ref text { fill: var(--ink-soft); font-size: 8px; }
 .refline { stroke-width: 1; }
 .refline.critical { stroke: var(--danger); stroke-dasharray: 4 3; }
