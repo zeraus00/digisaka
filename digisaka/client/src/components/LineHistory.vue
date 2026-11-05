@@ -80,7 +80,6 @@ const result = computed(() => {
           </article>
           <article class="metric">
             <span>Progression</span><strong>{{ progression?.finding ?? 'Not assessed' }}</strong>
-            <small>{{ progression?.text ?? 'No disease trend reading for this week' }}</small>
           </article>
           <article class="metric">
             <span>Last treatment</span>

@@ -12,9 +12,9 @@ import { useCycleStore } from '../stores/cycle.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import { updateState } from '../helpers/scanUpdate.js';
 import { groupLeaves } from '../helpers/groups.js';
-import { previousWeek, nextWeek, isoWeekOf, weekStart, weekEnd } from '../helpers/week.js';
+import { isoWeekOf, weekStart, weekEnd } from '../helpers/week.js';
 import { REFERRAL_TEXT } from '../helpers/messages.js';
-import { todayIso, fromIso, keepIfEdited } from '../helpers/today.js';
+import { todayIso, fromIso } from '../helpers/today.js';
 import { samplesEnabled, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
 const scan = useScanStore(), farm = useFarmStore(), cycle = useCycleStore(), suggestion = useSuggestionStore();
@@ -22,14 +22,10 @@ const router = useRouter();
 const step = computed({ get: () => scan.step, set: (v) => { scan.step = v; } }); // 1 Select Leaves, 2 Bulk Assess, 3 Results; kept in the store
 const STEPS = ['Select Leaves', 'Bulk Assess', 'Results'];
 const AGENT_STEPS = ['Leaf Images Collected', 'Black Sigatoka Validation', 'Individual Stage Assessment', 'Stage Groups Organized', 'Human Verification', 'Treatment Recommendation', 'Schedule Review'];
-const maxDate = computed(() => todayIso()); // scans can't be added to a future week
-const dateInput = ref(maxDate.value);
-watch(maxDate, (next, old) => {
-  dateInput.value = keepIfEdited(dateInput.value, old, next);
-  scan.followToday(isoWeekOf(fromIso(old)), isoWeekOf(fromIso(next)));
-});
+// The scan always sits on the current week; it follows the date when that moves (the dev clock).
+const today = computed(() => todayIso());
+watch(today, (next, old) => scan.followToday(isoWeekOf(fromIso(old)), isoWeekOf(fromIso(next))));
 const weekRange = computed(() => (scan.weekOk ? `${weekStart(scan.week)} to ${weekEnd(scan.week)}` : ''));
-const atLatest = computed(() => scan.week >= isoWeekOf(fromIso(maxDate.value)));
 const gallery = ref(null), camera = ref(null), rescanInput = ref(null), logBox = ref(null);
 const rescanId = ref(null);
 const stubSamples = samplesEnabled(); // only true on the stub stack (docker-compose.stub.yml)
@@ -50,13 +46,6 @@ const preview = (leaf) => {
   return previews.get(leaf.id);
 };
 const setLine = (e) => scan.select(e.target.value, scan.week);
-const setDate = () => { if (dateInput.value) scan.select(scan.line, isoWeekOf(fromIso(dateInput.value))); };
-const stepWeek = (fn) => {
-  const w = fn(scan.week);
-  const start = weekStart(w);
-  dateInput.value = start > maxDate.value ? maxDate.value : start;
-  scan.select(scan.line, w);
-};
 const picked = (e) => { scan.addFiles([...e.target.files]); e.target.value = ''; };
 const startRescan = (id) => { rescanId.value = id; rescanInput.value.click(); };
 const rescanPicked = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) scan.rescan(rescanId.value, f); };
@@ -112,11 +101,6 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
             <option v-for="l in farm.lines" :key="l" :value="l">{{ l }}</option>
           </select>
         </label>
-        <div class="week">
-          <label>Date <input v-model="dateInput" type="date" :max="maxDate" @change="setDate"></label>
-          <button type="button" @click="stepWeek(previousWeek)">Previous week</button>
-          <button type="button" :disabled="atLatest" @click="stepWeek(nextWeek)">Next week</button>
-        </div>
         <p class="hint">Week {{ scan.week }} ({{ weekRange }})</p>
         <p v-if="farm.linesError" class="err" role="alert">{{ farm.linesError }}</p>
         <LineHistory :line="scan.line" :week="scan.week" />
@@ -256,7 +240,6 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
 h2 { font: 800 14px var(--font-display); color: var(--forest); letter-spacing: .04em; }
 .page > * { max-width: 720px; }
 .pick { display: grid; }
-.week { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
 label { display: grid; gap: 4px; font-weight: 700; color: var(--ink-soft); }
 input, select, button { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; }
 button:disabled, select:disabled { opacity: .55; cursor: not-allowed; }
