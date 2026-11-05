@@ -3,7 +3,9 @@ import { api } from '../api.js';
 import { messageFor } from '../helpers/messages.js';
 
 export const POLL_MS = 2000;
-export const POLL_LIMIT = 90; // about three minutes; a cycle normally takes ~25 s
+// A positive whole number replaces the limit of 90 (about three minutes; a cycle normally takes ~25 s); the stub compose sets it.
+export const pollLimit = (raw) => (/^[1-9]\d*$/.test(raw ?? '') ? Number(raw) : 90);
+export const POLL_LIMIT = pollLimit(import.meta.env.VITE_STUB_POLL_LIMIT);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const base = '/api/v1/scheduler';
 const e = encodeURIComponent;

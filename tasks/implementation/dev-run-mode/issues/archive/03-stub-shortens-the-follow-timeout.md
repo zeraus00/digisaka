@@ -11,9 +11,9 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Reader tests: `'10'` gives 10; missing, `'0'`, `'-3'`, `'2.5'` and `'abc'` give 90
-- [ ] The existing timeout test still checks `1 + POLL_LIMIT` calls
-- [ ] Client tests and the build pass
-- [ ] By hand on the rebuilt stub stack: with the stub run stuck (ticket 01 done first, or L08 until then), the timeout card shows in about 20 s
+- [x] Reader tests: `'10'` gives 10; missing, `'0'`, `'-3'`, `'2.5'` and `'abc'` give 90
+- [x] The existing timeout test still checks `1 + POLL_LIMIT` calls
+- [x] Client tests and the build pass
+- [x] By hand on the rebuilt stub stack: with the stub run stuck (ticket 01 done first, or L08 until then), the timeout card shows in about 20 s
