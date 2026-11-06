@@ -32,7 +32,7 @@ const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${en
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow">{{ greeting }}</p>
-        <h1>Welcome back to <em>Digisaka</em></h1>
+        <h1>Welcome back to <em>Toka AI</em></h1>
         <p class="lead">Monitor banana crop health and review Black Sigatoka scans, suggestions and treatments across your lines.</p>
         <p class="updated">Last updated: <b>{{ updatedText }}</b></p>
       </div>
