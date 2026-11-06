@@ -2534,8 +2534,8 @@
         "yli": 8,
         "leaves_at_shooting": 12,
         "functional_leaves": 8,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 5,
+        "leaf_wetness_hours": 16.0
       },
       {
         "week": "2026-W17",
@@ -2543,8 +2543,8 @@
         "yli": 8,
         "leaves_at_shooting": 12,
         "functional_leaves": 8,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 40,
+        "leaf_wetness_hours": 58.0
       },
       {
         "week": "2026-W18",
@@ -2552,8 +2552,8 @@
         "yli": 8,
         "leaves_at_shooting": 12,
         "functional_leaves": 8,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
       },
       {
         "week": "2026-W19",
@@ -2570,8 +2570,8 @@
         "yli": 7,
         "leaves_at_shooting": 12,
         "functional_leaves": 7,
-        "rainfall_mm": 15,
-        "leaf_wetness_hours": 28.0
+        "rainfall_mm": 0,
+        "leaf_wetness_hours": 10.0
       },
       {
         "week": "2026-W21",
@@ -2588,8 +2588,8 @@
         "yli": 6,
         "leaves_at_shooting": 11,
         "functional_leaves": null,
-        "rainfall_mm": 12,
-        "leaf_wetness_hours": 24.4
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
       },
       {
         "week": "2026-W23",
@@ -2597,8 +2597,8 @@
         "yli": 6,
         "leaves_at_shooting": 11,
         "functional_leaves": 7,
-        "rainfall_mm": 12,
-        "leaf_wetness_hours": 24.4
+        "rainfall_mm": 50,
+        "leaf_wetness_hours": 70.0
       },
       {
         "week": "2026-W24",
@@ -2606,8 +2606,8 @@
         "yli": 6,
         "leaves_at_shooting": 10,
         "functional_leaves": 7,
-        "rainfall_mm": 12,
-        "leaf_wetness_hours": 24.4
+        "rainfall_mm": 15,
+        "leaf_wetness_hours": 28.0
       }
     ]
   },
@@ -2620,8 +2620,8 @@
         "yli": 9,
         "leaves_at_shooting": 12,
         "functional_leaves": 8,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
       },
       {
         "week": "2026-W17",
@@ -2629,8 +2629,8 @@
         "yli": 7,
         "leaves_at_shooting": 12,
         "functional_leaves": 7,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 2,
+        "leaf_wetness_hours": 12.4
       },
       {
         "week": "2026-W18",
@@ -2638,8 +2638,8 @@
         "yli": 9,
         "leaves_at_shooting": 12,
         "functional_leaves": 8,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 45,
+        "leaf_wetness_hours": 64.0
       },
       {
         "week": "2026-W19",
@@ -2647,8 +2647,8 @@
         "yli": 6,
         "leaves_at_shooting": 12,
         "functional_leaves": 7,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 5,
+        "leaf_wetness_hours": 16.0
       },
       {
         "week": "2026-W20",
@@ -2656,8 +2656,8 @@
         "yli": 8,
         "leaves_at_shooting": 12,
         "functional_leaves": 8,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 38,
+        "leaf_wetness_hours": 55.6
       },
       {
         "week": "2026-W21",
@@ -2665,8 +2665,8 @@
         "yli": 5,
         "leaves_at_shooting": 12,
         "functional_leaves": 6,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 0,
+        "leaf_wetness_hours": 10.0
       },
       {
         "week": "2026-W22",
@@ -2674,8 +2674,8 @@
         "yli": 8,
         "leaves_at_shooting": 11,
         "functional_leaves": 8,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 42,
+        "leaf_wetness_hours": 60.4
       },
       {
         "week": "2026-W23",
@@ -2683,8 +2683,8 @@
         "yli": 6,
         "leaves_at_shooting": 11,
         "functional_leaves": 7,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
       },
       {
         "week": "2026-W24",
@@ -2692,8 +2692,8 @@
         "yli": 8,
         "leaves_at_shooting": 10,
         "functional_leaves": 8,
-        "rainfall_mm": 20,
-        "leaf_wetness_hours": 34.0
+        "rainfall_mm": 35,
+        "leaf_wetness_hours": 52.0
       }
     ]
   }
