@@ -27,8 +27,8 @@ test('every scheduler request needs a Practitioner token', async () => {
   assert.equal((await get('/lines', as('both@digisaka.test'))).status, 200);
 });
 
-test('lists the 21 seed lines', async () => {
-  assert.deepEqual((await (await get('/lines')).json()).lines, Array.from({ length: 21 }, (_, i) => `L${String(i + 1).padStart(2, '0')}`));
+test('lists the 23 seed lines', async () => {
+  assert.deepEqual((await (await get('/lines')).json()).lines, Array.from({ length: 23 }, (_, i) => `L${String(i + 1).padStart(2, '0')}`));
 });
 
 test('line status carries the scenario for each seed line', async () => {
@@ -50,7 +50,7 @@ test('history is the last three weeks up to the week, from the weekly dataset', 
   assert.deepEqual(h.weeks.map((w) => w.week), ['2026-W22', '2026-W23', '2026-W24']);
   assert.deepEqual(h.weeks.at(-1), { week: '2026-W24', yls: 7, yli: 6, rainfall_mm: 30 });
   const early = await (await get('/lines/L04/weeks/2026-W22/history')).json();
-  assert.deepEqual(early.weeks.map((w) => w.week), ['2026-W20', '2026-W21']);
+  assert.deepEqual(early.weeks.map((w) => w.week), ['2026-W19', '2026-W20', '2026-W21']);
 });
 
 test('errors use the scheduler codes', async () => {

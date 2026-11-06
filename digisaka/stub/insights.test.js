@@ -61,7 +61,8 @@ test('a week with a cycle serves every field, with the risk, history, alerts and
   assert.deepEqual([b.line_id, b.week], ['L03', '2026-W25']);
   assert.equal(typeof b.functional_leaves_threshold, 'number');
   assert.equal(b.series.at(-1).week, '2026-W24');
-  assert.ok(b.series.some((w) => w.yli === null), 'a week the feed did not report is null');
+  const gappy = await insights('L22', '2026-W25');
+  assert.ok(gappy.series.some((w) => w.yli === null), 'a week the feed did not report is null');
   assert.ok(b.readings.length && b.readings.every((r) => r.text));
   assert.equal(b.risk.status, 'assessed');
   assert.ok(b.risk.conditions.some((c) => c.result === 'cannot_check'));

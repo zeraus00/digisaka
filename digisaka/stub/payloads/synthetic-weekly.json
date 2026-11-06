@@ -1,971 +1,2700 @@
 {
- "L01": {
-  "name": "stable_no_treatment",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   }
-  ]
- },
- "L02": {
-  "name": "worsening_dry",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 18,
-    "leaf_wetness_hours": 31.6
-   },
-   {
-    "week": "2026-W22",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 4,
-    "leaf_wetness_hours": 14.8
-   },
-   {
-    "week": "2026-W24",
-    "yls": 6,
-    "yli": 5,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 6,
-    "rainfall_mm": 2,
-    "leaf_wetness_hours": 12.4
-   }
-  ]
- },
- "L03": {
-  "name": "worsening_wet_multi_eligible",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 8,
-    "leaf_wetness_hours": 19.6
-   },
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L04": {
-  "name": "stage_2_two_options",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 8,
-    "leaf_wetness_hours": 19.6
-   },
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L05": {
-  "name": "poor_response_rotation",
-  "weeks": [
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L06": {
-  "name": "response_not_poor",
-  "weeks": [
-   {
-    "week": "2026-W21",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L07": {
-  "name": "poor_response_missing_interval",
-  "weeks": [
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L08": {
-  "name": "empty_eligible_stage_6",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 8,
-    "leaf_wetness_hours": 19.6
-   },
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L09": {
-  "name": "empty_eligible_stage_1",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 8,
-    "leaf_wetness_hours": 19.6
-   },
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L10": {
-  "name": "one_week_of_history",
-  "weeks": [
-   {
-    "week": "2026-W24",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 8,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L11": {
-  "name": "three_weeks_rainfall_not_computable",
-  "weeks": [
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 8,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L12": {
-  "name": "missing_feed",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 8,
-    "leaf_wetness_hours": 19.6
-   },
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": null,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L13": {
-  "name": "no_confirmed_stage_referral",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 8,
-    "leaf_wetness_hours": 19.6
-   },
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 10,
-    "leaf_wetness_hours": 22.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 25,
-    "leaf_wetness_hours": 40.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 30,
-    "leaf_wetness_hours": 46.0
-   }
-  ]
- },
- "L14": {
-  "name": "all_healthy",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W22",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W23",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   },
-   {
-    "week": "2026-W24",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 8,
-    "rainfall_mm": 12,
-    "leaf_wetness_hours": 24.4
-   }
-  ]
- },
- "L15": {
-  "name": "long_flat_yls_below_8",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   }
-  ]
- },
- "L16": {
-  "name": "long_flat_yls_critical",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 5,
-    "yli": 4,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 5,
-    "yli": 4,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 5,
-    "yli": 4,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 5,
-    "yli": 4,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 5,
-    "yli": 4,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   }
-  ]
- },
- "L17": {
-  "name": "long_healthy_then_drops",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   }
-  ]
- },
- "L18": {
-  "name": "long_slow_fall",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   }
-  ]
- },
- "L19": {
-  "name": "long_recovery",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 6,
-    "yli": 5,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 6,
-    "yli": 5,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 6,
-    "yli": 5,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   }
-  ]
- },
- "L20": {
-  "name": "long_fast_fall",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 10,
-    "yli": 9,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 9,
-    "yli": 8,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 8,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 8,
-    "yli": 7,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 6,
-    "yli": 5,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 6,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   }
-  ]
- },
- "L21": {
-  "name": "long_flat_yls_missing_week",
-  "weeks": [
-   {
-    "week": "2026-W20",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W21",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 12,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W22",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W23",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 11,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   },
-   {
-    "week": "2026-W24",
-    "yls": 7,
-    "yli": 6,
-    "leaves_at_shooting": 10,
-    "functional_leaves": 7,
-    "rainfall_mm": 20,
-    "leaf_wetness_hours": 34.0
-   }
-  ]
- }
+  "L01": {
+    "name": "stable_no_treatment",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  },
+  "L02": {
+    "name": "worsening_dry",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 18,
+        "leaf_wetness_hours": 31.6
+      },
+      {
+        "week": "2026-W22",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 4,
+        "leaf_wetness_hours": 14.8
+      },
+      {
+        "week": "2026-W24",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 6,
+        "rainfall_mm": 2,
+        "leaf_wetness_hours": 12.4
+      }
+    ]
+  },
+  "L03": {
+    "name": "worsening_wet_multi_eligible",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      }
+    ]
+  },
+  "L04": {
+    "name": "stage_2_two_options",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      }
+    ]
+  },
+  "L05": {
+    "name": "poor_response_rotation",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 6,
+        "rainfall_mm": 32,
+        "leaf_wetness_hours": 48.4
+      }
+    ]
+  },
+  "L06": {
+    "name": "response_not_poor",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 32,
+        "leaf_wetness_hours": 48.4
+      }
+    ]
+  },
+  "L07": {
+    "name": "poor_response_missing_interval",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 6,
+        "rainfall_mm": 32,
+        "leaf_wetness_hours": 48.4
+      }
+    ]
+  },
+  "L08": {
+    "name": "empty_eligible_stage_6",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      }
+    ]
+  },
+  "L09": {
+    "name": "empty_eligible_stage_1",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      }
+    ]
+  },
+  "L10": {
+    "name": "one_week_of_history",
+    "weeks": [
+      {
+        "week": "2026-W24",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      }
+    ]
+  },
+  "L11": {
+    "name": "three_weeks_rainfall_not_computable",
+    "weeks": [
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      }
+    ]
+  },
+  "L12": {
+    "name": "missing_feed",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": null,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      }
+    ]
+  },
+  "L13": {
+    "name": "no_confirmed_stage_referral",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 8,
+        "leaf_wetness_hours": 19.6
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 10,
+        "leaf_wetness_hours": 22.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 25,
+        "leaf_wetness_hours": 40.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 30,
+        "leaf_wetness_hours": 46.0
+      }
+    ]
+  },
+  "L14": {
+    "name": "all_healthy",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W22",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W24",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      }
+    ]
+  },
+  "L15": {
+    "name": "long_flat_yls_below_8",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W26",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W27",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W28",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W29",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W30",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W31",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W32",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W33",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W34",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W35",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W36",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W37",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  },
+  "L16": {
+    "name": "long_flat_yls_critical",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W26",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W27",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W28",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W29",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W30",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W31",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W32",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W33",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W34",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W35",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W36",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W37",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  },
+  "L17": {
+    "name": "long_healthy_then_drops",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W26",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W27",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W28",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W29",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W30",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W31",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W32",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W33",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W34",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W35",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W36",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W37",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  },
+  "L18": {
+    "name": "long_slow_fall",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W26",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W27",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W28",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W29",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W30",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W31",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W32",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W33",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W34",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W35",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W36",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W37",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  },
+  "L19": {
+    "name": "long_recovery",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W26",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W27",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W28",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W29",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W30",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W31",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W32",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W33",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W34",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W35",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W36",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W37",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  },
+  "L20": {
+    "name": "long_fast_fall",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W26",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W27",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W28",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W29",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W30",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W31",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W32",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W33",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W34",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W35",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W36",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W37",
+        "yls": 5,
+        "yli": 4,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  },
+  "L21": {
+    "name": "long_flat_yls_missing_week",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W25",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W26",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W27",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 9,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W28",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W29",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 8,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W30",
+        "yls": null,
+        "yli": null,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W31",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 7,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W32",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W33",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W34",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W35",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W36",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W37",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 6,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  },
+  "L22": {
+    "name": "erratic_gaps",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": null,
+        "yli": null,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": null,
+        "leaf_wetness_hours": null
+      },
+      {
+        "week": "2026-W20",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 15,
+        "leaf_wetness_hours": 28.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": null,
+        "yli": null,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": null,
+        "leaf_wetness_hours": null
+      },
+      {
+        "week": "2026-W22",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": null,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W23",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      },
+      {
+        "week": "2026-W24",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 7,
+        "rainfall_mm": 12,
+        "leaf_wetness_hours": 24.4
+      }
+    ]
+  },
+  "L23": {
+    "name": "erratic_noisy",
+    "weeks": [
+      {
+        "week": "2026-W16",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W17",
+        "yls": 8,
+        "yli": 7,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W18",
+        "yls": 10,
+        "yli": 9,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W19",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W20",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W21",
+        "yls": 6,
+        "yli": 5,
+        "leaves_at_shooting": 12,
+        "functional_leaves": 6,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W22",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W23",
+        "yls": 7,
+        "yli": 6,
+        "leaves_at_shooting": 11,
+        "functional_leaves": 7,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      },
+      {
+        "week": "2026-W24",
+        "yls": 9,
+        "yli": 8,
+        "leaves_at_shooting": 10,
+        "functional_leaves": 8,
+        "rainfall_mm": 20,
+        "leaf_wetness_hours": 34.0
+      }
+    ]
+  }
 }
