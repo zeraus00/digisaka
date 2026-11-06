@@ -76,7 +76,6 @@ export const TREND_VIEWS = [
   { id: 'leaves', name: 'Leaves', icon: 'trend-leaf', keys: ['leaves'] },
   { id: 'rain', name: 'Rainfall', icon: 'trend-drop', keys: ['rainfall_mm'] },
 ];
-const SERIES_NAME = { yls: 'YLS', yli: 'YLI', leaves: 'Leaves', rainfall_mm: 'Rainfall' };
 const hasValue = (weeks, key) => weeks.some((w) => w[key] != null);
 
 // Ids of the views that have at least one value in the shown weeks.
@@ -94,14 +93,6 @@ export function nextView(current, step, weeks, views = TREND_VIEWS) {
     if (ok.includes(id)) return id;
   }
   return current;
-}
-
-// "Missing weeks" line for the series a view draws; All lists only series that exist.
-export function missingTextFor(view, weeks, views = TREND_VIEWS) {
-  const missing = Object.fromEntries(Object.keys(SERIES_NAME).map((k) => [k, weeks.filter((w) => w[k] == null).map((w) => w.week)]));
-  const keys = views.find((v) => v.id === view).keys.filter((k) => hasValue(weeks, k));
-  const parts = keys.filter((k) => missing[k].length).map((k) => `${SERIES_NAME[k]}: ${missing[k].join(', ')}`);
-  return parts.length ? `Missing weeks — ${parts.join('; ')}.` : '';
 }
 
 // The chart weeks are the Line Insights series, always the same consecutive weeks (a week with no record has null values).

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, availableViews, resolveView, nextView, missingTextFor, axisTop, chartWeeks, leavesLines, leavesCaption, linePath, niceMax } from './evidence.js';
+import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, availableViews, resolveView, nextView, axisTop, chartWeeks, leavesLines, leavesCaption, linePath, niceMax } from './evidence.js';
 
 const weeks = [
   { week: '2026-W22', yls: 7, yli: 4, rainfall_mm: 10 },
@@ -157,12 +157,6 @@ describe('trend views', () => {
     expect(nextView('all', -1, noRain)).toBe('disease');
     expect(nextView('all', 1, noYls)).toBe('rain');
   });
-  it('missing-weeks line lists only the series the view draws', () => {
-    expect(missingTextFor('all', weeks)).toBe('Missing weeks — YLI: 2026-W23; Rainfall: 2026-W24.');
-    expect(missingTextFor('disease', weeks)).toBe('Missing weeks — YLI: 2026-W23.');
-    expect(missingTextFor('rain', weeks)).toBe('Missing weeks — Rainfall: 2026-W24.');
-    expect(missingTextFor('all', noRain)).toBe('Missing weeks — YLI: 2026-W23.');
-  });
 });
 
 describe('axisTop', () => {
@@ -203,11 +197,5 @@ describe('leaves', () => {
   it('skips weeks with no count, and says so when none has one', () => {
     expect(leavesCaption([{ week: '2026-W22', leaves: 6, canopy: 'watch' }, { week: '2026-W23', leaves: null }])).toContain('in 2026-W22');
     expect(leavesCaption(weeks)).toBe('No leaf count recorded.');
-  });
-  it('lists Leaves as missing only when the series is drawn on the view', () => {
-    const j = weeks.map((w) => ({ ...w, leaves: w.week === '2026-W24' ? null : 6 }));
-    expect(missingTextFor('leaves', j)).toBe('Missing weeks — Leaves: 2026-W24.');
-    expect(missingTextFor('disease', j)).toBe('Missing weeks — YLI: 2026-W23.');
-    expect(missingTextFor('all', weeks)).not.toContain('Leaves');
   });
 });

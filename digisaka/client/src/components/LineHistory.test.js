@@ -30,11 +30,10 @@ const render = async (state = insights) => {
 const labels = (html) => [...html.matchAll(/>(W\d{2})<\/text>/g)].map((m) => m[1]);
 
 describe('Line insights weekly charts', () => {
-  it('draw the eight insights weeks in order, a week with no record kept on the axis and named as missing', async () => {
+  it('draw the eight insights weeks in order, a week with no record kept on the axis', async () => {
     const html = await render();
     expect(labels(html)).toEqual(['W17', 'W18', 'W19', 'W20', 'W21', 'W22', 'W23', 'W24']);
-    expect(html).toContain('2026-W20');
-    expect(html).toMatch(/Missing weeks — [^<]*2026-W20/);
+    expect(html).not.toContain('Missing weeks');
   });
   it('draw no chart while the insights are not loaded or failed', async () => {
     for (const state of [{ phase: 'loading', data: null }, { phase: 'error', data: null, error: 'down' }]) {

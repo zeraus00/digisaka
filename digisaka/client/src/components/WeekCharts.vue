@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
 import Icon from './Icon.vue';
-import { diseaseCaption, rainfallCaption, linePath, niceMax, TREND_VIEWS, leavesLines, leavesCaption, axisTop, availableViews, resolveView, nextView, missingTextFor } from '../helpers/evidence.js';
+import { diseaseCaption, rainfallCaption, linePath, niceMax, TREND_VIEWS, leavesLines, leavesCaption, axisTop, availableViews, resolveView, nextView } from '../helpers/evidence.js';
 
 // Weekly YLS/YLI and rainfall as plain SVG. With `disease` and `rainfall` (a cycle's evidence) the compared
 // weeks are highlighted and captioned; without them it is a plain look at recent weeks.
@@ -68,7 +68,6 @@ const views = TREND_VIEWS;
 const available = computed(() => availableViews(weeks.value));
 const picked = ref(props.initialView);
 const view = computed(() => resolveView(picked.value, weeks.value));
-const missingText = computed(() => missingTextFor(view.value, weeks.value));
 const drawn = computed(() => ({ yls: ylsPts.value.some(Boolean), yli: yliPts.value.some(Boolean), rain: weeks.value.some((w) => w.rainfall_mm != null), leaves: weeks.value.some((w) => w.leaves != null) }));
 const pick = (id) => { picked.value = id; };
 const buttons = ref([]);
@@ -237,7 +236,6 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
     <p v-if="rCap" class="cap">{{ rCap }}</p>
   </figure>
 
-  <p v-if="missingText" class="cap soft">{{ missingText }}</p>
   </div>
 </template>
 

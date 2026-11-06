@@ -49,12 +49,12 @@ const renderReady = async (insightsState) => {
 const labels = (html) => [...html.matchAll(/>(W\d{2})<\/text>/g)].map((m) => m[1]);
 
 describe('EvidenceCharts weeks', () => {
-  it('draw the eight insights weeks whatever the evidence lists, a gap week kept and named as missing', async () => {
+  it('draw the eight insights weeks whatever the evidence lists, a gap week kept', async () => {
     const html = await renderReady({ phase: 'ready', data: { series } });
     expect(labels(html)).toEqual(['W17', 'W18', 'W19', 'W20', 'W21', 'W22', 'W23', 'W24']);
     expect(html).toContain('last 8 weeks');
     expect(html).not.toContain('weeks compared');
-    expect(html).toMatch(/Missing weeks — [^<]*2026-W20/);
+    expect(html).not.toContain('Missing weeks');
   });
   it('draw no chart without the insights, and keep the verdict chips', async () => {
     const html = await renderReady({ phase: 'error', data: null, error: 'down' });
