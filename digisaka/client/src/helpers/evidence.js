@@ -110,6 +110,15 @@ export function missingTextFor(view, weeks, views = TREND_VIEWS) {
   return parts.length ? `Missing weeks — ${parts.join('; ')}.` : '';
 }
 
+// The chart weeks are the Line Insights series, always the same consecutive weeks (a week with no record has null values).
+// Each week gets `leaves` (the count) and `canopy` (the served status); the served reference values come along.
+export function chartWeeks(data) {
+  return {
+    weeks: (data?.series ?? []).map((w) => ({ ...w, leaves: w.functional_leaves ?? null, canopy: w.canopy_status ?? null })),
+    refs: { critical: data?.functional_leaves_threshold ?? null, target: data?.functional_leaves_target ?? null },
+  };
+}
+
 // Join the Line Insights series to chart weeks by week: each week gets `leaves` (the count) and `canopy` (the served
 // status), and the served reference values come along. A week the series lacks, or no data yet, gives no leaves.
 // Top of a 0-12 axis that grows, in steps of two, only when a value would go over it.
