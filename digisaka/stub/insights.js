@@ -3,7 +3,7 @@
 // one before any cycle otherwise. shortcut: the series, history and outlook are fixed, not derived from the seed,
 // the stub proves the frontend against the contract, the manual run against the real scheduler is the gate.
 import { readFileSync } from 'node:fs';
-import { BASE, TODAY, fail, ok, authed, isValidWeek, shiftWeek, readEnd } from './common.js';
+import { BASE, todayOf, fail, ok, authed, isValidWeek, shiftWeek, readEnd } from './common.js';
 
 const load = (name) => JSON.parse(readFileSync(new URL(`./payloads/line-insights.${name}.json`, import.meta.url), 'utf8'));
 const PAYLOADS = { cycle: load('cycle'), none: load('no-cycle') };
@@ -42,7 +42,7 @@ export function insightsRoutes(store, { settleAll }) {
       // The series is the window of weeks ending at the read end (the asked week's Last finished week, capped at today's),
       // read from the line's weekly records (the dataset copy in the seed); the asked week has no entry. The readings are
       // derived from the same series, and are blank when its last week has no record.
-      const end = readEnd(params.week, store.data.devToday ?? TODAY);
+      const end = readEnd(params.week, todayOf(store));
       const last = frozen.series.length - 1;
       const record = (week) => line.records.find((r) => r.week === week);
       const series = frozen.series.map((_, i) => {

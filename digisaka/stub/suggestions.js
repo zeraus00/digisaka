@@ -3,9 +3,7 @@
 // SuggestionView; a line with no finished run has none. Also the scheduler's dev-date routes (the stub's
 // "today").
 import { readFileSync } from 'node:fs';
-import { BASE, TODAY, fail, ok, authed } from './common.js';
-
-export { TODAY };
+import { BASE, TODAY, todayOf, fail, ok, authed } from './common.js';
 
 // The 0004 clean and stressed payloads, shifted 19 weeks earlier so their dates meet the app's demo today
 // (see client/src/helpers/today.js). `draft` is the stressed one with nothing blocking: it only needs an acknowledgement.
@@ -115,8 +113,7 @@ export function suggestionAfter(line, run, finishedAt) {
 }
 
 export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Date.now }) {
-  // The date the stub treats as today: the dev date when one is set, else TODAY (the scheduler's DevClock).
-  const today = () => store.data.devToday ?? TODAY;
+  const today = () => todayOf(store);
   const todayView = () => ok({ today: today(), default: TODAY, pinned: store.data.devToday != null });
   const validDay = (v) => typeof v === 'string' && DATE.test(v) && !Number.isNaN(Date.parse(v)) && new Date(v).toISOString().startsWith(v);
   const unknownLine = (id) => fail(404, 'unknown_line', `No line ${id}`);

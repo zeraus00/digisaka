@@ -1,5 +1,5 @@
 // Stand-in for the scheduler API under /api/v1/scheduler: lines, history, insights, evidence, scans and cycles.
-import { BASE, TODAY, fail, ok, authed, isValidWeek, shiftWeek, readEnd } from './common.js';
+import { BASE, todayOf, fail, ok, authed, isValidWeek, shiftWeek, readEnd } from './common.js';
 import { suggestionRoutes, suggestionAfter } from './suggestions.js';
 import { insightsRoutes } from './insights.js';
 
@@ -122,7 +122,7 @@ export function schedulerRoutes(store, { now = Date.now, cycleMs = 4000 } = {}) 
         const l = line(params.id);
         if (!l) return unknownLine(params.id);
         if (!isValidWeek(params.week)) return fail(400, 'invalid_week', `${params.week} is not a week key`);
-        return ok({ line_id: params.id, week: params.week, weeks: l.weeks.filter((w) => w.week <= readEnd(params.week, store.data.devToday ?? TODAY)).slice(-3) });
+        return ok({ line_id: params.id, week: params.week, weeks: l.weeks.filter((w) => w.week <= readEnd(params.week, todayOf(store))).slice(-3) });
       }),
     },
     {

@@ -28,6 +28,8 @@ export function isValidWeek(value) {
 
 // The stub's default "today": the scheduler's SCHEDULER_DEMO_TODAY (see client/src/helpers/today.js).
 export const TODAY = '2026-06-15';
+// The date the stub treats as today: the dev date when one is set, else TODAY (the scheduler's DevClock).
+export const todayOf = (store) => store.data.devToday ?? TODAY;
 
 // The ISO week key `n` weeks from `week` (n may be negative), through the Thursday that names a week's year.
 export function shiftWeek(week, n) {
