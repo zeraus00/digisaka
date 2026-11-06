@@ -14,6 +14,7 @@ class _LeafPhoto {
   final File? file;
   final String? scenario; // tag for sample-leaf chip additions
 
+  // ignore: unused_element_parameter
   const _LeafPhoto({this.file, this.scenario});
 }
 
