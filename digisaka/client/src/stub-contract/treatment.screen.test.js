@@ -9,7 +9,7 @@ import TreatmentDetailView from '../views/TreatmentDetailView.vue';
 
 const ctx = useStub();
 const wait = async () => { ctx.clock.t += CYCLE_MS; };
-const show = (line, step) => renderScreen(TreatmentDetailView, '/treatment/:lineId/:week', `/treatment/${line}/2026-W24${step ? `?step=${step}` : ''}`);
+const show = (line, step) => renderScreen(TreatmentDetailView, '/treatment/:lineId/:week', `/treatment/${line}/2026-W25${step ? `?step=${step}` : ''}`);
 
 describe('treatment screen', () => {
   it('shows the basis, the three groups, other guidance and the record form, with no approval controls', async () => {
@@ -116,13 +116,13 @@ describe('treatment screen', () => {
   });
 
   describe('entered from a scan', () => {
-    const scanned = (step = 3) => { const sc = useScanStore(); sc.line = 'L04'; sc.week = '2026-W24'; sc.step = step; sc.leaves = [{ reschedule: { cycle_id: 'c1' } }]; return sc; };
+    const scanned = (step = 3) => { const sc = useScanStore(); sc.line = 'L04'; sc.week = '2026-W25'; sc.step = step; sc.leaves = [{ reschedule: { cycle_id: 'c1' } }]; return sc; };
 
     it('Spray Log shows the update while updating and on failure with Retry, and nothing once done', async () => {
       scanned();
       const s = useSuggestionStore();
       await s.load('L04', wait);
-      await useInsightsStore().load('L04', '2026-W24');
+      await useInsightsStore().load('L04', '2026-W25');
       s.updating = true;
       expect(await show('L04', 'spray')).toContain('Updating the treatment suggestion');
       s.updating = false; s.tracked = 'failed';
@@ -144,7 +144,7 @@ describe('treatment screen', () => {
       scanned();
       const s = useSuggestionStore();
       await s.load('L04', wait);
-      await useInsightsStore().load('L04', '2026-W24');
+      await useInsightsStore().load('L04', '2026-W25');
       s.phase = 'loading'; s.updating = false;
       s.tracked = 'timeout';
       expect(await show('L04', 'spray')).toContain('Check again');
@@ -157,7 +157,7 @@ describe('treatment screen', () => {
     it('shows Back to scan results at Results only, and no update card for another entry', async () => {
       const s = useSuggestionStore();
       await s.load('L04', wait);
-      await useInsightsStore().load('L04', '2026-W24');
+      await useInsightsStore().load('L04', '2026-W25');
       s.updating = true;
       expect(await show('L04', 'spray')).not.toContain('Updating the treatment suggestion');
       expect(await show('L04')).not.toContain('Back to scan results');

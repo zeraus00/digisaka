@@ -24,7 +24,7 @@ const keys = (o) => Object.keys(o).sort();
 const same = (o, fields) => assert.deepEqual(keys(o), [...fields].sort());
 
 const TOP = ['line_id', 'week', 'window_weeks', 'functional_leaves_threshold', 'functional_leaves_target', 'series', 'readings', 'risk', 'rain_outlook', 'history', 'history_coverage', 'group_usage', 'actions'];
-const WEEK = ['week', 'yli', 'yls', 'functional_leaves', 'leaves_at_shooting', 'rainfall_mm', 'canopy_status'];
+const WEEK = ['week', 'yli', 'yls', 'functional_leaves', 'leaves_at_shooting', 'rainfall_mm', 'canopy_status', 'leaf_wetness_hours'];
 const READING = ['rule', 'finding', 'text', 'source', 'sample_fact'];
 const RISK = ['status', 'finding', 'result', 'conditions'];
 const CONDITION = ['label', 'result', 'input'];
@@ -56,9 +56,9 @@ function shape(b) {
 }
 
 test('a week with a cycle serves every field, with the risk, history, alerts and action kinds assessed', async () => {
-  const b = await insights('L03', '2026-W24');
+  const b = await insights('L03', '2026-W25');
   shape(b);
-  assert.deepEqual([b.line_id, b.week], ['L03', '2026-W24']);
+  assert.deepEqual([b.line_id, b.week], ['L03', '2026-W25']);
   assert.equal(typeof b.functional_leaves_threshold, 'number');
   assert.equal(b.series.at(-1).week, '2026-W24');
   assert.ok(b.series.some((w) => w.yli === null), 'a week the feed did not report is null');
@@ -84,9 +84,9 @@ test('a week with a cycle serves every field, with the risk, history, alerts and
 });
 
 test('a week without a cycle serves the same fields, with the risk and action kinds not yet assessed', async () => {
-  const b = await insights('L04', '2026-W24');
+  const b = await insights('L04', '2026-W25');
   shape(b);
-  assert.deepEqual([b.line_id, b.week], ['L04', '2026-W24']);
+  assert.deepEqual([b.line_id, b.week], ['L04', '2026-W25']);
   assert.deepEqual(b.risk, { status: 'not_yet_assessed', finding: null, result: null, conditions: [] });
   assert.equal(b.rain_outlook.status, 'weather_not_yet_checked');
   assert.ok(b.rain_outlook.days.every((d) => d.status === 'weather_not_yet_checked' && d.precipitation_mm === null));
@@ -96,32 +96,37 @@ test('a week without a cycle serves the same fields, with the risk and action ki
 });
 
 test('the series and readings come from the line\'s weekly records, blank where the line has none', async () => {
-  const feed = await insights('L12', '2026-W24');
+  const feed = await insights('L12', '2026-W25');
   assert.deepEqual([feed.series.at(-1).yls, feed.series.at(-1).functional_leaves, feed.series.at(-1).canopy_status], [7, null, null], 'a missing feed value is null');
   assert.ok(feed.readings.length);
-  const early = await insights('L10', '2026-W22'); // L10 has one week of history, W24
+  const early = await insights('L10', '2026-W23'); // L10 has one week of history, W24
   assert.deepEqual(early.readings, []);
   early.series.forEach((w) => assert.deepEqual([w.yli, w.yls, w.functional_leaves, w.rainfall_mm, w.canopy_status], [null, null, null, null, null], w.week));
-  const one = await insights('L10', '2026-W24');
+  const one = await insights('L10', '2026-W25');
   assert.deepEqual(one.series.map((w) => w.yls).filter((v) => v !== null), [9]);
 });
 
-test('the series ends at the asked week, across a year boundary too', async () => {
+test('the series ends at the asked week\'s Last finished week, across a year boundary too', async () => {
   const weeks = async (line, week) => (await insights(line, week)).series.map((w) => w.week);
-  assert.deepEqual((await weeks('L02', '2026-W23')).slice(-2), ['2026-W22', '2026-W23']);
-  assert.deepEqual((await weeks('L02', '2026-W02')).slice(-4), ['2025-W51', '2025-W52', '2026-W01', '2026-W02']);
+  assert.deepEqual((await weeks('L02', '2026-W25')).slice(-2), ['2026-W23', '2026-W24']);
+  assert.deepEqual((await weeks('L02', '2026-W02')).slice(-4), ['2025-W50', '2025-W51', '2025-W52', '2026-W01']);
 });
 
-test('the week decides which: L03 has a cycle in W24 and none in W23', async () => {
-  assert.equal((await insights('L03', '2026-W24')).risk.status, 'assessed');
-  assert.equal((await insights('L03', '2026-W23')).risk.status, 'not_yet_assessed');
+test('a week after the stub\'s today is capped at the Last finished week of today (W24)', async () => {
+  const weeks = async (line, week) => (await insights(line, week)).series.map((w) => w.week);
+  assert.equal((await weeks('L02', '2026-W27')).at(-1), '2026-W24');
+});
+
+test('the week decides which: L03 has a cycle in W25 and none in W24', async () => {
+  assert.equal((await insights('L03', '2026-W25')).risk.status, 'assessed');
+  assert.equal((await insights('L03', '2026-W24')).risk.status, 'not_yet_assessed');
 });
 
 test('errors: unknown line, bad week key, no token, a role that is not a Practitioner', async () => {
-  assert.deepEqual([(await get('/lines/nope/weeks/2026-W24/insights')).status, (await get('/lines/nope/weeks/2026-W24/insights')).body.error], [404, 'unknown_line']);
+  assert.deepEqual([(await get('/lines/nope/weeks/2026-W25/insights')).status, (await get('/lines/nope/weeks/2026-W25/insights')).body.error], [404, 'unknown_line']);
   const bad = await get('/lines/L03/weeks/2026-24/insights');
   assert.deepEqual([bad.status, bad.body.error], [422, 'invalid_week']);
-  assert.equal((await get('/lines/L03/weeks/2026-W24/insights', {})).status, 401);
+  assert.equal((await get('/lines/L03/weeks/2026-W25/insights', {})).status, 401);
   const technical = SAMPLE_USERS.find((u) => !u.roles.includes('practitioner'));
-  if (technical) assert.equal((await get('/lines/L03/weeks/2026-W24/insights', { Authorization: `Bearer ${issueToken(technical)}` })).status, 403);
+  if (technical) assert.equal((await get('/lines/L03/weeks/2026-W25/insights', { Authorization: `Bearer ${issueToken(technical)}` })).status, 403);
 });

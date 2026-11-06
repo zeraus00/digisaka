@@ -187,10 +187,10 @@
   ]
  },
  "preview": {
-  "generated_on": "2026-06-08",
+  "generated_on": "2026-06-15",
   "horizon": {
-   "start": "2026-06-08",
-   "end": "2026-07-08",
+   "start": "2026-06-15",
+   "end": "2026-07-15",
    "days": 30
   },
   "replan": null,
@@ -249,7 +249,7 @@
   },
   "days": [
    {
-    "date": "2026-06-08",
+    "date": "2026-06-15",
     "weekday": "Mon",
     "state": "needs_approval",
     "monitoring": {
@@ -257,7 +257,7 @@
     }
    },
    {
-    "date": "2026-06-09",
+    "date": "2026-06-16",
     "weekday": "Tue",
     "state": "needs_approval",
     "application": {
@@ -266,8 +266,8 @@
      "moa": "G2",
      "frac": "G2",
      "timing_window": {
-      "start": "2026-06-09",
-      "end": "2026-06-15",
+      "start": "2026-06-16",
+      "end": "2026-06-22",
       "basis": "last application 2026-06-01 + 8 to 14 days"
      },
      "weather": {
@@ -277,7 +277,7 @@
     }
    },
    {
-    "date": "2026-06-15",
+    "date": "2026-06-22",
     "weekday": "Mon",
     "state": "needs_approval",
     "monitoring": {
@@ -288,7 +288,7 @@
     }
    },
    {
-    "date": "2026-06-22",
+    "date": "2026-06-29",
     "weekday": "Mon",
     "state": "needs_approval",
     "monitoring": {
@@ -300,19 +300,19 @@
      "moa": "M",
      "frac": "M",
      "timing_window": {
-      "start": "2026-06-21",
-      "end": "2026-06-27",
+      "start": "2026-06-28",
+      "end": "2026-07-04",
       "basis": "2026-06-09 + 12 to 18 days"
      },
      "weather": {
       "status": "moved",
       "detail": "Rain forecast 2026-06-21 13:00 to 19:00 is inside the 6 h rainfast period; moved to the first suitable day in the window",
-      "original_date": "2026-06-21"
+      "original_date": "2026-06-28"
      }
     }
    },
    {
-    "date": "2026-06-29",
+    "date": "2026-07-06",
     "weekday": "Mon",
     "state": "needs_approval",
     "monitoring": {
@@ -323,7 +323,7 @@
     }
    },
    {
-    "date": "2026-06-30",
+    "date": "2026-07-07",
     "weekday": "Tue",
     "state": "needs_approval",
     "application": {
@@ -332,8 +332,8 @@
      "moa": "G2",
      "frac": "G2",
      "timing_window": {
-      "start": "2026-06-30",
-      "end": "2026-07-06",
+      "start": "2026-07-07",
+      "end": "2026-07-13",
       "basis": "2026-06-22 + 8 to 14 days"
      },
      "weather": {
@@ -343,7 +343,7 @@
     }
    },
    {
-    "date": "2026-07-06",
+    "date": "2026-07-13",
     "weekday": "Mon",
     "state": "needs_approval",
     "monitoring": {
@@ -436,7 +436,7 @@
     "lon": 121.0,
     "scope": "farm (stopgap)"
    },
-   "covered_until": "2026-06-24",
+   "covered_until": "2026-07-01",
    "status": "ok"
   },
   "alerts": [

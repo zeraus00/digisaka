@@ -4,7 +4,7 @@ import { createStub } from './server.js';
 import { SAMPLE_USERS, issueToken } from './supabase.js';
 
 const B = '/api/v1/scheduler';
-const WEEK = '2026-W24';
+const WEEK = '2026-W25';
 const farmer = { Authorization: `Bearer ${issueToken(SAMPLE_USERS[0])}`, 'Content-Type': 'application/json' };
 let server, base, t;
 
@@ -24,7 +24,7 @@ const scan = (line, name, extra = {}) => call('POST', `${B}/lines/${line}/weeks/
 const verify = (line) => scan(line, 'leaf-healthy.jpg');
 
 test('each image name gives its canned answer; unrecognised names are stage 2', async () => {
-  assert.deepEqual((await scan('L04', 'a-healthy.jpg')).body, { qa_output_id: 'qa-1', outcome: 'healthy', stage: null, reschedule: { cycle_id: 'c-L04-24' } });
+  assert.deepEqual((await scan('L04', 'a-healthy.jpg')).body, { qa_output_id: 'qa-1', outcome: 'healthy', stage: null, reschedule: { cycle_id: 'c-L04-25' } });
   assert.equal((await scan('L04', 'not_leaf.jpg')).body.outcome, 'not_leaf');
   assert.equal((await scan('L04', 'referral.jpg')).body.outcome, 'referral');
   assert.equal((await scan('L04', 'rescan.jpg')).body.next_action, 're_scan');
@@ -44,7 +44,7 @@ test('an image the QA service cannot take answers 503 once, then goes through', 
 test('confirming symptoms finishes the scan; denying asks for a re-scan, and a re-scan keeps the same session', async () => {
   const q = (await scan('L04', 'a.jpg')).body.qa_output_id;
   const yes = await call('POST', `${B}/diagnoses/${q}/confirm-symptoms`, { confirmed: true });
-  assert.deepEqual(yes.body, { qa_output_id: q, outcome: 'treatment_result', stage: 'Stage 2', reschedule: { cycle_id: 'c-L04-24' } });
+  assert.deepEqual(yes.body, { qa_output_id: q, outcome: 'treatment_result', stage: 'Stage 2', reschedule: { cycle_id: 'c-L04-25' } });
   const q2 = (await scan('L04', 'b.jpg')).body.qa_output_id;
   assert.equal((await call('POST', `${B}/diagnoses/${q2}/confirm-symptoms`, { confirmed: false })).body.next_action, 're_scan');
   const again = await scan('L04', 'b2.jpg', { qa_output_id: q2 });
@@ -63,9 +63,9 @@ test('a scan awaiting confirmation or a re-scan does not reschedule; the first v
   const pending = (await scan('L04', 'a.jpg')).body;
   assert.equal(pending.reschedule, null);
   const first = await call('POST', `${B}/diagnoses/${pending.qa_output_id}/confirm-symptoms`, { confirmed: true });
-  assert.deepEqual(first.body.reschedule, { cycle_id: 'c-L04-24' });
+  assert.deepEqual(first.body.reschedule, { cycle_id: 'c-L04-25' });
   assert.equal((await verify('L04')).body.reschedule, null, 'a second verified scan of the week leaves the stage as it was');
-  assert.match((await verify('L05')).body.reschedule.cycle_id, /^c-L05-24-\d+$/, 'a taken cycle id gets a suffix');
+  assert.match((await verify('L05')).body.reschedule.cycle_id, /^c-L05-25-\d+$/, 'a taken cycle id gets a suffix');
 });
 
 test('the reschedule becomes the new revision of the suggestion; the week read lists every run, newest last', async () => {
@@ -82,7 +82,7 @@ test('the reschedule becomes the new revision of the suggestion; the week read l
   assert.deepEqual(week.runs.map((r) => [r.cycle_id, r.trigger, r.changed]), [[id, 'scan', true]]);
   assert.deepEqual(Object.keys(week.runs[0]), ['cycle_id', 'trigger', 'started_at', 'changed']);
   const seeded = (await call('GET', `${B}/lines/L03/weeks/${WEEK}`)).body;
-  assert.deepEqual(seeded.runs.map((r) => r.cycle_id), ['c-L03-24']);
+  assert.deepEqual(seeded.runs.map((r) => r.cycle_id), ['c-L03-25']);
   assert.equal((await call('GET', `${B}/lines/L04/weeks/2026-W20`)).body.error, 'unknown_cycle');
   assert.equal((await call('GET', `${B}/lines/L99/weeks/${WEEK}`)).body.error, 'unknown_line');
   assert.equal((await call('GET', `${B}/lines/L04/weeks/bad`)).body.error, 'invalid_week');
@@ -94,7 +94,7 @@ test('a first run of a line with none gives it a suggestion, and the line status
   assert.equal((await call('GET', `${B}/lines/L01/suggestion`)).status, 404, 'still no finished run');
   t += 3000;
   const s = (await call('GET', `${B}/lines/L01/suggestion`)).body;
-  assert.deepEqual([s.revision, s.outcome], ['c-L01-24', 'continue_monitoring']);
+  assert.deepEqual([s.revision, s.outcome], ['c-L01-25', 'continue_monitoring']);
   const status = (await call('GET', `${B}/lines/L01`)).body;
   assert.equal(status.latest_cycle.week, WEEK);
   assert.equal(status.leaves_scanned, 1);
@@ -108,13 +108,13 @@ test('L06 fails, retry succeeds, and a cycle that is not failed cannot be retrie
   assert.equal(failed.status, 'failed');
   assert.ok(failed.failure_reason);
   const suggestion = (await call('GET', `${B}/lines/L06/suggestion`)).body;
-  assert.deepEqual([suggestion.running, suggestion.revision], [false, 'c-L06-23'], 'a failed run leaves the suggestion as it was');
+  assert.deepEqual([suggestion.running, suggestion.revision], [false, 'c-L06-24'], 'a failed run leaves the suggestion as it was');
   const retry = await call('POST', `${B}/cycles/${id}/retry`);
   assert.equal(retry.status, 202);
   assert.equal(retry.body.status, 'running');
   t += 3000;
   assert.deepEqual(await call('GET', `${B}/cycles/${id}`).then((r) => [r.body.status, r.body.outcome]), ['done', 'continue_monitoring']);
-  assert.equal((await call('POST', `${B}/cycles/c-L02-23/retry`)).body.error, 'cycle_not_failed');
+  assert.equal((await call('POST', `${B}/cycles/c-L02-24/retry`)).body.error, 'cycle_not_failed');
   assert.equal((await call('POST', `${B}/cycles/nope/retry`)).body.error, 'unknown_cycle');
 });
 
@@ -133,7 +133,7 @@ test('state survives until reset, which restores the seed', async () => {
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'done');
   await fetch(`${base}/__stub/reset`, { method: 'POST' });
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.error, 'unknown_cycle');
-  assert.equal((await verify('L04')).body.reschedule.cycle_id, 'c-L04-24');
+  assert.equal((await verify('L04')).body.reschedule.cycle_id, 'c-L04-25');
 });
 
 const mode = (m) => call('PUT', `${B}/dev/run-mode`, { mode: m });

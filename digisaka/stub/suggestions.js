@@ -3,9 +3,11 @@
 // SuggestionView; a line with no finished run has none. Also the scheduler's dev-date routes (the stub's
 // "today").
 import { readFileSync } from 'node:fs';
-import { BASE, fail, ok, authed } from './common.js';
+import { BASE, TODAY, fail, ok, authed } from './common.js';
 
-// The 0004 clean and stressed payloads, shifted 20 weeks earlier so their dates meet the app's demo today
+export { TODAY };
+
+// The 0004 clean and stressed payloads, shifted 19 weeks earlier so their dates meet the app's demo today
 // (see client/src/helpers/today.js). `draft` is the stressed one with nothing blocking: it only needs an acknowledgement.
 const load = (name) => JSON.parse(readFileSync(new URL(`./payloads/selection-preview.${name}.json`, import.meta.url), 'utf8'));
 // `real` is recorded from a fresh-line run of the scheduler (its tests/scheduler/fixtures copy); it changes only when re-recorded.
@@ -23,7 +25,6 @@ monitoring.selection.units = monitoring.selection.units.map((u, i, all) => ({
 Object.assign(monitoring.preview, { days: [], alerts: [] });
 const PAYLOADS = { clean, stressed, draft, real, monitoring };
 
-export const TODAY = '2026-06-08';
 const DAY = 86400000;
 const addDays = (iso, n) => new Date(Date.parse(iso) + n * DAY).toISOString().slice(0, 10);
 const DATE = /^\d{4}-\d{2}-\d{2}$/;

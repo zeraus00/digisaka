@@ -11,7 +11,7 @@ const file = (n) => ({ name: `${n}.jpg` });
 
 async function scanned(line, ...names) {
   const s = useScanStore();
-  s.select(line, '2026-W24');
+  s.select(line, '2026-W25');
   s.addFiles(names.map(file));
   await s.assess();
   return s;
@@ -36,7 +36,7 @@ describe('scan store against the stub', () => {
 describe('stub sample leaves against the stub', () => {
   it('each sample produces its scenario outcome', async () => {
     const s = useScanStore();
-    s.select('L04', '2026-W24');
+    s.select('L04', '2026-W25');
     s.addFiles(['healthy', 'not_leaf', 'referral', 'rescan', 'stage2', 'unavailable'].map(sampleFile));
     await s.assess();
     expect(s.leaves.map((l) => l.phase)).toEqual(['done', 'done', 'done', 'rescan', 'confirm', 'failed']);

@@ -27,9 +27,9 @@ const OUTCOME_REASONS = {
   disease_not_computable: 'There is not enough scan history to tell whether the disease is getting worse.',
   rainfall_not_favourable: 'Rainfall is not favourable for the disease.',
   rainfall_not_computable: 'Rainfall could not be assessed.',
-  missing_feed_value: 'Weather or scan data for this week is missing.',
-  requirement_not_fired: 'Treatment not yet warranted by this week\'s data and the current rules.',
-  data_or_expert_review_needed: 'Data is missing or an expert needs to review this week.',
+  missing_feed_value: 'A weather or scan value is missing from the latest week\'s data.',
+  requirement_not_fired: 'Treatment not yet warranted by the latest week\'s data and the current rules.',
+  data_or_expert_review_needed: 'Data is missing or an expert needs to review the latest week\'s data.',
   fewer_than_min_weeks: 'There are not enough weekly records for the system to decide.',
 };
 export const outcomeReasonText = (code) => (code ? OUTCOME_REASONS[code] ?? code : '');

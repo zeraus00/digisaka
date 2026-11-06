@@ -9,7 +9,9 @@ import { rainOutlookText, conditionMark, conditionReading, weekday, dayRain } fr
 const props = defineProps({ line: { type: String, required: true }, week: { type: String, required: true } });
 const insights = useInsightsStore();
 const data = computed(() => insights.data);
-const thisWeek = computed(() => data.value?.series.find((w) => w.week === props.week));
+// The newest series entry: the week the scheduler last read, which is not the asked week.
+const thisWeek = computed(() => data.value?.series.at(-1));
+const readWeek = computed(() => Number((thisWeek.value?.week ?? props.week).split('W').pop()));
 const rainfall = computed(() => thisWeek.value?.rainfall_mm ?? null);
 const wetness = computed(() => thisWeek.value?.leaf_wetness_hours ?? null);
 const risk = computed(() => data.value?.risk);
@@ -23,10 +25,10 @@ const BADGE = { fired: 'bad', not_fired: 'ok' };
   <section v-else-if="data" class="jr-layout" aria-label="Weather and risk">
     <div>
       <div class="jr-metrics jr-card">
-        <article class="jr-metric"><span>Recorded rainfall</span><strong>{{ rainfall == null ? '—' : `${rainfall} mm` }}</strong><small>{{ rainfall == null ? 'No rainfall value recorded for this week' : `Week ${Number(week.split('W').pop())}` }}</small></article>
+        <article class="jr-metric"><span>Recorded rainfall</span><strong>{{ rainfall == null ? '—' : `${rainfall} mm` }}</strong><small>{{ rainfall == null ? `No rainfall value recorded for week ${readWeek}` : `Week ${readWeek}` }}</small></article>
         <!-- TODO(contract): humidity -->
         <article class="jr-metric jr-off"><span>Humidity</span><strong>Coming soon</strong><small>The scheduler does not provide this yet</small></article>
-        <article class="jr-metric"><span>Leaf wetness</span><strong>{{ wetness == null ? '—' : `${wetness} h` }}</strong><small>{{ wetness == null ? 'No leaf wetness value recorded for this week' : `Week ${Number(week.split('W').pop())}` }}</small></article>
+        <article class="jr-metric"><span>Leaf wetness</span><strong>{{ wetness == null ? '—' : `${wetness} h` }}</strong><small>{{ wetness == null ? `No leaf wetness value recorded for week ${readWeek}` : `Week ${readWeek}` }}</small></article>
       </div>
 
       <article class="jr-card">

@@ -1,9 +1,9 @@
 import { ref } from 'vue';
 
-// The app's "today". The stub scheduler data ends at 2026-W24, so the app starts on the Monday of that
-// week instead of the real clock; in a dev build the scheduler's dev clock replaces it (stores/devClock.js).
+// The app's "today", the scheduler's SCHEDULER_DEMO_TODAY. The stub scheduler data ends at 2026-W24, the Last finished
+// week of 2026-W25, so the app starts on the Monday of W25 instead of the real clock; in a dev build the scheduler's dev clock replaces it (stores/devClock.js).
 // Set `null` to use the real date again.
-const day = ref('2026-06-08');
+const day = ref('2026-06-15');
 
 export const setToday = (iso) => { day.value = iso; };
 export const today = () => (day.value ? fromIso(day.value) : new Date());
