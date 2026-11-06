@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, availableViews, resolveView, nextView, missingTextFor, axisTop, joinLeaves, leavesLines, leavesCaption, linePath, niceMax, visibleWeeks } from './evidence.js';
+import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, availableViews, resolveView, nextView, missingTextFor, axisTop, chartWeeks, leavesLines, leavesCaption, linePath, niceMax } from './evidence.js';
 
 const weeks = [
   { week: '2026-W22', yls: 7, yli: 4, rainfall_mm: 10 },
@@ -78,17 +78,6 @@ describe('niceMax', () => {
     expect(niceMax(84)).toBe(100);
     expect(niceMax(7)).toBe(8);
     expect(niceMax(0)).toBe(1);
-  });
-});
-
-describe('visibleWeeks', () => {
-  const many = Array.from({ length: 10 }, (_, i) => ({ week: `2026-W${String(15 + i).padStart(2, '0')}`, yls: i, yli: i, rainfall_mm: i }));
-  it('keeps the last three weeks plus every week the rules compared', () => {
-    const e = ev({ weeks: many, rainfall: { ...ev().rainfall, previous_weeks: ['2026-W20', '2026-W21'], recent_weeks: ['2026-W22', '2026-W23'] }, disease: { ...ev().disease, compared_weeks: ['2026-W21', '2026-W22', '2026-W23'] } });
-    expect(visibleWeeks(e).map((w) => w.week)).toEqual(['2026-W20', '2026-W21', '2026-W22', '2026-W23', '2026-W24']);
-  });
-  it('shows everything when there are three weeks or fewer', () => {
-    expect(visibleWeeks(ev()).map((w) => w.week)).toEqual(['2026-W22', '2026-W23', '2026-W24']);
   });
 });
 
@@ -188,15 +177,14 @@ describe('axisTop', () => {
 describe('leaves', () => {
   const data = { functional_leaves_threshold: 8, functional_leaves_target: 10, series: [
     { week: '2026-W22', functional_leaves: 11, canopy_status: 'ok' }, { week: '2026-W23', functional_leaves: 7, canopy_status: 'ok' }] };
-  it('joins by week and carries the served references', () => {
-    const j = joinLeaves(weeks, data);
-    expect(j.weeks.map((w) => w.leaves)).toEqual([11, 7, null]);
-    expect(j.weeks[1].canopy).toBe('ok');
+  it('takes every series week, with the leaves and status, and carries the served references', () => {
+    const j = chartWeeks(data);
+    expect(j.weeks.map((w) => [w.week, w.leaves, w.canopy])).toEqual([['2026-W22', 11, 'ok'], ['2026-W23', 7, 'ok']]);
     expect(j.refs).toEqual({ critical: 8, target: 10 });
   });
-  it('gives no leaves, and does not throw, when the series is not loaded', () => {
-    const j = joinLeaves(weeks, null);
-    expect(j.weeks.every((w) => w.leaves === null && w.canopy === null)).toBe(true);
+  it('gives no weeks, and does not throw, when the series is not loaded', () => {
+    const j = chartWeeks(null);
+    expect(j.weeks).toEqual([]);
     expect(j.refs).toEqual({ critical: null, target: null });
   });
   it('draws only the reference lines the server sent, labelled', () => {
@@ -217,7 +205,7 @@ describe('leaves', () => {
     expect(leavesCaption(weeks)).toBe('No leaf count recorded.');
   });
   it('lists Leaves as missing only when the series is drawn on the view', () => {
-    const j = joinLeaves(weeks, data).weeks;
+    const j = weeks.map((w) => ({ ...w, leaves: w.week === '2026-W24' ? null : 6 }));
     expect(missingTextFor('leaves', j)).toBe('Missing weeks — Leaves: 2026-W24.');
     expect(missingTextFor('disease', j)).toBe('Missing weeks — YLI: 2026-W23.');
     expect(missingTextFor('all', weeks)).not.toContain('Leaves');
