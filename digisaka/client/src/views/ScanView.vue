@@ -1,11 +1,10 @@
 <script setup>
-import { RouterLink } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { computed, onMounted, onBeforeUnmount, ref, nextTick, watch } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
 import Icon from '../components/Icon.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
 import SuggestionUpdate from '../components/SuggestionUpdate.vue';
-import TreatmentJourney from '../components/TreatmentJourney.vue';
 import LineHistory from '../components/LineHistory.vue';
 import { useScanStore, outcomeLabel, MAX_LEAVES } from '../stores/scan.js';
 import { useFarmStore } from '../stores/farm.js';
@@ -19,7 +18,8 @@ import { todayIso, fromIso, keepIfEdited } from '../helpers/today.js';
 import { samplesEnabled, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
 const scan = useScanStore(), farm = useFarmStore(), cycle = useCycleStore(), suggestion = useSuggestionStore();
-const step = ref(1); // 1 Select Leaves, 2 Bulk Assess, 3 Results, 4 Treatment review
+const router = useRouter();
+const step = computed({ get: () => scan.step, set: (v) => { scan.step = v; } }); // 1 Select Leaves, 2 Bulk Assess, 3 Results; kept in the store
 const STEPS = ['Select Leaves', 'Bulk Assess', 'Results'];
 const AGENT_STEPS = ['Leaf Images Collected', 'Black Sigatoka Validation', 'Individual Stage Assessment', 'Stage Groups Organized', 'Human Verification', 'Treatment Recommendation', 'Schedule Review'];
 const maxDate = computed(() => todayIso()); // scans can't be added to a future week
@@ -36,6 +36,8 @@ const stubSamples = samplesEnabled(); // only true on the stub stack (docker-com
 const previews = new Map();
 
 onMounted(async () => {
+  // Back from the treatment screen opens on Results: follow a run that is still going.
+  if (step.value === 3 && reschedule.value) suggestion.track(scan.line, reschedule.value.cycle_id);
   await farm.loadLines();
   if (!scan.line && farm.lines.length) scan.select(farm.lines[0], scan.week);
 });
@@ -63,17 +65,18 @@ async function assess() {
   step.value = 2;
   await scan.assess();
 }
-function startOver() { stopUpdate(); scan.leaves = []; scan.log = []; step.value = 1; addDefaultSamples(scan); }
+function startOver() { stopUpdate(); scan.newScan(); addDefaultSamples(scan); }
 const groups = computed(() => groupLeaves(scan.leaves));
 
 // Results: a verified scan started a run when `reschedule` is set; follow the suggestion until its new revision is ready.
 function stopUpdate() { cycle.reset(); suggestion.stop(); suggestion.tracked = ''; }
 const reschedule = computed(() => scan.reschedule);
 const update = computed(() => updateState({ reschedule: reschedule.value, tracked: suggestion.tracked, updating: suggestion.updating }));
-// Going on to step 4 keeps the update running, and coming back from it does not start it again.
-watch(step, (now, old) => {
-  if (now === 3 && old !== 4) { if (reschedule.value) suggestion.track(scan.line, reschedule.value.cycle_id); } else if (now < 3) stopUpdate();
+// The treatment screen follows the run itself; leaving the scan stops this follow before that screen mounts.
+watch(step, (now) => {
+  if (now === 3) { if (reschedule.value) suggestion.track(scan.line, reschedule.value.cycle_id); } else stopUpdate();
 });
+const toTreatment = () => router.push({ path: `/treatment/${encodeURIComponent(scan.line)}/${encodeURIComponent(scan.week)}`, query: { step: 'weather' } });
 
 const needsAnswer = computed(() => scan.leaves.filter((l) => l.phase === 'confirm' || l.phase === 'rescan'));
 const failed = computed(() => scan.leaves.filter((l) => l.phase === 'failed'));
@@ -88,8 +91,6 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
 
 <template>
   <div class="page">
-    <TreatmentJourney v-if="step === 4" :line="scan.line" :week="scan.week" :reschedule="reschedule" @back="step = 3" />
-    <template v-else>
     <PageHeader :title="step === 2 ? 'Black Sigatoka Validation' : step === 3 ? 'Bulk Assessment Result' : 'Leaf Scan'"
                 :subtitle="step === 1 ? 'Scan or select banana leaves to check for signs of Black Sigatoka' : ''" />
 
@@ -243,10 +244,9 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
       </section>
 
       <SuggestionUpdate :line="scan.line" :week="scan.week" :reschedule="reschedule" :show-done="false" />
-      <button class="primary wide" @click="step = 4">Continue to weather risk</button>
+      <button class="primary wide" @click="toTreatment">Continue to weather risk</button>
       <EvidenceCharts v-if="update === 'ready'" :cycle-id="suggestion.revision ?? ''" :line="scan.line" :week="scan.week" />
       <div class="nav"><button :disabled="update === 'updating'" @click="step = 2">Back</button><button v-if="update !== 'updating'" @click="startOver">New scan</button></div>
-    </template>
     </template>
   </div>
 </template>

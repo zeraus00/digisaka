@@ -135,3 +135,9 @@ test('state survives until reset, which restores the seed', async () => {
   assert.equal((await call('GET', `${B}/cycles/${id}`)).body.error, 'unknown_cycle');
   assert.equal((await verify('L04')).body.reschedule.cycle_id, 'c-L04-24');
 });
+
+test('L08 run never settles: it stays running however long the client waits', async () => {
+  const id = (await verify('L08')).body.reschedule.cycle_id;
+  t += 10 * 60_000;
+  assert.equal((await call('GET', `${B}/cycles/${id}`)).body.status, 'running');
+});

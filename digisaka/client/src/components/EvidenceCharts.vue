@@ -13,7 +13,8 @@ const insights = useInsightsStore();
 watch(() => [props.line, props.week], () => insights.load(props.line, props.week), { immediate: true });
 const load = () => (props.cycleId ? store.load(props.cycleId) : store.reset());
 watch(() => props.cycleId, load, { immediate: true });
-onBeforeUnmount(() => { store.reset(); insights.load('', ''); });
+// Insights are shared with the treatment screen's tabs, so they are left in place on unmount.
+onBeforeUnmount(() => store.reset());
 const ev = computed(() => (store.phase === 'ready' ? store.evidence : null));
 const weeks = computed(() => (ev.value ? visibleWeeks(ev.value) : []));
 const chart = computed(() => joinLeaves(weeks.value, insights.data));

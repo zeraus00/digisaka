@@ -16,7 +16,9 @@ const update = computed(() => updateState({ reschedule: props.reschedule, tracke
 const current = computed(() => suggestion.lineId === props.line && isCurrent({ phase: suggestion.phase, updating: suggestion.updating, state: update.value }));
 const treatmentPath = computed(() => `/treatment/${encodeURIComponent(props.line)}/${encodeURIComponent(props.week)}`);
 // The done card is the last branch of the template; without `showDone` it is the only one left out, so the section is left out with it.
-const done = computed(() => !(suggestion.phase === 'notfound' || update.value === 'updating' || suggestion.phase === 'loading' || ['failed', 'timeout', 'error'].includes(update.value)));
+// Still reading and no follow has ended: a first run has no suggestion to read, so the phase stays loading after a failure or timeout.
+const loadingFirst = computed(() => suggestion.phase === 'loading' && !suggestion.tracked);
+const done = computed(() => !(suggestion.phase === 'notfound' || update.value === 'updating' || loadingFirst.value || ['failed', 'timeout', 'error'].includes(update.value)));
 const outcome = computed(() => suggestion.suggestion?.outcome);
 const track = () => suggestion.track(props.line, props.reschedule.cycle_id);
 // A failed run is read as a cycle to retry, then followed again.
@@ -36,7 +38,7 @@ async function retry() {
       <h2>No treatment suggestion yet</h2>
       <p class="hint">This line has no treatment suggestion yet. A scan is suggested to start one.</p>
     </template>
-    <template v-else-if="update === 'updating' || suggestion.phase === 'loading'">
+    <template v-else-if="update === 'updating' || loadingFirst">
       <h2>Updating the treatment suggestion...</h2>
       <p class="hint">This usually takes under a minute.</p>
     </template>
@@ -46,7 +48,8 @@ async function retry() {
       <button class="primary" :disabled="cycle.busy" @click="retry">Retry</button>
     </template>
     <template v-else-if="update === 'timeout' || update === 'error'">
-      <h2>{{ update === 'timeout' ? 'This is taking too long' : 'Could not load the suggestion' }}</h2>
+      <h2>{{ update === 'timeout' ? 'The update is taking longer than expected' : 'Could not load the suggestion' }}</h2>
+      <p v-if="update === 'timeout'" class="hint">It may still finish. Check again in a moment.</p>
       <button class="primary" @click="track">Check again</button>
     </template>
     <template v-else-if="showDone">
