@@ -2,7 +2,7 @@
 export const STEPS = [
   { id: 'weather', label: 'Weather', icon: 'weather', title: 'Weather Risk' },
   { id: 'spray', label: 'Spray Log', icon: 'spray', title: 'Spray Log' },
-  { id: 'fungicides', label: 'Fungicides', icon: 'fungicides', title: 'Fungicide Options' },
+  { id: 'fungicides', label: 'Fungicides', icon: 'fungicides', title: 'Recommendations' },
   { id: 'schedule', label: 'Schedule', icon: 'calendar', title: 'Schedule' },
 ];
 

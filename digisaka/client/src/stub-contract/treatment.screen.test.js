@@ -17,7 +17,7 @@ describe('treatment screen', () => {
     await s.load('L04', wait);
     const options = await show('L04', 'fungicides');
     expect(options).toContain('Based on healthy images only');
-    expect(options).toContain('Fungicide Options');
+    expect(options).toContain('Recommendations');
     expect(options).toContain('Recommended</span>');
     expect(options).toContain('Other guidance');
     expect(options).toContain('The data suggests the line is healthy');
@@ -34,7 +34,7 @@ describe('treatment screen', () => {
     const html = await show('L05');
     expect(html).toMatch(/<option[^>]*>[^<]*\(excluded\)<\/option>/);
     expect(html).toContain('Human Review Required');
-    expect(await show('L05', 'fungicides')).toContain('Fungicide Options');
+    expect(await show('L05', 'fungicides')).toContain('Recommendations');
   });
 
   it('shows the what-changed note and the updating marker while a run is in progress, and clears them on the new revision', async () => {
@@ -80,7 +80,7 @@ describe('treatment screen', () => {
 
   it('each ?step= shows its heading, four named tabs and only its own tab selected', async () => {
     await useSuggestionStore().load('L04', wait);
-    const cases = [['weather', 'Weather Risk'], ['spray', 'Spray Log'], ['fungicides', 'Fungicide Options'], ['schedule', 'Schedule'], ['bogus', 'Schedule'], [undefined, 'Schedule']];
+    const cases = [['weather', 'Weather Risk'], ['spray', 'Spray Log'], ['fungicides', 'Recommendations'], ['schedule', 'Schedule'], ['bogus', 'Schedule'], [undefined, 'Schedule']];
     for (const [step, title] of cases) {
       const html = await show('L04', step);
       expect(html).toContain(`<h2 class="step-title" data-v-${html.match(/data-v-(\w+)/)[1]}>${title}</h2>`);
