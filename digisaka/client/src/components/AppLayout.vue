@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useDevClockStore } from '../stores/devClock.js';
@@ -11,6 +11,7 @@ const scroller = ref(null);
 const route = useRoute(), router = useRouter(), auth = useAuthStore();
 const title = computed(() => route.meta.title || 'Digisaka');
 const sidebarOpen = ref(false);
+const sidebar = ref(null), hamburger = ref(null);
 
 const MENU = [
   { to: '/', label: 'Dashboard', icon: 'home' },
@@ -19,11 +20,26 @@ const MENU = [
   { to: '/schedule', label: 'Treatment Schedule', icon: 'calendar' },
 ];
 
-onMounted(() => useDevClockStore().load());
-
 const { menuOpen, narrow, account, avatar, toggleMenu, closeMenu } = useAccountMenu(route);
 function signOut() { closeMenu(); auth.signOut(); router.push('/login'); }
-watch(() => route.path, () => { if (narrow.value) sidebarOpen.value = false; });
+function openSidebar() {
+  sidebarOpen.value = true;
+  nextTick(() => sidebar.value?.querySelector('a, button:not([disabled])')?.focus());
+}
+function closeSidebar(restoreFocus = false) {
+  sidebarOpen.value = false;
+  if (restoreFocus) nextTick(() => hamburger.value?.focus());
+}
+function onSidebarKeydown(event) {
+  if (event.key === 'Escape' && narrow.value && sidebarOpen.value) closeSidebar(true);
+}
+onMounted(() => {
+  useDevClockStore().load();
+  document.addEventListener('keydown', onSidebarKeydown);
+});
+onUnmounted(() => document.removeEventListener('keydown', onSidebarKeydown));
+watch(() => route.path, () => { if (narrow.value) closeSidebar(true); });
+watch(narrow, () => closeSidebar());
 </script>
 
 <template>
@@ -33,14 +49,17 @@ watch(() => route.path, () => { if (narrow.value) sidebarOpen.value = false; });
       class="sidebar-backdrop"
       :class="{ 'sidebar-backdrop--visible': sidebarOpen }"
       aria-hidden="true"
-      @click="sidebarOpen = false"
+      @click="closeSidebar(true)"
     ></div>
 
     <aside
       id="user-sidebar"
+      ref="sidebar"
       class="sidebar"
       :class="{ 'sidebar--open': sidebarOpen, 'sidebar--narrow': narrow }"
       aria-label="User navigation"
+      :aria-hidden="narrow && !sidebarOpen ? 'true' : undefined"
+      :inert="narrow && !sidebarOpen"
     >
       <svg class="leaf-deco leaf-deco--1" aria-hidden="true" width="80" height="120" viewBox="0 0 80 120">
         <path d="M70 6C40 10 20 40 10 110C50 90 76 50 70 6Z" fill="#fff" opacity="0.07"/>
@@ -92,12 +111,13 @@ watch(() => route.path, () => { if (narrow.value) sidebarOpen.value = false; });
       <header class="topbar">
         <button
           v-if="narrow"
+          ref="hamburger"
           type="button"
           class="topbar-hamburger"
           aria-label="Open navigation"
           :aria-expanded="sidebarOpen"
           aria-controls="user-sidebar"
-          @click="sidebarOpen = true"
+          @click="openSidebar"
         >
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="3" y1="6" x2="21" y2="6"></line>
