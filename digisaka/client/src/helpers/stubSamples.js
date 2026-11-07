@@ -16,7 +16,7 @@ export const RETAKE_SAMPLE = 'stage2'; // a retake of a rescan leaf must be a no
 
 export const samplesEnabled = () => import.meta.env.VITE_STUB_SAMPLES === '1';
 
-// What each stub line demonstrates: its weekly data scenario (the scheduler's synthetic dataset, L01 to L21) and, for
+// What each stub line demonstrates: its weekly data scenario (the scheduler's synthetic dataset, L01 to L23) and, for
 // L02 to L07, what the stub does with it. Shown only on the stub stack (README "Run it on the stub").
 const LINE_SCENARIOS = {
   L01: 'Stable, no treatment',
@@ -40,6 +40,8 @@ const LINE_SCENARIOS = {
   L19: 'Long series, recovery',
   L20: 'Long series, fast fall',
   L21: 'Long series, flat YLS, one missing week',
+  L22: 'Erratic, gaps in the feed',
+  L23: 'Erratic, noisy YLS',
 };
 export const lineLabel = (id) => (samplesEnabled() && LINE_SCENARIOS[id] ? `${id} · ${LINE_SCENARIOS[id]}` : id);
 

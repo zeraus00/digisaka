@@ -2,13 +2,13 @@
 import { computed, watch, onBeforeUnmount } from 'vue';
 import { useEvidenceStore } from '../stores/evidence.js';
 import { useInsightsStore } from '../stores/insights.js';
-import { conditionDetail, levelText, spreadChipText, verdictText, visibleWeeks, joinLeaves } from '../helpers/evidence.js';
+import { conditionDetail, levelText, spreadChipText, verdictText, chartWeeks } from '../helpers/evidence.js';
 import WeekCharts from './WeekCharts.vue';
 
-// What the rules looked at for one cycle: the last weeks of YLS/YLI and rainfall, with the verdicts.
+// What the rules looked at for one cycle: the verdicts, and the last 8 weeks of YLS/YLI, rainfall and leaves from the insights.
 const props = defineProps({ cycleId: { type: String, default: '' }, line: { type: String, default: '' }, week: { type: String, default: '' } });
 const store = useEvidenceStore();
-// Leaves are not in the evidence; they come from the insights for the scan's line and week. A failed read only leaves them out.
+// The chart weeks come from the insights for the scan's line and week, not the evidence, so there are always 8. Without them there is no chart.
 const insights = useInsightsStore();
 watch(() => [props.line, props.week], () => insights.load(props.line, props.week), { immediate: true });
 const load = () => (props.cycleId ? store.load(props.cycleId) : store.reset());
@@ -16,22 +16,21 @@ watch(() => props.cycleId, load, { immediate: true });
 // Insights are shared with the treatment screen's tabs, so they are left in place on unmount.
 onBeforeUnmount(() => store.reset());
 const ev = computed(() => (store.phase === 'ready' ? store.evidence : null));
-const weeks = computed(() => (ev.value ? visibleWeeks(ev.value) : []));
-const chart = computed(() => joinLeaves(weeks.value, insights.data));
+const chart = computed(() => chartWeeks(insights.data));
 </script>
 
 <template>
   <section v-if="store.phase === 'loading' || store.phase === 'error' || ev" class="evidence" aria-label="Evidence">
-    <h3>What the system looked at <small>(last 3 weeks and the weeks compared)</small></h3>
+    <h3>What the system looked at <small>(last 8 weeks)</small></h3>
     <p v-if="store.phase === 'loading'" class="hint">Loading the evidence…</p>
     <p v-else-if="store.phase === 'error'" class="err">{{ store.error }} <button class="mark" type="button" @click="load">Try again</button></p>
-    <template v-else-if="ev && weeks.length">
+    <template v-else-if="ev && ev.weeks.length">
       <div class="chips">
         <span v-if="ev.disease.level" class="chip" :class="'level-' + ev.disease.level.verdict">YLS level: {{ levelText(ev.disease.level) }}</span>
         <span class="chip" :class="String(ev.disease.falling)">YLS is falling: {{ verdictText(ev.disease.falling) }}</span>
         <span class="chip" :class="String(ev.rainfall.favourable)">{{ spreadChipText(ev.rainfall.favourable, conditionDetail(ev.rainfall)) }}</span>
       </div>
-      <WeekCharts :weeks="chart.weeks" :leaves="chart.refs" :disease="ev.disease" :rainfall="ev.rainfall" />
+      <WeekCharts v-if="chart.weeks.length" :weeks="chart.weeks" :leaves="chart.refs" :disease="ev.disease" :rainfall="ev.rainfall" />
     </template>
   </section>
 </template>

@@ -1,8 +1,8 @@
 // The treatment screen's four steps, in order, and the `?step=` value that opens one.
 export const STEPS = [
   { id: 'weather', label: 'Weather', icon: 'weather', title: 'Weather Risk' },
-  { id: 'spray', label: 'Spray Log', icon: 'spray', title: 'Spray Log' },
-  { id: 'fungicides', label: 'Fungicides', icon: 'fungicides', title: 'Fungicide Options' },
+  { id: 'spray', label: 'Fungicide History', icon: 'spray', title: 'Fungicide History' },
+  { id: 'fungicides', label: 'Fungicides', icon: 'fungicides', title: 'Recommendations' },
   { id: 'schedule', label: 'Schedule', icon: 'calendar', title: 'Schedule' },
 ];
 

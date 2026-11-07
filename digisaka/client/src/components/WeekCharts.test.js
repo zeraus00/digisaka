@@ -65,4 +65,14 @@ describe('WeekCharts trend toggle', () => {
     expect(bare).not.toContain('refline critical');
     expect(bare).toContain('refline target');
   });
+  it('on eight weeks the captions still name the compared weeks and the rainfall bars keep their groups', async () => {
+    const eight = Array.from({ length: 8 }, (_, k) => ({ week: `2026-W${17 + k}`, yls: 9 - k, yli: 5, rainfall_mm: 10 + k }));
+    const disease = { worsening: true, worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W23', '2026-W24'] };
+    const rainfall = { window_weeks: 2, recent_weeks: ['2026-W23', '2026-W24'], previous_weeks: ['2026-W21', '2026-W22'], recent_total_mm: 33, previous_total_mm: 29, favourable: false, conditions: [] };
+    expect(await render({ weeks: eight, disease, rainfall, initialView: 'disease' })).toContain('YLS fell two weeks in a row (3 to 2).');
+    const rain = await render({ weeks: eight, disease, rainfall, initialView: 'rain' });
+    expect(count(rain, /class="bar recent"/g)).toBe(2);
+    expect(count(rain, /class="bar previous"/g)).toBe(2);
+    expect(rain).toContain('Rain over the last 2 weeks: 33 mm, up from 29 mm.');
+  });
 });

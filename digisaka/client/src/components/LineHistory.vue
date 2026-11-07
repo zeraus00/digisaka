@@ -1,32 +1,29 @@
 <script setup>
 import { computed, watch, onBeforeUnmount } from 'vue';
-import { useLineHistoryStore } from '../stores/lineHistory.js';
 import { useInsightsStore } from '../stores/insights.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import WeekCharts from './WeekCharts.vue';
 import { outcomeReasonText } from '../helpers/messages.js';
-import { joinLeaves } from '../helpers/evidence.js';
+import { chartWeeks } from '../helpers/evidence.js';
 import { canopyLabel, progressionReading, outcomeText, canopyScale, percentOf, rainOutlookText } from '../helpers/insights.js';
 
 // A line's insights for the week, so the practitioner sees the state of the line while choosing what to scan.
-// The weekly charts keep reading the line history; everything else reads the insights and the latest suggestion.
+// The weekly charts and everything else read the insights (8 weeks) and the latest suggestion.
 const props = defineProps({ line: { type: String, default: '' }, week: { type: String, default: '' } });
-const history = useLineHistoryStore();
 const insights = useInsightsStore();
 const suggestion = useSuggestionStore();
 const load = () => {
-  history.load(props.line, props.week);
   insights.load(props.line, props.week);
   if (props.line) suggestion.load(props.line);
 };
 watch(() => [props.line, props.week], load, { immediate: true });
 // No suggestion.stop() here: Scan step 3 starts tracking its run as this step unmounts, and a stop would cancel it.
-onBeforeUnmount(() => { history.load('', ''); insights.load('', ''); });
+onBeforeUnmount(() => insights.load('', ''));
 
-const phase = computed(() => [insights.phase, history.phase].find((p) => p === 'error') ?? [insights.phase, history.phase].find((p) => p === 'loading') ?? insights.phase);
-const error = computed(() => insights.error || history.error);
+const phase = computed(() => insights.phase);
+const error = computed(() => insights.error);
 const data = computed(() => insights.data);
-const chart = computed(() => joinLeaves(history.weeks, insights.data));
+const chart = computed(() => chartWeeks(insights.data));
 const yls = computed(() => insights.latest('yls'));
 const yli = computed(() => insights.latest('yli'));
 const shooting = computed(() => insights.latest('leaves_at_shooting'));

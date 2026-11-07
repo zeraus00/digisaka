@@ -6,7 +6,7 @@ import { shiftWeek } from './insights.js';
 // real feed would have a gap. `evidence` is the rules' reading of a cycle, null for a cycle with no trend stage.
 const wk = (week, yls, yli, rainfall_mm) => ({ week, yls, yli, rainfall_mm });
 
-// The scheduler's synthetic weekly dataset (L01 to L21, weeks up to W24, the Last finished week of the app's today), copied from its demo data:
+// The scheduler's synthetic weekly dataset (L01 to L23, weeks W16 to W24, the Last finished week of the app's today), copied from its demo data:
 // `payloads/synthetic-weekly.json`. A line's chart weeks and Line Insights readings come from it; `name` is not served.
 const WEEKLY = JSON.parse(readFileSync(new URL('./payloads/synthetic-weekly.json', import.meta.url), 'utf8'));
 const weekly = (id) => ({ name: WEEKLY[id].name, weeks: WEEKLY[id].weeks.map((r) => wk(r.week, r.yls, r.yli, r.rainfall_mm)), records: WEEKLY[id].weeks });
@@ -91,8 +91,8 @@ const seed = () => ({
     },
     // Nothing recorded; a verified scan starts a run.
     L07: { ...weekly('L07'), cycles: [], applications: [], leaves: 0 },
-    // L08 to L21: weekly data only. A verified scan starts a run that ends in monitoring, like any line without a plan.
-    ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => `L${String(i + 8).padStart(2, '0')}`).map((id) => [id, { ...weekly(id), cycles: [], applications: [], leaves: 0 }])),
+    // L08 to L23: weekly data only. A verified scan starts a run that ends in monitoring, like any line without a plan.
+    ...Object.fromEntries(Array.from({ length: 16 }, (_, i) => `L${String(i + 8).padStart(2, '0')}`).map((id) => [id, { ...weekly(id), cycles: [], applications: [], leaves: 0 }])),
   },
 });
 

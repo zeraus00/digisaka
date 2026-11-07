@@ -69,12 +69,6 @@ export function niceMax(v) {
   return 10 * pow;
 }
 
-// Last three weeks, plus any earlier week the rules compared, so every caption can be checked against the chart.
-export function visibleWeeks({ weeks, disease, rainfall }) {
-  const used = new Set([...(disease.compared_weeks ?? []), ...(rainfall.recent_weeks ?? []), ...(rainfall.previous_weeks ?? [])]);
-  return weeks.filter((w, i) => i >= weeks.length - 3 || used.has(w.week));
-}
-
 // Trend toggle: a view is data (id, name, icon, the week fields it draws); ticket-02 adds a Leaves entry.
 export const TREND_VIEWS = [
   { id: 'all', name: 'All trends', icon: 'trend-all', iconOnly: true, keys: ['yls', 'yli', 'leaves', 'rainfall_mm'] },
@@ -82,7 +76,6 @@ export const TREND_VIEWS = [
   { id: 'leaves', name: 'Leaves', icon: 'trend-leaf', keys: ['leaves'] },
   { id: 'rain', name: 'Rainfall', icon: 'trend-drop', keys: ['rainfall_mm'] },
 ];
-const SERIES_NAME = { yls: 'YLS', yli: 'YLI', leaves: 'Leaves', rainfall_mm: 'Rainfall' };
 const hasValue = (weeks, key) => weeks.some((w) => w[key] != null);
 
 // Ids of the views that have at least one value in the shown weeks.
@@ -102,26 +95,17 @@ export function nextView(current, step, weeks, views = TREND_VIEWS) {
   return current;
 }
 
-// "Missing weeks" line for the series a view draws; All lists only series that exist.
-export function missingTextFor(view, weeks, views = TREND_VIEWS) {
-  const missing = Object.fromEntries(Object.keys(SERIES_NAME).map((k) => [k, weeks.filter((w) => w[k] == null).map((w) => w.week)]));
-  const keys = views.find((v) => v.id === view).keys.filter((k) => hasValue(weeks, k));
-  const parts = keys.filter((k) => missing[k].length).map((k) => `${SERIES_NAME[k]}: ${missing[k].join(', ')}`);
-  return parts.length ? `Missing weeks — ${parts.join('; ')}.` : '';
-}
-
-// Join the Line Insights series to chart weeks by week: each week gets `leaves` (the count) and `canopy` (the served
-// status), and the served reference values come along. A week the series lacks, or no data yet, gives no leaves.
-// Top of a 0-12 axis that grows, in steps of two, only when a value would go over it.
-export const axisTop = (values) => Math.max(12, 2 * Math.ceil(Math.max(0, ...values.filter((v) => v != null)) / 2));
-
-export function joinLeaves(weeks, data) {
-  const bySeries = new Map((data?.series ?? []).map((s) => [s.week, s]));
+// The chart weeks are the Line Insights series, always the same consecutive weeks (a week with no record has null values).
+// Each week gets `leaves` (the count) and `canopy` (the served status); the served reference values come along.
+export function chartWeeks(data) {
   return {
-    weeks: weeks.map((w) => ({ ...w, leaves: bySeries.get(w.week)?.functional_leaves ?? null, canopy: bySeries.get(w.week)?.canopy_status ?? null })),
+    weeks: (data?.series ?? []).map((w) => ({ ...w, leaves: w.functional_leaves ?? null, canopy: w.canopy_status ?? null })),
     refs: { critical: data?.functional_leaves_threshold ?? null, target: data?.functional_leaves_target ?? null },
   };
 }
+
+// Top of a 0-12 axis that grows, in steps of two, only when a value would go over it.
+export const axisTop = (values) => Math.max(12, 2 * Math.ceil(Math.max(0, ...values.filter((v) => v != null)) / 2));
 
 // Reference lines to draw: only a value the server sent; the client never compares the count with them.
 export const leavesLines = (refs) => [['critical', refs?.critical], ['target', refs?.target]].filter(([, v]) => v != null).map(([kind, value]) => ({ kind, value, label: `${value} ${kind}` }));
