@@ -73,19 +73,28 @@ onMounted(() => {
       </div>
     </section>
 
+    <section class="mobile-hero" aria-hidden="true">
+      <div class="mobile-hero-mark">
+        <img src="../assets/bananaleaf-no-border.png" alt="">
+      </div>
+      <div class="mobile-hero-copy">
+        <h1>Toka AI</h1>
+        <p>Healthy leaves. Better harvests.</p>
+      </div>
+    </section>
+
     <!-- RIGHT PANEL - Login Form -->
     <section class="right-panel">
       <form class="login-card" novalidate @submit.prevent="submit">
-        <div class="mobile-brand" :class="{ 'is-visible': reveal.logo }" aria-hidden="true">
-          <div class="logo-box">
-            <img src="../assets/bananaleaf1.png" alt="">
-          </div>
-          <span class="brand-text">Toka AI</span>
-        </div>
-
         <div class="form-wrapper" :class="{ 'is-visible': reveal.form }">
-          <h1 class="login-heading" :class="{ 'is-visible': reveal.heading }">Sign In</h1>
-          <p class="login-subtitle" :class="{ 'is-visible': reveal.heading }">Use your Toka AI account.</p>
+          <h1 class="login-heading" :class="{ 'is-visible': reveal.heading }">
+            <span class="desktop-heading">Sign In</span>
+            <span class="mobile-heading">Sign In</span>
+          </h1>
+          <p class="login-subtitle" :class="{ 'is-visible': reveal.heading }">
+            <span class="desktop-subtitle">Use your Toka AI account.</span>
+            <span class="mobile-subtitle">Sign in to keep your farm on track.</span>
+          </p>
 
           <div class="form-group">
             <label class="form-label" for="email">Email</label>
@@ -160,16 +169,14 @@ onMounted(() => {
 
 /* ENTRANCE ANIMATIONS */
 .left-content,
-.form-wrapper,
-.mobile-brand {
+.form-wrapper {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .left-content.is-visible,
-.form-wrapper.is-visible,
-.mobile-brand.is-visible {
+.form-wrapper.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -209,8 +216,7 @@ onMounted(() => {
   .form-wrapper .login-subtitle,
   .form-wrapper .form-group,
   .form-wrapper .err,
-  .form-wrapper .signin-button,
-  .mobile-brand {
+  .form-wrapper .signin-button {
     opacity: 1;
     transform: none;
     transition: none;
@@ -314,22 +320,10 @@ onMounted(() => {
   margin: 0;
 }
 
-/* MOBILE BRAND (shown when left panel hidden) */
-.mobile-brand {
+.mobile-hero,
+.mobile-heading,
+.mobile-subtitle {
   display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 32px;
-}
-
-.mobile-brand .logo-box {
-  width: 48px;
-  height: 48px;
-}
-
-.mobile-brand .brand-text {
-  font-size: 28px;
 }
 
 /* RIGHT PANEL */
@@ -513,88 +507,245 @@ onMounted(() => {
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
   .login-page {
     grid-template-columns: 1fr;
   }
   .left-panel {
     display: none;
   }
+  .mobile-hero {
+    display: block;
+    position: relative;
+    width: 100%;
+    max-width: 820px;
+    height: clamp(400px, 58vh, 520px);
+    margin: 0 auto;
+    overflow: hidden;
+    color: #fff;
+    text-align: center;
+    background: linear-gradient(135deg, #2fa354 0%, #1f7a3d 55%, #175a2d 100%);
+    border-radius: 0 0 40px 40px;
+  }
+  .mobile-hero::before,
+  .mobile-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 100% 0 100% 0;
+    background: rgba(255, 255, 255, .09);
+    pointer-events: none;
+  }
+  .mobile-hero::before {
+    width: 300px;
+    height: 130px;
+    right: -72px;
+    top: 22px;
+    transform: rotate(-35deg);
+  }
+  .mobile-hero::after {
+    width: 270px;
+    height: 124px;
+    left: -126px;
+    top: 58%;
+    transform: rotate(35deg);
+  }
+  .mobile-hero-mark {
+    position: absolute;
+    top: clamp(84px, 12vh, 108px);
+    left: 50%;
+    display: grid;
+    width: 92px;
+    height: 92px;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .75);
+    border-radius: 50%;
+    background: #fff;
+    transform: translateX(-50%);
+  }
+  .mobile-hero-mark img {
+    width: 58px;
+    height: 58px;
+    object-fit: cover;
+  }
+  .mobile-hero-copy {
+    position: absolute;
+    top: clamp(190px, 25vh, 228px);
+    right: 24px;
+    left: 24px;
+  }
+  .mobile-hero-copy h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .mobile-hero-copy p {
+    margin: 8px 0 0;
+    font-size: 17px;
+    opacity: .92;
+  }
   .right-panel {
-    padding: 32px 20px;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 820px;
+    min-height: 0;
+    margin: -112px auto 0;
+    padding: 0 24px 48px;
   }
   .login-card {
-    max-width: 100%;
-    padding: 32px 24px;
+    width: 100%;
+    max-width: 480px;
+    padding: 36px 40px 32px;
+    border: 1px solid #9ca3af;
     border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(20, 57, 31, .1);
   }
-  .mobile-brand {
-    display: flex;
+  .desktop-heading,
+  .desktop-subtitle {
+    display: none;
+  }
+  .mobile-heading,
+  .mobile-subtitle {
+    display: inline;
   }
   .login-heading {
-    font-size: 32px;
-    line-height: 40px;
+    margin: 0;
+    color: #14391f;
+    font-size: 30px;
+    line-height: 1.3;
   }
   .login-subtitle {
+    margin: 6px 0 24px;
+    color: #5b645e;
     font-size: 16px;
+  }
+  .form-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .form-group { margin-bottom: 14px; }
+  .input-wrapper {
+    height: 56px;
+    padding: 0 16px;
+    border: 1px solid #cbd0d5;
+    border-radius: 10px;
+    background: #fff;
+  }
+  .input-wrapper:focus-within {
+    border-color: #35a95b;
+    box-shadow: 0 0 0 3px rgba(53, 169, 91, .18);
   }
   .form-input {
-    height: 48px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
     font-size: 16px;
+    color: #14391f;
   }
+  .form-input:focus {
+    border: 0;
+    box-shadow: none;
+  }
+  .form-input::placeholder { color: #8a978d; }
+  .password-input { padding-right: 36px; }
+  .toggle-password { right: 0; width: 30px; height: 30px; }
+  .toggle-password svg { stroke: #6f8f78; }
+  .signin-button {
+    height: 56px;
+    margin-top: 2px;
+    background: #08783f;
+    box-shadow: none;
+    font-size: 18px;
+  }
+  .signin-button:hover:not(:disabled) { background: #06552c; }
 }
 
 @media (max-width: 767px) {
   .login-page {
-    grid-template-columns: 1fr;
+    display: block;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: #f6f5f0;
   }
-  .left-panel {
-    display: none;
+  .mobile-hero {
+    height: 307px;
+    max-width: none;
+    border-radius: 0 0 30px 30px;
   }
+  .mobile-hero::before { width: 176px; height: 76px; right: -40px; top: 18px; }
+  .mobile-hero::after { width: 160px; height: 74px; left: -80px; top: 208px; }
+  .mobile-hero-mark { top: 82px; width: 68px; height: 68px; }
+  .mobile-hero-mark img { width: 42px; height: 42px; }
+  .mobile-hero-copy { top: 158px; right: 16px; left: 16px; }
+  .mobile-hero-copy h1 { font-size: 32px; }
+  .mobile-hero-copy p { margin-top: 6px; font-size: 14px; }
   .right-panel {
-    width: 100%;
-    padding: 24px 16px 40px;
     align-items: flex-start;
+    max-width: 430px;
+    margin-top: -27px;
+    padding: 0 16px 32px;
   }
   .login-card {
     width: 100%;
     max-width: none;
-    padding: 24px 20px;
+    padding: 28px 24px 24px;
+    border: 1px solid #9ca3af;
     border-radius: 16px;
-  }
-  .mobile-brand {
-    display: flex;
-    margin-bottom: 24px;
-  }
-  .mobile-brand .logo-box {
-    width: 40px;
-    height: 40px;
-  }
-  .mobile-brand .brand-text {
-    font-size: 24px;
+    box-shadow: 0 4px 14px rgba(20, 57, 31, .08);
   }
   .login-heading {
-    font-size: 28px;
-    line-height: 36px;
+    font-size: 24px;
+    line-height: 1.3;
   }
   .login-subtitle {
-    font-size: 16px;
-    margin-bottom: 28px;
+    margin: 4px 0 18px;
+    font-size: 14px;
   }
-  .form-label {
-    font-size: 15px;
-  }
+  .form-group { margin-bottom: 12px; }
+  .input-wrapper { height: 52px; }
   .form-input {
-    height: 48px;
-    font-size: 16px;
-    padding: 0 16px;
+    height: 100%;
+    padding: 0;
   }
-  .password-input {
-    padding-right: 48px;
+  .password-input { padding-right: 34px; }
+  .toggle-password { width: 28px; height: 28px; border-radius: 50%; }
+  .remember-me { margin: 20px 0 28px; }
+  .signin-button { height: 52px; }
+  .err { margin-bottom: 12px; }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .login-page {
+    display: block;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: #f6f5f0;
   }
-  .signin-button {
-    height: 48px;
-    font-size: 16px;
+  .right-panel { margin-top: -112px; }
+}
+
+@media (max-width: 767px) and (max-height: 700px) {
+  .mobile-hero { height: 260px; }
+  .mobile-hero-mark { top: 58px; }
+  .mobile-hero-copy { top: 134px; }
+}
+
+@media (max-width: 359px) {
+  .login-card {
+    padding-right: 20px;
+    padding-left: 20px;
   }
 }
 
