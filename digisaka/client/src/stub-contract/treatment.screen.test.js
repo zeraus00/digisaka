@@ -80,15 +80,15 @@ describe('treatment screen', () => {
 
   it('each ?step= shows its heading, four named tabs and only its own tab selected', async () => {
     await useSuggestionStore().load('L04', wait);
-    const cases = [['weather', 'Weather Risk'], ['spray', 'Spray Log'], ['fungicides', 'Recommendations'], ['schedule', 'Schedule'], ['bogus', 'Schedule'], [undefined, 'Schedule']];
+    const cases = [['weather', 'Weather Risk'], ['spray', 'Fungicide History'], ['fungicides', 'Recommendations'], ['schedule', 'Schedule'], ['bogus', 'Schedule'], [undefined, 'Schedule']];
     for (const [step, title] of cases) {
       const html = await show('L04', step);
       expect(html).toContain(`<h2 class="step-title" data-v-${html.match(/data-v-(\w+)/)[1]}>${title}</h2>`);
-      for (const name of ['Weather', 'Spray Log', 'Fungicides', 'Schedule']) expect(html).toContain(`aria-label="${name}"`);
+      for (const name of ['Weather', 'Fungicide History', 'Fungicides', 'Schedule']) expect(html).toContain(`aria-label="${name}"`);
       expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
       expect(html).toContain('Treatment Suggestion');
     }
-    expect(await show('L04', 'weather')).toContain('Continue to Spray Log');
+    expect(await show('L04', 'weather')).toContain('Continue to Fungicide History');
     expect(await show('L04', 'spray')).toContain('Continue to Fungicides');
     expect(await show('L04', 'fungicides')).toContain('Continue to Schedule');
   });
@@ -118,7 +118,7 @@ describe('treatment screen', () => {
   describe('entered from a scan', () => {
     const scanned = (step = 3) => { const sc = useScanStore(); sc.line = 'L04'; sc.week = '2026-W25'; sc.step = step; sc.leaves = [{ reschedule: { cycle_id: 'c1' } }]; return sc; };
 
-    it('Spray Log shows the update while updating and on failure with Retry, and nothing once done', async () => {
+    it('Fungicide History shows the update while updating and on failure with Retry, and nothing once done', async () => {
       scanned();
       const s = useSuggestionStore();
       await s.load('L04', wait);

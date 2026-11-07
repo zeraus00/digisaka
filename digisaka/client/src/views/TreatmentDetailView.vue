@@ -45,7 +45,7 @@ const open = (id) => router.replace({ query: { ...route.query, step: id } });
 const visited = ref([]);
 watch(step, (id) => { if (!visited.value.includes(id)) visited.value.push(id); }, { immediate: true });
 // A new line starts with no product chosen.
-// A scan of this line and week with a started run is followed, not started again; the Spray Log tab shows that update.
+// A scan of this line and week with a started run is followed, not started again; the Fungicide History tab shows that update.
 const entry = computed(() => entryOf({ scan, line: lineId.value, week: week.value }));
 const fromScan = computed(() => entry.value.kind === 'follow');
 const backToScan = computed(() => showBackToScan({ scan, line: lineId.value, week: week.value }));
@@ -107,7 +107,7 @@ const lastApplied = computed(() => {
     <div role="tabpanel" :aria-label="heading">
       <template v-if="step === 'weather'">
         <WeatherRisk :line="lineId" :week="week" />
-        <div class="btns go"><button type="button" @click="open('spray')">Continue to Spray Log</button></div>
+        <div class="btns go"><button type="button" @click="open('spray')">Continue to Fungicide History</button></div>
       </template>
       <template v-else-if="step === 'spray'">
         <SprayLog>
