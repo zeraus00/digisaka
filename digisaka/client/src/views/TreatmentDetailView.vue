@@ -76,7 +76,7 @@ const lastApplied = computed(() => {
 </script>
 
 <template>
-  <div class="page" :class="{ narrow: step === 'schedule' }">
+  <div class="page">
     <RouterLink v-if="backToScan" class="back-scan" to="/scan">← Back to scan results</RouterLink>
     <PageHeader title="Treatment Suggestion" :subtitle="`Line ${lineId} · ${week}`" />
     <p v-if="store.phase === 'loading'" class="empty">Loading…</p>
@@ -173,7 +173,6 @@ const lastApplied = computed(() => {
 </template>
 
 <style scoped>
-.narrow { max-width: 760px; }
 .error { color: var(--danger); font-weight: 700; }
 .empty { padding: 30px; text-align: center; color: var(--ink-soft); border: 1.5px dashed var(--line); border-radius: var(--radius-md); background: var(--card); }
 .banner { display: flex; align-items: center; gap: 10px; padding: 12px 18px; margin-bottom: 14px; border-radius: 999px; background: #D5E9DB; color: var(--forest); font: 800 15px var(--font-display); }
