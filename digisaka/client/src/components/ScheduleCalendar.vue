@@ -12,9 +12,11 @@ watch(months, (ms) => { const i = ms.findIndex((m) => todayIso().startsWith(m.ke
 const m = computed(() => months.value[at.value]);
 const short = (iso) => `${iso.slice(8)}/${iso.slice(5, 7)}`;
 const range = (e) => (e.kind === 'application' ? `${short(e.start)} – ${short(e.end)}` : short(e.date));
-const KIND = { application: { icon: '💊', cls: 'gold' }, monitoring: { icon: '🔍', cls: 'plum' }, applied: { icon: '💊', cls: 'done' } };
+// Suggested steps are outlined; recorded applications are filled.
+const KIND = { application: { icon: '💊', cls: 'sug' }, monitoring: { icon: '🔍', cls: 'plum' }, applied: { icon: '✓', cls: 'rec' } };
+const cellClass = (day) => (day.some((e) => e.kind === 'applied') ? 'rec' : KIND[day[0].kind].cls);
 const todayDay = computed(() => (m.value && todayIso().startsWith(m.value.key) ? Number(todayIso().slice(8)) : null));
-const applied = computed(() => `${events.value.filter((e) => e.done).length} / ${events.value.filter((e) => e.kind !== 'monitoring' && (e.kind === 'applied' || e.kind === 'application')).length} applied`);
+const count = computed(() => `${events.value.filter((e) => e.kind === 'applied').length} recorded · ${events.value.filter((e) => e.kind === 'application').length} suggested`);
 </script>
 
 <template>
@@ -26,19 +28,24 @@ const applied = computed(() => `${events.value.filter((e) => e.done).length} / $
         <h3>{{ m.month }} {{ m.year }}</h3>
         <button type="button" :disabled="at === months.length - 1" aria-label="Next month" @click="at++">›</button>
       </header>
+      <ul class="legend" aria-label="Legend">
+        <li><span class="swatch sug" aria-hidden="true"></span>Suggested step</li>
+        <li><span class="swatch rec" aria-hidden="true"></span>Recorded application</li>
+        <li><span class="swatch plum" aria-hidden="true"></span>Scan day</li>
+      </ul>
       <div class="grid">
         <span v-for="w in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" :key="w" class="wd">{{ w }}</span>
         <template v-for="(c, i) in m.cells" :key="i">
           <span v-if="!c" />
-          <span v-else-if="m.onDay[c]" class="cell ev" :class="[KIND[m.onDay[c][0].kind].cls, { today: c === todayDay, done: m.onDay[c].some((e) => e.done) }]">
-            <b>{{ c }}</b><i>{{ m.onDay[c].some((e) => e.done) ? '✓' : m.onDay[c].map((e) => KIND[e.kind].icon).join('') }}</i>
+          <span v-else-if="m.onDay[c]" class="cell ev" :class="[cellClass(m.onDay[c]), { today: c === todayDay }]">
+            <b>{{ c }}</b><i>{{ m.onDay[c].map((e) => KIND[e.kind].icon).join('') }}</i>
           </span>
           <span v-else class="cell" :class="{ today: c === todayDay }">{{ c }}</span>
         </template>
       </div>
     </section>
     <section class="prop-card tl">
-      <header><h3>Timeline</h3><span class="count">{{ applied }}</span></header>
+      <header><h3>Timeline</h3><span class="count">{{ count }}</span></header>
       <ol>
         <li v-for="e in events" :key="e.date + e.kind + e.label" :class="[KIND[e.kind].cls, { done: e.done }]">
           <span class="node">{{ e.done ? '✓' : '' }}</span>
@@ -65,10 +72,17 @@ const applied = computed(() => `${events.value.filter((e) => e.done).length} / $
 .wd { text-align: center; font: 700 12px var(--font-body); color: var(--ink-soft); }
 .cell { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 46px; border-radius: 10px; font-size: 13px; color: var(--ink-soft); }
 .cell.ev { font-weight: 800; color: var(--ink); } .cell.ev i { font-style: normal; font-size: 14px; }
-.cell.gold { background: #FCE7C8; } .cell.plum { background: #EADCF0; } .cell.done { background: #D5E9DB; }
+.cell.sug { background: none; border: 2px solid #D98A00; } .cell.plum { background: #EADCF0; } .cell.rec { background: var(--forest); color: #fff; }
+.cell.rec b { color: #fff; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; padding: 0; list-style: none; font-size: 13px; color: var(--ink-soft); }
+.legend li { display: flex; align-items: center; gap: 6px; }
+.swatch { width: 14px; height: 14px; border-radius: 4px; }
+.swatch.sug { border: 2px solid #D98A00; } .swatch.rec { background: var(--forest); } .swatch.plum { background: #EADCF0; }
 .cell.today { outline: 2px solid var(--forest); }
 .tl header { display: flex; justify-content: space-between; align-items: center; } .count { font-size: 13px; color: var(--ink-soft); }
 .tl ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+.tl li.sug .node { border-color: #D98A00; }
+.tl li.rec .node { background: var(--forest); border-color: var(--forest); }
 .tl li { display: grid; grid-template-columns: 22px 92px 1fr; gap: 10px; align-items: start; }
 .node { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #D98A00; font-size: 12px; color: #fff; }
 .plum .node { border-color: #8A4FA0; } .done .node { background: var(--forest); border-color: var(--forest); }

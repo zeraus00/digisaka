@@ -24,6 +24,8 @@ export const useScanStore = defineStore('scan', {
   state: () => ({ line: '', week: isoWeekOf(today()), leaves: [], notice: '', assessing: false, log: [] }),
   getters: {
     weekOk: (s) => isValidWeek(s.week),
+    // The newest run a scan of this line-week started, or null when none did.
+    reschedule: (s) => s.leaves.map((l) => l.reschedule).filter(Boolean).at(-1) ?? null,
     canAssess: (s) => isValidWeek(s.week) && !!s.line && !s.assessing && s.leaves.some((l) => l.phase === 'queued' || l.phase === 'failed'),
   },
   actions: {
@@ -40,7 +42,7 @@ export const useScanStore = defineStore('scan', {
       this.notice = '';
       for (const file of files) {
         if (this.leaves.length >= MAX_LEAVES) { this.notice = `You can scan up to ${MAX_LEAVES} leaves at a time.`; break; }
-        this.leaves.push({ id: nextId++, file, phase: 'queued', qaOutputId: null, stage: null, outcome: null, checklist: [], error: '' });
+        this.leaves.push({ id: nextId++, file, phase: 'queued', qaOutputId: null, stage: null, outcome: null, checklist: [], error: '', reschedule: null });
       }
     },
     remove(id) { if (!this.assessing) this.leaves = this.leaves.filter((l) => l.id !== id); },
@@ -51,6 +53,8 @@ export const useScanStore = defineStore('scan', {
       leaf.qaOutputId = answer.qa_output_id;
       if ('stage' in answer) leaf.stage = answer.stage;
       leaf.outcome = answer.outcome ?? null;
+      // The run a verified scan started; null when the line stage is unchanged.
+      if ('reschedule' in answer) leaf.reschedule = answer.reschedule;
       if (answer.symptom_checklist?.length) leaf.checklist = answer.symptom_checklist;
       leaf.phase = phaseOf(answer);
       const tag = this.label(leaf);

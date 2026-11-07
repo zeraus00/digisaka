@@ -4,11 +4,11 @@ import { messageFor } from '../helpers/messages.js';
 
 const base = '/api/v1/scheduler';
 
-// Each line's status (latest cycle, selections, recorded applications) from the scheduler.
+// Each line's status (latest cycle, finished weeks, recorded applications) from the scheduler.
 export const useLinesStore = defineStore('lines', {
   state: () => ({ statuses: [], loading: false, error: '', loaded: false }),
   getters: {
-    withSelections: (s) => s.statuses.filter((l) => l.selections?.length),
+    withCycles: (s) => s.statuses.filter((l) => l.cycles?.length),
   },
   actions: {
     async load() {
@@ -19,7 +19,7 @@ export const useLinesStore = defineStore('lines', {
         const results = await Promise.allSettled(ids.map((id) => api.get(`${base}/lines/${encodeURIComponent(id)}`)));
         this.statuses = results.map((r, i) => (r.status === 'fulfilled'
           ? r.value
-          : { line_id: ids[i], selections: [], applications: [], latest_cycle: null, human_review_required: false, error: messageFor(r.reason) }));
+          : { line_id: ids[i], cycles: [], applications: [], latest_cycle: null, human_review_required: false, error: messageFor(r.reason) }));
       } catch (e) { this.error = messageFor(e); this.statuses = []; }
       finally { this.loading = false; this.loaded = true; }
     },
@@ -27,27 +27,24 @@ export const useLinesStore = defineStore('lines', {
   },
 });
 
-// The weeks that used a Selection, newest first: a new draft, or a continued week naming the Selection it kept.
+const OUTCOME = { suggested: 'Suggestion ready', human_review_required: 'Human review required', continue_monitoring: 'Continue monitoring' };
+// A finished run's one-line state: its outcome, or the run's status when it failed.
+export const cycleLabel = (c) => (c.status === 'failed' ? 'Run failed' : OUTCOME[c.outcome] ?? c.outcome ?? c.status);
+
+// The line's finished weeks, newest first.
 export function weekRows(line) {
-  const sels = Object.fromEntries((line.selections ?? []).map((x) => [x.selection_id, x]));
-  return (line.cycles ?? []).filter((c) => c.selection_id && sels[c.selection_id]).map((c) => {
-    const sel = sels[c.selection_id];
-    return {
-      ...sel, cycle_id: c.cycle_id, week: c.week, continued: c.continued, fromWeek: sel.origin_week,
-      appliedOn: (line.applications ?? []).filter((a) => a.selection_id === c.selection_id).map((a) => a.applied_on).sort(),
-    };
-  });
+  return [...(line.cycles ?? [])].sort((a, b) => b.week.localeCompare(a.week)).map((c) => ({ ...c, label: cycleLabel(c) }));
 }
 
-// Totals and the newest selections across all lines, for the dashboard.
+// Totals and the newest finished weeks across all lines, for the dashboard.
 export function dashboardSummary(statuses) {
   const sum = (key) => statuses.reduce((n, l) => n + (l[key] ?? 0), 0);
-  const rows = statuses.flatMap((l) => weekRows(l).map((x) => ({ lineId: l.line_id, week: x.week, status: x.status })));
+  const rows = statuses.flatMap((l) => weekRows(l).map((x) => ({ lineId: l.line_id, week: x.week, label: x.label, status: x.status, outcome: x.outcome })));
   return {
     lines: statuses.length,
     weeksAssessed: sum('weeks_assessed'),
     leavesScanned: sum('leaves_scanned'),
-    awaitingDecision: statuses.reduce((n, l) => n + (l.selections ?? []).filter((x) => x.status === 'draft').length, 0),
+    applications: statuses.reduce((n, l) => n + (l.applications ?? []).length, 0),
     humanReview: statuses.filter((l) => l.human_review_required).length,
     recent: rows.sort((a, b) => b.week.localeCompare(a.week) || a.lineId.localeCompare(b.lineId)).slice(0, 5),
   };

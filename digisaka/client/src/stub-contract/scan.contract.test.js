@@ -1,17 +1,13 @@
-// Drives the real scan and cycle stores against the in-process stub, polling on its fake clock.
+// Drives the real scan store against the in-process stub.
 import { describe, it, expect, vi } from 'vitest';
-import { useStub, CYCLE_MS } from './harness.js';
+import { useStub } from './harness.js';
 import { useScanStore } from '../stores/scan.js';
-import { useCycleStore } from '../stores/cycle.js';
-import { useLinesStore } from '../stores/lines.js';
 import { sampleFile, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
 vi.mock('../helpers/image.js', () => ({ fileToPayload: async (f) => ({ img_name: f.name, img: 'AAAA' }) }));
 
-const ctx = useStub();
+useStub();
 const file = (n) => ({ name: `${n}.jpg` });
-// Each poll wait moves the stub's clock past the cycle's run time.
-const wait = async () => { ctx.clock.t += CYCLE_MS; };
 
 async function scanned(line, ...names) {
   const s = useScanStore();
@@ -49,50 +45,5 @@ describe('stub sample leaves against the stub', () => {
     expect(s.leaves[3].phase).toBe('confirm');
     await s.assess(); // the QA service is back on the retry
     expect(s.leaves[5].phase).toBe('confirm');
-  });
-});
-
-describe('cycle store against the stub', () => {
-  it('refuses to close a week with no verified scan', async () => {
-    const c = useCycleStore();
-    await c.close('L04', '2026-W24', wait);
-    expect(c.phase).toBe('idle');
-    expect(c.error).toBe('Finish at least one scan, including its symptom confirmation, before closing the week.');
-  });
-
-  it.each([
-    ['L04', 'selection'],
-    ['L01', 'monitoring'],
-  ])('closing %s ends in %s', async (line, phase) => {
-    await scanned(line, 'a-healthy');
-    const c = useCycleStore();
-    await c.close(line, '2026-W24', wait);
-    expect(c.phase).toBe(phase);
-  });
-
-  it('shows human review for L05', async () => {
-    await scanned('L05', 'a-healthy');
-    const c = useCycleStore();
-    await c.close('L05', '2026-W24', wait);
-    expect(c.phase).toBe('review');
-  });
-
-  it('L06 fails and the retry succeeds', async () => {
-    await scanned('L06', 'a-healthy');
-    const c = useCycleStore();
-    await c.close('L06', '2026-W24', wait);
-    expect(c.phase).toBe('failed');
-    expect(c.cycle.failure_reason).toBeTruthy();
-    await c.retry(wait);
-    expect(c.phase).toBe('monitoring');
-  });
-
-  it('a finished selection appears in the line status', async () => {
-    await scanned('L04', 'a-healthy');
-    await useCycleStore().close('L04', '2026-W24', wait);
-    const lines = useLinesStore();
-    await lines.load();
-    expect(lines.byId('L04').selections.map((x) => x.origin_week)).toEqual(['2026-W24']);
-    expect(lines.byId('L04').cycles.find((x) => x.week === '2026-W24')).toMatchObject({ continued: false, selection_id: expect.any(String) });
   });
 });

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { scheduleEvents, monthGrids, isoWeek } from './schedule.js';
-import { productOf } from '../stores/selection.js';
+import { productOf } from '../stores/suggestion.js';
 
 const unit = 'http://x#Type|http://x#FungicideAzoxystrobin';
 const days = [
@@ -31,7 +31,7 @@ describe('scheduleEvents', () => {
     expect(rec('2026-07-04', id)).toBe(false);
     expect(rec('2026-07-01', 'other')).toBe(false);
   });
-  it('adds an applied event for a recorded application no planned window covers, in date order', () => {
+  it('adds an applied event for a recorded application, in date order', () => {
     const ev = scheduleEvents(days, [{ product_id: 'http://x#FungicidePyrimethanil', applied_on: '2026-06-01' }], (id) => id.split('#').pop());
     expect(ev.map((e) => [e.date, e.kind, e.label, e.done])).toEqual([
       ['2026-06-01', 'applied', 'FungicidePyrimethanil', true],
@@ -39,9 +39,9 @@ describe('scheduleEvents', () => {
       ['2026-07-06', 'monitoring', 'Weekly assessment', false],
     ]);
   });
-  it('does not repeat an application a planned window already covers', () => {
-    const ev = scheduleEvents(days, [{ product_id: productOf(unit), applied_on: '2026-07-01' }]);
-    expect(ev.filter((e) => e.kind === 'applied')).toEqual([]);
+  it('shows a recorded application inside a suggested window as its own event, and the step as done', () => {
+    const ev = scheduleEvents(days, [{ product_id: productOf(unit), applied_on: '2026-07-01' }], () => 'Azoxystrobin');
+    expect(ev.map((e) => [e.date, e.kind, e.done])).toEqual([['2026-06-29', 'application', true], ['2026-07-01', 'applied', true], ['2026-07-06', 'monitoring', false]]);
   });
   it('handles a missing days list', () => expect(scheduleEvents(undefined)).toEqual([]));
 });

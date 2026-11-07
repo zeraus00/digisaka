@@ -2,9 +2,10 @@
 import { computed } from 'vue';
 import { checkLabel, humanDetail, unitGroup, GROUP_LABEL, titleCase, sentenceCase, explainMoa, stripChecks, RESULT_LABEL } from '../helpers/checks.js';
 
-const props = defineProps({ unit: { type: Object, required: true } });
+// The scheduler names the group (recommended, eligible, excluded); a unit alone cannot say.
+const props = defineProps({ unit: { type: Object, required: true }, group: { type: String, default: '' } });
 const KIND = { carrier: 'Add', property: 'Needs', excluded: 'Do not mix with' };
-const group = computed(() => unitGroup(props.unit));
+const grp = computed(() => props.group || unitGroup(props.unit));
 const strips = computed(() => stripChecks(props.unit).map((c) => ({ ...c, label: checkLabel(c.check), ...humanDetail(c.check, c.detail) })));
 const all = computed(() => (props.unit.checks ?? []).map((c) => ({ ...c, label: checkLabel(c.check), ...humanDetail(c.check, c.detail) })));
 const passed = computed(() => all.value.filter((c) => c.result === 'pass').length);
@@ -17,8 +18,8 @@ const meta = computed(() => {
 </script>
 
 <template>
-  <article class="pcard" :class="group">
-    <div class="top"><h4>{{ titleCase(unit.product) }}</h4><span class="pill" :class="group">{{ GROUP_LABEL[group] }}</span></div>
+  <article class="pcard" :class="grp">
+    <div class="top"><h4>{{ titleCase(unit.label ?? unit.product) }}</h4><span class="pill" :class="grp">{{ GROUP_LABEL[grp] }}</span></div>
     <p v-if="meta" class="sub">{{ meta }}</p>
     <ul v-if="unit.conditions?.length" class="conds"><li v-for="c in unit.conditions" :key="c.kind + c.label">{{ KIND[c.kind] ?? c.kind }}: {{ explainMoa(c.label) }}</li></ul>
     <div v-for="s in strips" :key="s.check" class="strip" :class="s.result">

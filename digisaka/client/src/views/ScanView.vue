@@ -8,13 +8,15 @@ import LineHistory from '../components/LineHistory.vue';
 import { useScanStore, outcomeLabel, MAX_LEAVES } from '../stores/scan.js';
 import { useFarmStore } from '../stores/farm.js';
 import { useCycleStore } from '../stores/cycle.js';
+import { useSuggestionStore } from '../stores/suggestion.js';
+import { updateState } from '../helpers/scanUpdate.js';
 import { groupLeaves } from '../helpers/groups.js';
 import { previousWeek, nextWeek, isoWeekOf, weekStart, weekEnd } from '../helpers/week.js';
 import { outcomeReasonText, REFERRAL_TEXT } from '../helpers/messages.js';
 import { todayIso, fromIso, keepIfEdited } from '../helpers/today.js';
 import { samplesEnabled, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
-const scan = useScanStore(), farm = useFarmStore(), cycle = useCycleStore();
+const scan = useScanStore(), farm = useFarmStore(), cycle = useCycleStore(), suggestion = useSuggestionStore();
 const step = ref(1); // 1 Select Leaves, 2 Bulk Assess, 3 Results
 const STEPS = ['Select Leaves', 'Bulk Assess', 'Results'];
 const AGENT_STEPS = ['Leaf Images Collected', 'Black Sigatoka Validation', 'Individual Stage Assessment', 'Stage Groups Organized', 'Human Verification', 'Treatment Recommendation', 'Schedule Review'];
@@ -36,8 +38,8 @@ onMounted(async () => {
   if (!scan.line && farm.lines.length) scan.select(farm.lines[0], scan.week);
 });
 // Runs before onMounted picks the first line (a no-op until a line is set), then on every line or week change.
-watch(() => [scan.line, scan.week], () => { cycle.follow(scan.line, scan.week); addDefaultSamples(scan); }, { immediate: true });
-onBeforeUnmount(() => { cycle.stop(); for (const u of previews.values()) URL.revokeObjectURL(u); });
+watch(() => [scan.line, scan.week], () => { stopUpdate(); addDefaultSamples(scan); }, { immediate: true });
+onBeforeUnmount(() => { stopUpdate(); for (const u of previews.values()) URL.revokeObjectURL(u); });
 
 const preview = (leaf) => {
   if (!previews.has(leaf.id)) previews.set(leaf.id, URL.createObjectURL(leaf.file));
@@ -59,9 +61,24 @@ async function assess() {
   step.value = 2;
   await scan.assess();
 }
-function startOver() { cycle.reset(); scan.leaves = []; scan.log = []; step.value = 1; addDefaultSamples(scan); }
+function startOver() { stopUpdate(); scan.leaves = []; scan.log = []; step.value = 1; addDefaultSamples(scan); }
 const groups = computed(() => groupLeaves(scan.leaves));
-function confirmSchedule() { cycle.close(scan.line, scan.week); }
+
+// Results: a verified scan started a run when `reschedule` is set; follow the suggestion until its new revision is ready.
+function stopUpdate() { cycle.reset(); suggestion.stop(); suggestion.tracked = ''; }
+const reschedule = computed(() => scan.reschedule);
+const update = computed(() => updateState({ reschedule: reschedule.value, tracked: suggestion.tracked, updating: suggestion.updating }));
+const track = () => (reschedule.value ? suggestion.track(scan.line, reschedule.value.cycle_id) : undefined);
+watch(step, (now) => { if (now === 3) track(); else stopUpdate(); });
+// A failed run is read as a cycle to retry, then followed again.
+async function retryUpdate() {
+  suggestion.tracked = '';
+  await cycle.attach(reschedule.value.cycle_id);
+  if (cycle.phase === 'failed') await cycle.retry();
+  if (cycle.phase === 'failed') suggestion.tracked = 'failed';
+  else await suggestion.track(scan.line, cycle.cycle?.cycle_id ?? reschedule.value.cycle_id);
+}
+const treatmentPath = computed(() => `/treatment/${encodeURIComponent(scan.line)}/${encodeURIComponent(scan.week)}`);
 
 const needsAnswer = computed(() => scan.leaves.filter((l) => l.phase === 'confirm' || l.phase === 'rescan'));
 const failed = computed(() => scan.leaves.filter((l) => l.phase === 'failed'));
@@ -209,7 +226,7 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
       </div>
     </template>
 
-    <!-- Step 3: Results, grouped by stage; Confirm & Schedule closes the week and follows the cycle -->
+    <!-- Step 3: Results, grouped by stage; then the line's suggestion, updating when a scan moved the stage -->
     <template v-else>
       <section class="card">
         <h2>Leaves in this Bulk</h2>
@@ -229,43 +246,34 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
       </section>
 
       <section class="card" aria-live="polite">
-        <p v-if="cycle.error" class="err" role="alert">{{ cycle.error }}</p>
-        <template v-if="cycle.phase === 'idle'">
-          <p>Confirm &amp; Schedule closes {{ scan.week }} for line {{ scan.line }} and works out a treatment. No more scans can be added to this week.</p>
-          <button class="primary" :disabled="cycle.busy" @click="confirmSchedule">Confirm &amp; Schedule</button>
+        <p v-if="cycle.error || suggestion.error" class="err" role="alert">{{ cycle.error || suggestion.error }}</p>
+        <template v-if="update === 'unchanged'">
+          <h2>The treatment suggestion is unchanged</h2>
+          <p class="hint">These scans did not change it, so the current treatment suggestion still stands.</p>
+          <RouterLink class="btn primary" :to="treatmentPath">Open the current suggestion</RouterLink>
         </template>
-        <template v-else-if="cycle.phase === 'closing' || cycle.phase === 'running'">
-          <h2>Working out a treatment...</h2>
+        <template v-else-if="update === 'updating'">
+          <h2>Updating the treatment suggestion...</h2>
           <p class="hint">This usually takes under a minute.</p>
         </template>
-        <template v-else-if="cycle.phase === 'selection'">
-          <h2>A treatment selection is ready</h2>
-          <RouterLink class="btn primary" :to="`/treatment/${encodeURIComponent(cycle.cycle?.line_id ?? scan.line)}/${encodeURIComponent(cycle.cycle?.week ?? scan.week)}`">Open selection</RouterLink>
+        <template v-else-if="update === 'ready'">
+          <h2>The treatment suggestion is updated</h2>
+          <p v-if="suggestion.suggestion?.outcome === 'continue_monitoring'" class="hint">No treatment is suggested yet. Keep monitoring this line and scan again next week.</p>
+          <p v-else-if="suggestion.suggestion?.outcome === 'human_review_required'" class="hint">The data suggests an expert should look at this line{{ suggestion.suggestion.outcome_reason ? `: ${outcomeReasonText(suggestion.suggestion.outcome_reason)}` : '' }}</p>
+          <RouterLink class="btn primary" :to="treatmentPath">Open the suggestion</RouterLink>
         </template>
-        <template v-else-if="cycle.phase === 'monitoring'">
-          <h2>No treatment needed yet</h2>
-          <p v-if="cycle.cycle?.outcome_reason">{{ outcomeReasonText(cycle.cycle.outcome_reason) }}</p>
-          <p class="hint">Keep monitoring this line and scan again next week.</p>
-        </template>
-        <template v-else-if="cycle.phase === 'review'">
-          <h2>Human review required</h2>
-          <p>No treatment is proposed for this week. An expert needs to look at this line.</p>
-          <p v-if="cycle.cycle?.outcome_reason">Reason: {{ outcomeReasonText(cycle.cycle.outcome_reason) }}</p>
-          <p v-if="cycle.cycle?.status === 'reopened'" class="hint">This week was reopened; a newer cycle replaces this one.</p>
-          <button v-else-if="cycle.cycle?.outcome_reason === 'gate_e_rejected'" class="primary" :disabled="cycle.busy" @click="cycle.reopen()">Reopen this week</button>
-        </template>
-        <template v-else-if="cycle.phase === 'failed'">
-          <h2>The cycle failed</h2>
+        <template v-else-if="update === 'failed'">
+          <h2>The update failed</h2>
           <p v-if="cycle.cycle?.failure_reason">Reason: {{ cycle.cycle.failure_reason }}</p>
-          <button class="primary" :disabled="cycle.busy" @click="cycle.retry()">Retry</button>
+          <button class="primary" :disabled="cycle.busy" @click="retryUpdate">Retry</button>
         </template>
         <template v-else>
-          <h2>{{ cycle.phase === 'timeout' ? 'This is taking too long' : 'Could not load the cycle' }}</h2>
-          <button class="primary" @click="cycle.resume()">Check again</button>
+          <h2>{{ update === 'timeout' ? 'This is taking too long' : 'Could not load the suggestion' }}</h2>
+          <button class="primary" @click="track">Check again</button>
         </template>
       </section>
-      <EvidenceCharts v-if="['selection', 'monitoring', 'review'].includes(cycle.phase)" :cycle-id="cycle.cycle?.cycle_id ?? ''" />
-      <div class="nav"><button :disabled="cycle.phase !== 'idle'" @click="step = 2">Back</button><button v-if="cycle.phase !== 'closing' && cycle.phase !== 'running'" @click="startOver">New scan</button></div>
+      <EvidenceCharts v-if="update === 'ready'" :cycle-id="suggestion.revision ?? ''" />
+      <div class="nav"><button :disabled="update === 'updating'" @click="step = 2">Back</button><button v-if="update !== 'updating'" @click="startOver">New scan</button></div>
     </template>
   </div>
 </template>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diseaseCaption, rainfallCaption, verdictText, levelText, missingWeeks, linePath, niceMax, visibleWeeks } from './evidence.js';
+import { diseaseCaption, rainfallCaption, spreadChipText, conditionDetail, verdictText, levelText, missingWeeks, linePath, niceMax, visibleWeeks } from './evidence.js';
 
 const weeks = [
   { week: '2026-W22', yls: 7, yli: 4, rainfall_mm: 10 },
@@ -34,6 +34,21 @@ describe('rainfallCaption', () => {
   });
   it('says not enough data when not computable', () => {
     expect(rainfallCaption(ev({ rainfall: { ...ev().rainfall, favourable: 'not_computable', recent_total_mm: null, previous_total_mm: null } }))).toBe('Not enough rainfall data to compare the last 2 weeks.');
+  });
+});
+
+describe('rainfallCaption when the verdict is unknown but the totals are known', () => {
+  it('does not blame the rainfall data', () => {
+    const caption = rainfallCaption(ev({ rainfall: { ...ev().rainfall, favourable: 'not_computable' } }));
+    expect(caption).toBe('Rain over the last 2 weeks: 84 mm, up from 52 mm. Not enough rainfall or leaf-wetness data to tell if conditions favour spread.');
+  });
+});
+
+describe('spreadChipText', () => {
+  it('names the conditions, since the verdict also reads leaf wetness', () => {
+    expect(spreadChipText(true)).toBe('Conditions favour spread: yes');
+    expect(spreadChipText(false)).toBe('Conditions favour spread: no');
+    expect(spreadChipText('not_computable')).toBe('Conditions favour spread: not enough data');
   });
 });
 
@@ -91,5 +106,45 @@ describe('levelText', () => {
   it('reads a not-computable trend as unknown, not no', () => {
     expect(verdictText('not_computable')).toBe('not enough data');
     expect(verdictText(false)).toBe('no');
+  });
+});
+
+const wetnessNotMet = [
+  { id: 'c1', label: 'Rainfall rising over two weeks', verdict: 'met', missing: null },
+  { id: 'c2', label: 'Rainfall above 0 mm over two weeks', verdict: 'met', missing: null },
+  { id: 'c3', label: 'Leaf wetness above 6 hours', verdict: 'not_met', missing: null },
+];
+const wetnessMissing = wetnessNotMet.map((c) => (c.id === 'c3' ? { ...c, verdict: 'cannot_check', missing: 'leaf wetness for 2026-W24' } : c));
+const rain = (favourable, conditions) => ({ ...ev().rainfall, favourable, conditions });
+
+describe('conditionDetail', () => {
+  it('names the condition that was not met when the verdict is no', () => {
+    expect(conditionDetail(rain(false, wetnessNotMet))).toBe('not met: Leaf wetness above 6 hours');
+  });
+  it('names the condition that could not be checked, and what was missing, when the verdict is unknown', () => {
+    expect(conditionDetail(rain('not_computable', wetnessMissing))).toBe('could not check: Leaf wetness above 6 hours (leaf wetness for 2026-W24)');
+  });
+  it('falls back to the id when the KG sent no label', () => {
+    expect(conditionDetail(rain(false, [{ id: 'c3', label: null, verdict: 'not_met', missing: null }]))).toBe('not met: c3');
+  });
+  it('has nothing to add when every condition is met or the scheduler sent no list', () => {
+    expect(conditionDetail(rain(true, wetnessNotMet.map((c) => ({ ...c, verdict: 'met' }))))).toBeNull();
+    expect(conditionDetail(rain(false, undefined))).toBeNull();
+    expect(conditionDetail(rain('not_computable', []))).toBeNull();
+  });
+});
+
+describe('the chip and the caption with the deciding condition', () => {
+  it('puts the detail on the chip', () => {
+    expect(spreadChipText(false, 'not met: Leaf wetness above 6 hours')).toBe('Conditions favour spread: no (not met: Leaf wetness above 6 hours)');
+    expect(spreadChipText(true, null)).toBe('Conditions favour spread: yes');
+  });
+  it('names the unmet condition in the caption', () => {
+    expect(rainfallCaption(ev({ rainfall: rain(false, wetnessNotMet) }))).toBe('Rain over the last 2 weeks: 84 mm, up from 52 mm. Not met: Leaf wetness above 6 hours.');
+  });
+  it('replaces the generic sentence with the condition that could not be checked', () => {
+    const caption = rainfallCaption(ev({ rainfall: rain('not_computable', wetnessMissing) }));
+    expect(caption).toBe('Rain over the last 2 weeks: 84 mm, up from 52 mm. Could not check: Leaf wetness above 6 hours (leaf wetness for 2026-W24).');
+    expect(caption).not.toContain('rainfall or leaf-wetness');
   });
 });

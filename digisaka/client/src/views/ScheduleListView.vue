@@ -11,14 +11,14 @@ onMounted(() => lines.load());
 
 <template>
   <div class="page">
-    <PageHeader title="Scheduled Treatments" subtitle="Lines with a treatment selection — tap a line to see its weeks." />
+    <PageHeader title="Scheduled Treatments" subtitle="Lines with a finished week — tap a line to see its suggestions." />
     <SkeletonList v-if="lines.loading && !lines.statuses.length" />
     <p v-else-if="lines.error" class="error">{{ lines.error }}</p>
-    <p v-else-if="lines.loaded && !lines.withSelections.length" class="empty">No treatments have been scheduled yet. Scan a line-week and choose Confirm &amp; Schedule to see it here.</p>
-    <button v-for="l in lines.withSelections" :key="l.line_id" class="card" type="button" @click="router.push(`/schedule/${encodeURIComponent(l.line_id)}`)">
+    <p v-else-if="lines.loaded && !lines.withCycles.length" class="empty">No treatments have been suggested yet. Scan a line-week to see one here.</p>
+    <button v-for="l in lines.withCycles" :key="l.line_id" class="card" type="button" @click="router.push(`/schedule/${encodeURIComponent(l.line_id)}`)">
       <span class="thumb">🌱</span>
-      <span class="body"><span class="name">Line {{ l.line_id }}</span><span class="sub">{{ l.human_review_required ? 'Human review required' : 'Treatment selections' }}</span></span>
-      <span class="count">{{ l.selections.length }} {{ l.selections.length === 1 ? 'selection' : 'selections' }}</span>
+      <span class="body"><span class="name">Line {{ l.line_id }}</span><span class="sub">{{ l.human_review_required ? 'Human review required' : 'Treatment suggestions' }}</span></span>
+      <span class="count">{{ l.cycles.length }} {{ l.cycles.length === 1 ? 'week' : 'weeks' }}</span>
       <span class="chev">›</span>
     </button>
   </div>

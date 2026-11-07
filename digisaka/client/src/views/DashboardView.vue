@@ -12,7 +12,6 @@ const name = computed(() => { const w = auth.email.split('@')[0].split(/[._-]/)[
 const greeting = computed(() => `WELCOME BACK${name.value ? ', ' + name.value.toUpperCase() : ''}`);
 const date = computed(() => today().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }));
 const sum = computed(() => dashboardSummary(lines.statuses));
-const STATUS = { draft: 'Awaiting decision', approved: 'Approved', rejected: 'Rejected', superseded: 'Replaced', ended: 'Ended' };
 
 async function refresh() { spin.value = true; await lines.load(); setTimeout(() => (spin.value = false), 500); }
 onMounted(() => lines.load());
@@ -25,7 +24,7 @@ const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${en
       <div class="hero-copy">
         <p class="eyebrow">{{ greeting }}</p>
         <h1>Welcome back to <em>Digisaka</em></h1>
-        <p class="lead">Monitor banana crop health and review Black Sigatoka scans, selections and treatments across your lines.</p>
+        <p class="lead">Monitor banana crop health and review Black Sigatoka scans, suggestions and treatments across your lines.</p>
       </div>
       <div class="hero-side">
         <div class="date">{{ date }}</div>
@@ -40,7 +39,7 @@ const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${en
       </button>
       <button class="action" type="button" @click="router.push('/history')">
         <span class="tile teal"><Icon name="history" /></span>
-        <span class="txt"><b>Diagnosis History</b><small>Review each line's weeks and selections</small></span><i>›</i>
+        <span class="txt"><b>Diagnosis History</b><small>Review each line's weeks and suggestions</small></span><i>›</i>
       </button>
       <button class="action" type="button" @click="router.push('/schedule')">
         <span class="tile yellow">🗓️</span>
@@ -54,20 +53,20 @@ const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${en
       <div class="stats">
         <div class="stat"><span class="chip blue"><Icon name="plus" :size="18" /></span><b>{{ sum.leavesScanned }}</b><small>Leaves Scanned</small></div>
         <div class="stat"><span class="chip purple"><Icon name="history" :size="18" /></span><b>{{ sum.weeksAssessed }}</b><small>Line-weeks Assessed</small></div>
-        <div class="stat"><span class="chip orange"><Icon name="alert" :size="18" /></span><b>{{ sum.awaitingDecision }}</b><small>Awaiting Decision</small></div>
+        <div class="stat"><span class="chip orange"><Icon name="alert" :size="18" /></span><b>{{ sum.applications }}</b><small>Applications Recorded</small></div>
       </div>
-      <p class="note">Counts cover closed weeks across {{ sum.lines }} {{ sum.lines === 1 ? 'line' : 'lines' }}.<template v-if="sum.humanReview"> {{ sum.humanReview }} {{ sum.humanReview === 1 ? 'line needs' : 'lines need' }} human review.</template></p>
+      <p class="note">Counts cover finished weeks across {{ sum.lines }} {{ sum.lines === 1 ? 'line' : 'lines' }}.<template v-if="sum.humanReview"> {{ sum.humanReview }} {{ sum.humanReview === 1 ? 'line needs' : 'lines need' }} human review.</template></p>
     </section>
 
     <section>
-      <div class="section-head"><h2>Recent selections</h2></div>
+      <div class="section-head"><h2>Recent results</h2></div>
       <div v-if="lines.loaded && !sum.recent.length" class="empty">
-        No selections yet. Scan a line and close its week to see one here.
+        No results yet. Scan a line to see one here.
         <button type="button" @click="router.push('/scan')">Start a scan</button>
       </div>
       <button v-for="r in sum.recent" :key="r.lineId + r.week" class="recent" type="button" @click="open(r)">
         <span class="grow"><b>Line {{ r.lineId }}</b><small>{{ r.week }}</small></span>
-        <span class="badge" :class="r.status === 'draft' ? 'warn' : 'ok'">{{ STATUS[r.status] ?? r.status }}</span>
+        <span class="badge" :class="r.outcome === 'suggested' ? 'ok' : 'warn'">{{ r.label }}</span>
       </button>
     </section>
   </div>

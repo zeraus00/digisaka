@@ -3,64 +3,43 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
-import AlertWhy from '../components/AlertWhy.vue';
 import ProductCard from '../components/ProductCard.vue';
 import ScheduleCalendar from '../components/ScheduleCalendar.vue';
-import { useSelectionStore, productOf } from '../stores/selection.js';
+import { useSuggestionStore } from '../stores/suggestion.js';
 import { outcomeReasonText } from '../helpers/messages.js';
-import { unitGroup } from '../helpers/checks.js';
-import { orderAlerts, approveState, groupAlerts, LEVEL_ICON } from '../helpers/alerts.js';
+import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
 import { todayIso, keepIfEdited } from '../helpers/today.js';
 
-const route = useRoute(), store = useSelectionStore();
+const route = useRoute(), store = useSuggestionStore();
 const lineId = computed(() => String(route.params.lineId));
 const week = computed(() => String(route.params.week));
 
-const sel = computed(() => store.selection);
+const sug = computed(() => store.suggestion);
+const BASIS = {
+  stage_confirmed: 'Based on the stage you confirmed from this line\'s scans',
+  all_healthy_images: 'Based on healthy images only: no stage is confirmed',
+  no_confirmed_stage: 'No stage is confirmed for this line yet',
+};
+const OUTCOME = { human_review_required: 'Human Review Required', continue_monitoring: 'Continue monitoring' };
+const GROUPS = [['recommended', 'Recommended'], ['eligible', 'Eligible'], ['excluded', 'Fails a check or not for this stage']];
+const lineAlerts = computed(() => orderAlerts(sug.value?.alerts ?? []));
 
-const period = computed(() => sel.value?.approval_period);
-// The units in the Selection are the products an application can be recorded for.
-const products = computed(() => (sel.value?.units ?? []).filter((u) => u.selectable !== false && !u.excluded_from_schedule));
-const byGroup = (g) => (sel.value?.units ?? []).filter((u) => unitGroup(u) === g);
-const shown = computed(() => [...byGroup('recommended'), ...byGroup('eligible')]);
-const excluded = computed(() => byGroup('excluded'));
-const alerts = computed(() => orderAlerts(store.preview?.alerts ?? []));
-const ackAlerts = computed(() => alerts.value.filter((a) => a.id && requiredIds.value.includes(a.id)));
-const otherAlerts = computed(() => groupAlerts(alerts.value.filter((a) => !ackAlerts.value.includes(a)), unitName));
-const unitOf = (a) => a.unit_id ?? store.required.find((r) => r.id === a.id)?.unit_id;
-const unitName = (a) => sel.value?.units.find((u) => u.unit_id === unitOf(a));
-const requiredIds = computed(() => store.required.map((a) => a.id));
-
-const STATUS = { draft: 'Awaiting your decision', approved: 'Approved', rejected: 'Rejected', superseded: 'Replaced by a newer selection', ended: 'Approval period ended' };
-const BANNER = computed(() => {
-  const s = store.status;
-  if (s === 'approved') return { cls: 'ok', icon: '✓', text: `Approved from ${period.value.start} to ${period.value.end}` };
-  if (s === 'rejected') return { cls: 'bad', icon: '!', text: `Human Review Required${store.cycle?.outcome_reason ? ` — ${outcomeReasonText(store.cycle.outcome_reason)}` : ''}` };
-  if (s === 'draft') return { cls: 'wait', icon: '•', text: STATUS.draft };
-  return { cls: 'warn', icon: '•', text: STATUS[s] ?? s };
-});
-
-const note = ref(''), acked = ref([]), productId = ref(''), appliedOn = ref(todayIso());
-// A new line-week starts with nothing acknowledged and no product chosen.
-const load = () => { acked.value = []; productId.value = ''; return store.load(lineId.value, week.value); };
+const productId = ref(''), appliedOn = ref(todayIso());
+// A new line starts with no product chosen.
+const load = () => { productId.value = ''; return store.load(lineId.value); };
 onMounted(load);
-watch([lineId, week], load);
-onBeforeUnmount(() => store.run++);
-const allAcked = computed(() => requiredIds.value.every((id) => acked.value.includes(id)));
-// One tickbox covers every required item; the store still receives the ids.
-const ackAll = computed({ get: () => requiredIds.value.length > 0 && allAcked.value, set: (on) => { acked.value = on ? [...requiredIds.value] : []; } });
-const gate = computed(() => approveState({ approvable: sel.value?.approvable, blockers: sel.value?.blockers, required: requiredIds.value, acked: acked.value }));
-const canApprove = computed(() => gate.value.ok && !store.busy);
-async function done(work) { await work; if (!store.error) { note.value = ''; acked.value = []; } }
-const approve = () => done(store.approve(acked.value, note.value));
-const reject = () => done(store.reject(note.value));
-const renew = () => done(store.renew(acked.value, note.value));
+watch(lineId, load);
+onBeforeUnmount(() => store.stop());
 watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value, old, next); });
-const record = () => store.apply(productId.value, appliedOn.value);
-// A product in an earlier week's Selection may not be a unit now: fall back to the name in its id.
-const productName = (id) => (sel.value?.units ?? []).find((u) => productOf(u.unit_id) === id)?.product ?? id.split('#').pop().replace(/^Fungicide/, '');
-// Every product applied on the latest recorded date, not just the last row.
+// The scheduler sends a practice id as the label (PracFungicideSpraying); read it as words.
+const guidanceName = (label) => label.replace(/^Prac/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
+const tierOf = (u) => GROUPS.find(([g]) => store.groups[g].includes(u))?.[0];
+const record = async () => { if (await store.record(productId.value, appliedOn.value) === 'recorded') productId.value = ''; };
+const confirm = async () => { if (await store.confirm() === 'recorded') productId.value = ''; };
+// A product in an earlier suggestion may not be a unit now: fall back to the name in its id.
+const productName = (id) => store.units.find((u) => u.product_id === id)?.label ?? id.split('#').pop().replace(/^Fungicide/, '');
 const assessedWeeks = computed(() => store.cycles.filter((c) => c.status === 'done').map((c) => c.week));
+// Every product applied on the latest recorded date, not just the last row.
 const lastApplied = computed(() => {
   const day = store.history.reduce((m, h) => (h.applied_on > m ? h.applied_on : m), '');
   const rows = store.history.filter((h) => h.applied_on === day);
@@ -70,86 +49,71 @@ const lastApplied = computed(() => {
 
 <template>
   <div class="page narrow">
-    <PageHeader title="Treatment selection" :subtitle="`Line ${lineId} · ${week}`" />
+    <PageHeader title="Treatment suggestion" :subtitle="`Line ${lineId} · ${week}`" />
     <p v-if="store.phase === 'loading'" class="empty">Loading…</p>
     <p v-else-if="store.phase === 'error'" class="error">{{ store.error }} <button class="mark" type="button" @click="load">Try again</button></p>
-    <p v-else-if="store.phase === 'notfound'" class="empty">This week's treatment couldn't be found.</p>
-    <template v-else-if="store.phase === 'ready' && sel">
+    <p v-else-if="store.phase === 'notfound'" class="empty">This line has no treatment suggestion yet. A scan is suggested to start one.</p>
+    <template v-else-if="store.phase === 'ready' && sug">
       <p v-if="store.error" class="error">{{ store.error }}</p>
-      <div class="banner" :class="BANNER.cls"><span class="tick">{{ BANNER.icon }}</span>{{ BANNER.text }}</div>
+      <div class="banner" :class="sug.outcome === 'human_review_required' ? 'bad' : 'ok'">
+        <span class="tick">{{ sug.outcome === 'human_review_required' ? '!' : '✓' }}</span>
+        <span>{{ OUTCOME[sug.outcome] ?? BASIS[sug.basis] ?? 'Current suggestion' }}</span>
+        <span v-if="store.updating" class="updating" role="status">Updating…</span>
+      </div>
+      <p v-if="sug.outcome_reason" class="meta reason">{{ outcomeReasonText(sug.outcome_reason) }}</p>
+      <p v-if="sug.basis && sug.outcome !== 'human_review_required'" class="meta basis">{{ BASIS[sug.basis] }}</p>
+      <p v-if="sug.changes?.summary" class="meta changes">What changed: {{ sug.changes.summary }}</p>
 
       <section class="prop-card">
         <h3>Products</h3>
-        <p class="meta">{{ period.start ? `Approval period ${period.start} to ${period.end} (${period.days} days)` : 'Not approved yet — no approval period.' }}</p>
-        <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.join(', ') }} on {{ lastApplied.on }}.<template v-if="excluded.some((u) => (u.checks ?? []).some((c) => c.check === 'rotation'))"> Products of the same practice are listed under excluded, to rotate.</template></p>
-        <p class="meta counts">{{ byGroup('recommended').length }} recommended · {{ byGroup('eligible').length }} eligible · {{ excluded.length }} excluded</p>
-        <ul class="units">
-          <li v-for="u in shown" :id="`unit-${u.unit_id}`" :key="u.unit_id"><ProductCard :unit="u" /></li>
-        </ul>
-        <details v-if="excluded.length" class="excl">
-          <summary><b>{{ excluded.length }} excluded</b> · Show why</summary>
-          <ul class="units">
-            <li v-for="u in excluded" :id="`unit-${u.unit_id}`" :key="u.unit_id"><ProductCard :unit="u" /></li>
-          </ul>
-        </details>
-        <p class="meta soon">Recommended products are the schedule's pick. Choosing among the eligible ones yourself is planned, not available yet.</p>
-        <section v-if="ackAlerts.length" class="ack">
-          <h4>Needs your acknowledgement</h4>
-          <ul>
-            <li v-for="a in ackAlerts" :key="a.id">
-              <span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}
-              <span v-if="a.new_since_approval" class="badge">New since approval</span>
-              <AlertWhy :alert="a" :unit="unitName(a)" :unit-id="unitOf(a)" :build="store.payload.kg_build" />
-            </li>
-          </ul>
-          <label v-if="['draft', 'approved'].includes(store.status)">
-            <input v-model="ackAll" type="checkbox" :disabled="store.busy" /> I acknowledge this
-          </label>
+        <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.join(', ') }} on {{ lastApplied.on }}.</p>
+        <p class="meta counts">{{ GROUPS.map(([g, label]) => `${store.groups[g].length} ${g}`).join(' · ') }}</p>
+        <section v-if="lineAlerts.length" class="ack notes">
+          <h4>Alerts</h4>
+          <ul><li v-for="a in lineAlerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
         </section>
-        <section v-if="otherAlerts.length" class="ack notes">
-          <h4>Other alerts <small>No acknowledgement needed</small></h4>
-          <ul>
-            <li v-for="g in otherAlerts" :key="g.alert.id ?? g.alert.text" :class="g.alert.level">
-              <span class="icon" aria-hidden="true">{{ LEVEL_ICON[g.alert.level] }}</span>{{ g.alert.text }}
-              <span v-if="g.alert.new_since_approval" class="badge">New since approval</span>
-              <AlertWhy :alert="g.alert" :units="g.units" :build="store.payload.kg_build" />
-            </li>
-          </ul>
-        </section>
-        <p v-if="store.status === 'draft' && !gate.ok" class="why-off">{{ gate.reason }}</p>
-        <template v-if="store.status === 'draft' || store.status === 'approved'">
-          <textarea v-model="note" rows="2" placeholder="Note (optional)" aria-label="Decision note"></textarea>
-          <div class="btns">
-            <template v-if="store.status === 'draft'">
-              <button class="danger" type="button" :disabled="store.busy" @click="reject">Reject</button>
-              <button type="button" :disabled="!canApprove" @click="approve">Approve</button>
-            </template>
-            <button v-else type="button" :disabled="!allAcked || store.busy" @click="renew">Renew for 30 days</button>
-          </div>
+        <template v-for="[g, label] in GROUPS" :key="g">
+          <details v-if="store.groups[g].length" class="grp" :open="g !== 'excluded'" :data-group="g">
+            <summary><b>{{ label }}</b> · {{ store.groups[g].length }}</summary>
+            <ul class="units">
+              <li v-for="u in store.groups[g]" :id="`unit-${u.unit_id}`" :key="u.unit_id">
+                <ProductCard :unit="u" :group="g" />
+                <p v-if="u.needs_confirmation" class="confirm-mark">Needs confirmation to record</p>
+                <ul v-if="u.alerts.length" class="ualerts"><li v-for="a in u.alerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
+              </li>
+            </ul>
+          </details>
         </template>
-        <p v-else-if="sel.note" class="noted">Note: {{ sel.note }}</p>
+        <section v-if="sug.other_guidance.length" class="ack notes guidance">
+          <h4>Other guidance</h4>
+          <ul><li v-for="o in sug.other_guidance" :key="o.practice_id">{{ guidanceName(o.label) }}</li></ul>
+        </section>
       </section>
 
-      <section v-if="store.status === 'approved'" class="prop-card">
-        <h3>Applications</h3>
+      <section class="prop-card">
+        <h3>Record an application</h3>
+        <p class="meta">You can record any product; those that need confirmation ask first.</p>
         <div class="row">
-          <select v-model="productId" aria-label="Product applied"><option value="" disabled>Product</option><option v-for="u in products" :key="u.unit_id" :value="u.unit_id">{{ u.product }}</option></select>
-          <input v-model="appliedOn" type="date" :max="todayIso()" aria-label="Date applied" />
+          <select v-model="productId" aria-label="Product applied" :disabled="store.busy || !!store.pending">
+            <option value="" disabled>Product</option>
+            <option v-for="u in store.units" :key="u.unit_id" :value="u.product_id">{{ u.label }}{{ tierOf(u) === 'excluded' ? ' (excluded)' : '' }}</option>
+          </select>
+          <input v-model="appliedOn" type="date" :max="todayIso()" aria-label="Date applied" :disabled="store.busy || !!store.pending" />
         </div>
-        <div v-if="store.offSchedule" class="off-schedule" role="alert">
-          <p>This application is off the schedule:</p>
-          <ul><li v-for="w in store.offSchedule.warnings" :key="w.code">{{ w.text }}</li></ul>
+        <div v-if="store.pending" class="off-schedule" role="alert">
+          <p>{{ productName(store.pending.product_id) }} needs your confirmation{{ store.pending.tier ? ` (${store.pending.tier})` : '' }}:</p>
+          <ul><li v-for="a in store.pending.alerts" :key="a.id">{{ a.text }}</li></ul>
           <div class="btns">
-            <button type="button" :disabled="store.busy" @click="store.confirmOffSchedule()">Record anyway</button>
-            <button type="button" class="ghost" :disabled="store.busy" @click="store.cancelOffSchedule()">Cancel</button>
+            <button type="button" :disabled="store.busy" @click="confirm">Record anyway</button>
+            <button type="button" class="ghost" :disabled="store.busy" @click="store.cancel()">Cancel</button>
           </div>
         </div>
-        <div v-else class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy" @click="record">Record application</button></div>
+        <div v-else class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy || store.updating" @click="record">Record application</button></div>
       </section>
 
-      <ScheduleCalendar :days="store.preview?.days ?? []" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" />
+      <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" />
 
-      <EvidenceCharts :cycle-id="store.cycle?.cycle_id ?? ''" />
+      <EvidenceCharts :cycle-id="sug.revision" />
     </template>
     <p class="disclaimer">AI-assisted scheduling should be verified by an agricultural specialist before treatment decisions.</p>
   </div>
@@ -196,4 +160,10 @@ const lastApplied = computed(() => {
 .why-off { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--danger); }
 .apps { margin: 8px 0 0 18px; color: var(--ink-soft); font-size: 14px; }
 .row { display: flex; gap: 8px; margin-top: 10px; } .row select, .row input { flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 12px; font: 600 14px var(--font-body); }
+
+.banner.ok { background: #D5E9DB; } .banner .updating { margin-left: auto; font: 700 13px var(--font-body); }
+.meta.reason, .meta.basis, .meta.changes { margin: 0 0 8px; } .meta ~ .prop-card { margin-top: 16px; }
+.grp { margin-top: 12px; } .grp summary { cursor: pointer; color: var(--forest); }
+.confirm-mark { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: var(--warn); }
+.ualerts { margin: 4px 0 0 18px; font-size: 13px; }
 </style>

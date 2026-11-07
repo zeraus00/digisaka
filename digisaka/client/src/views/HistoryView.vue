@@ -3,18 +3,19 @@ import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import SkeletonList from '../components/SkeletonList.vue';
+import { outcomeReasonText } from '../helpers/messages.js';
 import { useLinesStore, weekRows } from '../stores/lines.js';
 
 const router = useRouter(), lines = useLinesStore();
 onMounted(() => lines.load());
-const STATUS = { draft: 'Awaiting decision', approved: 'Approved', rejected: 'Rejected', superseded: 'Replaced', ended: 'Ended' };
 const cycleText = (l) => (l.human_review_required ? 'Human review required' : l.latest_cycle ? `Last cycle ${l.latest_cycle.week}: ${l.latest_cycle.status}` : 'No cycles yet');
+const lastApplied = (l) => (l.applications ?? []).map((a) => a.applied_on).sort().at(-1);
 const open = (l, p) => router.push(`/treatment/${encodeURIComponent(l.line_id)}/${encodeURIComponent(p.week)}`);
 </script>
 
 <template>
   <div class="page">
-    <PageHeader title="Diagnosis History" subtitle="Each line's recent weeks, treatment selections and recorded applications." />
+    <PageHeader title="Diagnosis History" subtitle="Each line's recent weeks, suggestions and recorded applications." />
     <SkeletonList v-if="lines.loading && !lines.statuses.length" />
     <p v-else-if="lines.error" class="error">{{ lines.error }}</p>
     <p v-else-if="lines.loaded && !lines.statuses.length" class="empty">No lines are available.</p>
@@ -28,16 +29,15 @@ const open = (l, p) => router.push(`/treatment/${encodeURIComponent(l.line_id)}/
         </span>
         <button class="trash" type="button" disabled aria-label="Delete (not available yet)" title="Not available yet">🗑</button>
       </div>
-      <ul v-if="l.selections.length" class="weeks">
+      <p v-if="lastApplied(l)" class="teal applied">Last applied {{ lastApplied(l) }}</p>
+      <ul v-if="l.cycles?.length" class="weeks">
         <li v-for="p in weekRows(l)" :key="p.cycle_id">
           <button type="button" @click="open(l, p)">
-            <b>{{ p.week }}</b><span>{{ STATUS[p.status] ?? p.status }}</span><span v-if="p.continued" class="soft">Continued the {{ p.fromWeek }} selection</span>
-            <span class="soft">{{ p.approval_period.start ? `${p.approval_period.start} to ${p.approval_period.end}` : 'Not approved yet' }}</span>
-            <span v-if="p.appliedOn.length" class="teal">Applied {{ p.appliedOn.at(-1) }}</span>
+            <b>{{ p.week }}</b><span>{{ p.label }}</span><span v-if="p.outcome_reason" class="soft">{{ outcomeReasonText(p.outcome_reason) }}</span>
           </button>
         </li>
       </ul>
-      <p v-else-if="!l.error" class="soft none">No selections yet.</p>
+      <p v-else-if="!l.error" class="soft none">No finished weeks yet.</p>
     </div>
   </div>
 </template>
@@ -57,4 +57,5 @@ const open = (l, p) => router.push(`/treatment/${encodeURIComponent(l.line_id)}/
 .weeks button { display: flex; flex-wrap: wrap; gap: 6px 14px; width: 100%; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--card); text-align: left; }
 .weeks button:hover { border-color: var(--leaf); }
 .none { margin: 6px 0 0 24px; }
+.applied { margin: 6px 0 0 24px; font-size: 13.5px; }
 </style>

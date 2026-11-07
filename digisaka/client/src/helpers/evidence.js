@@ -4,6 +4,19 @@ const weekWord = (n) => WORD[n] ?? `${n} weeks`;
 
 export const verdictText = (v) => (v === true ? 'yes' : v === false ? 'no' : 'not enough data');
 
+// The spread chip shows the infection-risk finding (rainfall and leaf wetness together), so it names the conditions.
+export const spreadChipText = (v, detail) => `Conditions favour spread: ${verdictText(v)}${detail ? ` (${detail})` : ''}`;
+
+// Which conditions decided the spread verdict: the ones not met when it is "no", the ones that could not be
+// checked when it is unknown. Null when it is "yes" or an older scheduler sent no list.
+export function conditionDetail({ favourable, conditions } = {}) {
+  const want = favourable === false ? 'not_met' : favourable === 'not_computable' ? 'cannot_check' : null;
+  const decided = (conditions ?? []).filter((c) => c.verdict === want);
+  if (!decided.length) return null;
+  const names = decided.map((c) => (c.label ?? c.id) + (c.missing ? ` (${c.missing})` : '')).join(', ');
+  return `${want === 'not_met' ? 'not met' : 'could not check'}: ${names}`;
+}
+
 // The level chip: where this week's YLS sits against the rules' thresholds, with the number it was compared to.
 export function levelText({ verdict, below, critical_below: critical } = {}) {
   if (verdict === 'critical') return critical == null ? 'critical' : `critical, below ${critical}`;
@@ -27,9 +40,13 @@ export function diseaseCaption({ weeks, disease: d }) {
 const mm = (n) => `${Number.isInteger(n) ? n : Math.round(n * 10) / 10} mm`;
 
 export function rainfallCaption({ rainfall: r }) {
-  if (r.favourable === 'not_computable' || r.recent_total_mm == null || r.previous_total_mm == null) return `Not enough rainfall data to compare the last ${r.window_weeks} weeks.`;
+  if (r.recent_total_mm == null || r.previous_total_mm == null) return `Not enough rainfall data to compare the last ${r.window_weeks} weeks.`;
   const dir = r.recent_total_mm > r.previous_total_mm ? 'up from' : r.recent_total_mm < r.previous_total_mm ? 'down from' : 'the same as';
-  return `Rain over the last ${r.window_weeks} weeks: ${mm(r.recent_total_mm)}, ${dir} ${mm(r.previous_total_mm)}.`;
+  const totals = `Rain over the last ${r.window_weeks} weeks: ${mm(r.recent_total_mm)}, ${dir} ${mm(r.previous_total_mm)}.`;
+  const detail = conditionDetail(r);
+  if (detail) return `${totals} ${detail[0].toUpperCase()}${detail.slice(1)}.`;
+  // the verdict also reads leaf wetness, so unknown with known totals is not a rainfall gap
+  return r.favourable === 'not_computable' ? `${totals} Not enough rainfall or leaf-wetness data to tell if conditions favour spread.` : totals;
 }
 
 export const missingWeeks = (weeks) => Object.fromEntries(['yls', 'yli', 'rainfall_mm'].map((k) => [k, weeks.filter((w) => w[k] == null).map((w) => w.week)]));

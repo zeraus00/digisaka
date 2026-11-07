@@ -32,12 +32,13 @@ test('lists the seven seed lines', async () => {
 
 test('line status carries the scenario for each seed line', async () => {
   const status = async (id) => (await get(`/lines/${id}`)).json();
-  assert.deepEqual(await status('L01'), { line_id: 'L01', selections: [], cycles: [], applications: [], latest_cycle: null, human_review_required: false, weeks_assessed: 0, leaves_scanned: 0 });
+  assert.deepEqual(await status('L01'), { line_id: 'L01', cycles: [], applications: [], latest_cycle: null, human_review_required: false, weeks_assessed: 0, leaves_scanned: 0 });
   const l2 = await status('L02');
-  assert.equal(l2.selections[0].status, 'approved');
-  assert.equal(l2.applications[0].selection_id, l2.selections[0].selection_id);
-  assert.equal((await status('L03')).selections[0].status, 'draft');
-  assert.equal((await status('L04')).selections.length, 0);
+  assert.equal(l2.cycles[0].outcome, 'suggested');
+  assert.equal(l2.applications[0].product_id, 'u-chlorothalonil');
+  assert.equal((await status('L03')).cycles[0].outcome, 'suggested');
+  assert.equal((await status('L04')).applications.length, 0);
+  assert.equal('selections' in l2, false);
   const l5 = await status('L05');
   assert.equal(l5.human_review_required, true);
   assert.equal(l5.latest_cycle.week, '2026-W24');
@@ -71,18 +72,16 @@ test('evidence has weeks, disease and rainfall; a cycle without it is unknown_ev
   assert.equal(ev.disease.falling, true);
   assert.deepEqual(ev.disease.level, { yls: 5, below: 8, critical_below: 6, verdict: 'critical' });
   assert.equal(ev.rainfall.recent_total_mm, 84);
+  assert.deepEqual(ev.rainfall.conditions.map((c) => [c.id, c.verdict, c.missing]), [['c1', 'met', null], ['c2', 'met', null], ['c3', 'met', null]]);
+  assert.ok(ev.rainfall.conditions.every((c) => typeof c.label === 'string'));
   const none = await get('/cycles/c-L05-24/evidence');
   assert.equal(none.status, 404);
   assert.equal((await none.json()).error, 'unknown_evidence');
 });
 
-test('seed consistency: every selection and application points at a real cycle and selection, and compared weeks have data', () => {
+test('seed consistency: compared weeks have data', () => {
   const { lines } = createSeedStore().data;
   for (const [id, l] of Object.entries(lines)) {
-    const cycleIds = new Set(l.cycles.map((c) => c.cycle_id));
-    const selectionIds = new Set(l.selections.map((x) => x.selection_id));
-    for (const x of l.selections) assert.ok(cycleIds.has(x.origin_cycle_id), `${id} ${x.selection_id} has no cycle`);
-    for (const a of l.applications) assert.ok(selectionIds.has(a.selection_id), `${id} application has no selection`);
     const weeks = new Set(l.weeks.map((w) => w.week));
     for (const c of l.cycles) {
       assert.ok(weeks.has(c.week), `${id} ${c.cycle_id} week has no data`);
