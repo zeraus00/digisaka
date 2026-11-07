@@ -1,9 +1,8 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter, RouterView } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useUseCaseStore } from '../stores/useCase.js';
-import Icon from '../components/Icon.vue';
 import { useAccountMenu } from '../components/useAccountMenu.js';
 import { WORKSPACE } from './nav.js';
 import '../styles/admin.css';
@@ -12,51 +11,138 @@ const scroller = ref(null);
 const route = useRoute(), router = useRouter(), uc = useUseCaseStore(), auth = useAuthStore();
 const initial = computed(() => auth.initials);
 const { menuOpen, narrow, account, avatar, toggleMenu, closeMenu } = useAccountMenu(route);
+const sidebarOpen = ref(false);
+const active = computed(() => route.path.replace(/^\/admin\/?/, '').replace(/^workflows\/.*/, 'extractions') || 'overview');
+
 function leave() { closeMenu(); auth.signOut(); router.push('/login'); }
 function toApp() { closeMenu(); router.push('/scan'); }
 const to = (screen) => (screen === 'overview' ? '/admin' : `/admin/${screen}`);
-const active = computed(() => route.path.replace(/^\/admin\/?/, '').replace(/^workflows\/.*/, 'extractions') || 'overview');
+
+watch(() => route.path, () => { if (narrow.value) sidebarOpen.value = false; });
 onMounted(() => uc.load().catch(() => {}));
 </script>
 
 <template>
   <div class="admin">
-    <aside class="side">
-      <div class="brand"><span class="mark">🌾</span>DigiSaka</div>
-      <p class="group">Workspace</p>
-      <nav>
-        <button v-for="n in WORKSPACE" :key="n.screen" type="button" class="link" :class="{ active: active === n.screen, off: n.unavailable }" :disabled="n.unavailable" :title="n.unavailable ? 'Not available yet' : undefined" @click="router.push(to(n.screen))">
-          <svg viewBox="0 0 24 24" v-html="n.svg"></svg><span>{{ n.label }}</span>
-        </button>
+    <div
+      v-if="narrow"
+      class="sidebar-backdrop"
+      :class="{ 'sidebar-backdrop--visible': sidebarOpen }"
+      aria-hidden="true"
+      @click="sidebarOpen = false"
+    ></div>
+
+    <aside
+      id="admin-sidebar"
+      class="sidebar"
+      :class="{ 'sidebar--open': sidebarOpen, 'sidebar--narrow': narrow }"
+      aria-label="Admin sidebar"
+    >
+      <svg class="leaf-deco leaf-deco--1" aria-hidden="true" width="80" height="120" viewBox="0 0 80 120">
+        <path d="M70 6C40 10 20 40 10 110C50 90 76 50 70 6Z" fill="#fff" opacity="0.07"/>
+      </svg>
+      <svg class="leaf-deco leaf-deco--2" aria-hidden="true" width="150" height="130" viewBox="0 0 150 130">
+        <path d="M0 30C40 40 50 80 30 110C-10 90 -10 60 0 30Z" fill="#fff" opacity="0.08"/>
+        <path d="M0 90C50 70 110 90 140 110C90 130 30 125 0 110Z" fill="#fff" opacity="0.08"/>
+      </svg>
+      <svg class="leaf-deco leaf-deco--3" aria-hidden="true" width="160" height="170" viewBox="0 0 160 170">
+        <path d="M5 5C80 20 140 80 150 170H20C0 110 -5 50 5 5Z" fill="#fff" opacity="0.06"/>
+        <path d="M130 0C165 30 160 100 140 140C110 100 110 40 130 0Z" fill="#fff" opacity="0.06"/>
+      </svg>
+
+      <div class="sidebar-brand">
+        <span class="sidebar-mark" aria-hidden="true">
+          <img src="../assets/bananaleaf2.png" alt="" width="40" height="40">
+        </span>
+        <span class="sidebar-title">DigiSaka</span>
+      </div>
+
+      <div class="sidebar-section">Workspace</div>
+
+      <nav class="sidebar-nav" aria-label="Admin navigation">
+        <ul class="sidebar-list" role="list">
+          <li v-for="n in WORKSPACE" :key="n.screen">
+            <button
+              v-if="n.unavailable"
+              type="button"
+              class="sidebar-link sidebar-link--unavailable"
+              title="Not available yet"
+              disabled
+            >
+              <svg viewBox="0 0 24 24" class="sidebar-icon" v-html="n.svg" aria-hidden="true"></svg>
+              <span class="sidebar-label">{{ n.label }}</span>
+              <span class="sidebar-badge" aria-label="Not available">Soon</span>
+            </button>
+            <button
+              v-else
+              type="button"
+              class="sidebar-link"
+              :class="{ 'sidebar-link--active': active === n.screen }"
+              :aria-current="active === n.screen ? 'page' : undefined"
+              @click="router.push(to(n.screen))"
+            >
+              <svg viewBox="0 0 24 24" class="sidebar-icon" v-html="n.svg" aria-hidden="true"></svg>
+              <span class="sidebar-label">{{ n.label }}</span>
+            </button>
+          </li>
+        </ul>
       </nav>
-      <div class="spacer"></div>
-      <div class="foot"><b>AI Knowledge Hub</b>Managing knowledge for {{ uc.cases.length }} use cases.</div>
+
+      <button type="button" class="sidebar-signout" @click="leave">Sign Out</button>
     </aside>
 
     <div class="main">
-      <header class="top">
-        <div class="where"><span class="mark small">🌾</span><span>Digisaka AI</span></div>
+      <header class="topbar">
         <div class="tools">
-          <button v-if="auth.practitioner" type="button" class="exit" @click="router.push('/scan')">&#8617; Digisaka app</button>
-          <button type="button" class="exit" @click="leave">Sign out</button>
-          <label class="uc"><span>Use Case</span>
-            <select :value="uc.slug" @change="uc.select($event.target.value)"><option v-for="c in uc.cases" :key="c.slug" :value="c.slug">{{ c.label }}</option></select>
+          <button
+            v-if="narrow"
+            type="button"
+            class="topbar-hamburger"
+            aria-label="Open navigation"
+            :aria-expanded="sidebarOpen"
+            aria-controls="admin-sidebar"
+            @click="sidebarOpen = true"
+          >
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <button v-if="auth.practitioner" type="button" class="topbar-btn" @click="toApp">
+            &#8617; Digisaka app
+          </button>
+          <label class="topbar-usecase">
+            <span>Use Case</span>
+            <select :value="uc.slug" @change="uc.select($event.target.value)">
+              <option v-for="c in uc.cases" :key="c.slug" :value="c.slug">{{ c.label }}</option>
+            </select>
           </label>
-          <div ref="account" class="account">
-            <button ref="avatar" type="button" class="avatar" :title="auth.email" aria-label="Account" :tabindex="narrow ? 0 : -1"
-                    :aria-expanded="narrow ? menuOpen : undefined" :aria-controls="narrow ? 'admin-account-menu' : undefined" @click="toggleMenu">{{ initial }}</button>
-            <div v-if="menuOpen" id="admin-account-menu" class="menu">
-              <p class="menu-who">{{ auth.email }}</p>
-              <button v-if="auth.practitioner" type="button" class="menu-item" @click="toApp">&#8617; Digisaka app</button>
-              <button type="button" class="menu-item" @click="leave">Sign out</button>
+          <div ref="account" class="topbar-account">
+            <button
+              ref="avatar"
+              type="button"
+              class="topbar-avatar"
+              :title="auth.email"
+              aria-label="Account"
+              :tabindex="narrow ? 0 : -1"
+              :aria-expanded="narrow ? menuOpen : undefined"
+              :aria-controls="narrow ? 'admin-account-menu' : undefined"
+              @click="toggleMenu"
+            >{{ initial }}</button>
+            <div v-if="menuOpen" id="admin-account-menu" class="topbar-menu">
+              <p class="topbar-menu-who">{{ auth.email }}</p>
+              <button v-if="auth.practitioner" type="button" class="topbar-menu-item" @click="toApp">&#8617; Digisaka app</button>
+              <button type="button" class="topbar-menu-item" @click="leave">Sign out</button>
             </div>
           </div>
         </div>
       </header>
+
       <main ref="scroller" class="content">
-        <RouterView v-slot="{ Component, route }">
+        <RouterView v-slot="{ Component, route: pageRoute }">
           <Transition name="page" mode="out-in" @after-leave="scroller.scrollTo({ top: 0 })">
-            <div :key="route.path" class="route-wrap"><component :is="Component" /></div>
+            <div :key="pageRoute.path" class="route-wrap"><component :is="Component" /></div>
           </Transition>
         </RouterView>
       </main>
@@ -65,50 +151,291 @@ onMounted(() => uc.load().catch(() => {}));
 </template>
 
 <style scoped>
-.admin { display: grid; grid-template-columns: 276px 1fr; height: 100dvh; }
-.side { display: flex; flex-direction: column; padding: 24px 16px 20px; color: #fff; background: linear-gradient(180deg, #087E42, var(--forest-deep)); overflow-y: auto; }
-.brand { display: flex; align-items: center; gap: 12px; padding: 0 8px 20px; font: 800 24px var(--font-display); }
-.mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: rgba(255, 255, 255, .14); }
-.mark.small { width: 32px; height: 32px; font-size: 16px; background: linear-gradient(135deg, var(--leaf), var(--forest)); }
-.group { padding: 14px 12px 8px; font: 800 12px var(--font-display); letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
-nav { display: grid; gap: 3px; }
-.link { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; border: 0; border-radius: 12px; position: relative; background: none; color: rgba(255, 255, 255, .78); font: 600 14.5px var(--font-body); text-align: left; }
-.link svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.link:hover { background: rgba(255, 255, 255, .08); }
-.link.active { background: rgba(255, 255, 255, .16); color: #fff; font-weight: 800; }
-.link.off { opacity: .45; cursor: not-allowed; }
-.link.off:hover { background: none; }
-.link:focus-visible { outline-color: #fff; }
-.spacer { flex: 1; min-height: 16px; }
-.foot { padding: 14px; border-radius: 16px; background: rgba(255, 255, 255, .1); font-size: 13.5px; line-height: 1.4; color: rgba(255, 255, 255, .78); }
-.foot b { display: block; margin-bottom: 2px; font: 800 15px var(--font-display); color: #fff; }
+.admin {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  height: 100dvh;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: relative;
+  width: var(--sidebar-w);
+  height: 100dvh;
+  overflow: hidden;
+  background: #056b43;
+  color: #fff;
+  z-index: 20;
+}
+
+.leaf-deco {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+.leaf-deco--1 { top: 0; right: -10px; width: 80px; height: 120px; }
+.leaf-deco--2 { top: 62%; left: -20px; width: 150px; height: 130px; }
+.leaf-deco--3 { bottom: -24px; left: 100px; width: 160px; height: 170px; }
+
+.sidebar-brand {
+  position: absolute;
+  top: 22px;
+  left: 24px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 800 24px var(--font-display);
+  letter-spacing: -.3px;
+}
+.sidebar-mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 43px;
+  flex: none;
+}
+.sidebar-mark img { display: block; width: 40px; height: 40px; object-fit: contain; }
+.sidebar-title { white-space: nowrap; }
+
+.sidebar-section {
+  position: absolute;
+  top: 97px;
+  left: 24px;
+  z-index: 1;
+  color: rgba(255, 255, 255, .7);
+  font: 700 12px/14px var(--font-display);
+}
+.sidebar-nav {
+  position: absolute;
+  top: 128px;
+  left: 24px;
+  z-index: 1;
+  width: calc(100% - 48px);
+}
+.sidebar-list { display: flex; flex-direction: column; gap: 4px; }
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  height: 48px;
+  padding: 0 10px 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font: 600 15px var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.sidebar-link:hover:not(:disabled):not(.sidebar-link--active) { background: rgba(0, 0, 0, .12); }
+.sidebar-link:focus-visible, .sidebar-signout:focus-visible {
+  outline: 3px solid var(--leaf-soft);
+  outline-offset: 2px;
+}
+.sidebar-link--active { background: #04583a; color: #fff; }
+.sidebar-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sidebar-label { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sidebar-link--unavailable { opacity: .5; cursor: not-allowed; }
+.sidebar-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .15);
+  color: rgba(255, 255, 255, .8);
+  font: 700 10px var(--font-display);
+  text-transform: uppercase;
+}
+.sidebar-signout {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1;
+  width: calc(100% - 48px);
+  height: 52px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+  color: #056b43;
+  font: 800 15px var(--font-body);
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease, box-shadow .2s ease;
+}
+.sidebar-signout:hover { background: #f3f4f6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5, 107, 67, .2); }
+.sidebar-signout:active { transform: scale(.98); }
 
 .main { display: flex; flex-direction: column; min-width: 0; height: 100dvh; }
-.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 72px; padding: 0 var(--gutter); background: #fff; border-bottom: 1px solid var(--line); flex: none; }
-.where { display: flex; align-items: center; gap: 12px; font: 800 17px var(--font-display); color: var(--forest); }
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 84px;
+  min-height: 84px;
+  padding: 0 27px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  flex: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
 .tools { display: flex; align-items: center; gap: 12px; }
-.exit { height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--forest); font-weight: 800; white-space: nowrap; }
-.exit:hover { background: var(--tint); }
-.uc { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px 0 16px; border: 1px solid var(--line); border-radius: 999px; font-weight: 800; color: var(--forest); }
-.uc select { border: 0; background: transparent; font-weight: 800; color: var(--forest); cursor: pointer; }
-.account { position: relative; }
-.menu { display: none; }
-.menu-who { padding: 8px 12px; font-size: 13px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; }
-.menu-item { display: block; width: 100%; padding: 10px 12px; border: 0; border-radius: 10px; background: none; color: var(--forest); font: 800 15px var(--font-body); text-align: left; }
-.menu-item:hover { background: var(--tint); }
-.avatar { border: 0; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--leaf); color: #fff; font: 800 14px var(--font-display); }
+.topbar-btn {
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid #056b43;
+  border-radius: 10px;
+  background: #fff;
+  color: #056b43;
+  font: 700 14px var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.topbar-btn:hover { background: #f3f4f6; }
+.topbar-usecase { display: flex; align-items: center; gap: 8px; height: 38px; white-space: nowrap; }
+.topbar-usecase > span { font-size: 14px; }
+.topbar-usecase select {
+  width: 160px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #056b43;
+  border-radius: 8px;
+  background: #fff;
+  color: #056b43;
+  font: 600 14px var(--font-body);
+  cursor: pointer;
+}
+.topbar-usecase select:focus-visible, .topbar-btn:focus-visible, .topbar-hamburger:focus-visible {
+  outline: 3px solid var(--leaf);
+  outline-offset: 2px;
+}
+.topbar-account { position: relative; }
+.topbar-avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  font: 800 14px var(--font-display);
+  cursor: pointer;
+}
+.topbar-avatar:focus-visible { outline: 3px solid var(--leaf); outline-offset: 2px; }
+.topbar-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  min-width: 200px;
+  max-width: calc(100vw - 2 * var(--gutter));
+  padding: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
+.topbar-menu-who {
+  padding: 8px 12px;
+  color: #6b7280;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.topbar-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #056b43;
+  font: 700 15px var(--font-body);
+  text-align: left;
+  cursor: pointer;
+}
+.topbar-menu-item:hover { background: #f3f4f6; }
 .content { flex: 1; min-height: 0; overflow-y: auto; padding: 26px var(--gutter) 40px; }
+.sidebar-backdrop { display: none; }
+.topbar-hamburger { display: none; }
 
 @media (max-width: 900px) {
-  .admin { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: 100dvh; }
-  .side { flex-direction: row; align-items: center; gap: 4px; padding: 8px; overflow-x: auto; }
-  .brand, .group, .spacer, .foot { display: none; }
-  nav { display: flex; gap: 4px; }
-  .link { width: auto; white-space: nowrap; padding: 9px 12px; }
-  .main { height: auto; min-height: 0; }
-  .where span:last-child, .exit { display: none; }
-  .uc span { display: none; }
-  .avatar { cursor: pointer; }
-  .menu { display: block; position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; min-width: 200px; max-width: calc(100vw - 2 * var(--gutter)); padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(6, 40, 20, .18); }
+  .admin { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr; }
+  .sidebar.sidebar--narrow {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    width: min(320px, 100vw);
+    height: 100dvh;
+    padding: 0 0 16px;
+    box-shadow: 4px 0 24px rgba(5, 107, 67, .2);
+    transform: translateX(-105%);
+    transition: transform .25s ease;
+    overflow: hidden;
+  }
+  .sidebar.sidebar--narrow.sidebar--open { transform: translateX(0); }
+  .sidebar.sidebar--narrow .sidebar-brand,
+  .sidebar.sidebar--narrow .sidebar-section,
+  .sidebar.sidebar--narrow .sidebar-nav,
+  .sidebar.sidebar--narrow .sidebar-signout { position: static; }
+  .sidebar.sidebar--narrow .sidebar-brand { margin: 22px 24px 24px; }
+  .sidebar.sidebar--narrow .sidebar-section { margin: 0 24px 8px; }
+  .sidebar.sidebar--narrow .sidebar-nav { width: auto; margin: 0 24px; overflow-y: auto; }
+  .sidebar.sidebar--narrow .sidebar-list { gap: 2px; }
+  .sidebar.sidebar--narrow .sidebar-link { height: 46px; padding: 0 12px; }
+  .sidebar.sidebar--narrow .sidebar-signout { width: calc(100% - 48px); margin: auto 24px 0; flex: none; }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(5, 107, 67, .4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility .2s ease;
+  }
+  .sidebar-backdrop--visible { opacity: 1; visibility: visible; }
+  .main { height: 100dvh; }
+  .topbar { justify-content: flex-end; height: 72px; min-height: 72px; padding: 0 var(--gutter); }
+  .tools { gap: 10px; }
+  .topbar-hamburger {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-right: auto;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #056b43;
+    cursor: pointer;
+  }
+  .topbar-hamburger:hover { background: #f3f4f6; }
+  .topbar-btn { display: none; }
+  .topbar-usecase > span { display: none; }
+  .topbar-usecase select { width: min(160px, 38vw); }
+  .topbar-menu { display: block; }
+  .content { padding-top: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .sidebar-backdrop, .sidebar-signout { transition: none; }
 }
 </style>
