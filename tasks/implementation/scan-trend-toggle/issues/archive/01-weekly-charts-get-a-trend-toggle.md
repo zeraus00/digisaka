@@ -14,7 +14,7 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] Helper tests: available views, fallback to All when the pick becomes unavailable, arrow-key next button (wraps, skips disabled), missing-weeks line per view
 - [ ] Render tests: the default view has a labelled group, three buttons, All pressed and named, one combined chart with a key and no prose caption; each single view shows only its own caption; a series with no values disables its button and leaves the key; the numbers table is gone

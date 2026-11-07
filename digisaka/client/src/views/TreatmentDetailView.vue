@@ -98,7 +98,7 @@ const lastApplied = computed(() => {
     <ol class="tabs" role="tablist" aria-label="Treatment review steps">
       <li v-for="s in STEPS" :key="s.id">
         <button type="button" role="tab" :aria-selected="step === s.id" :aria-label="s.label" :title="s.label" :class="{ done: step !== s.id && visited.includes(s.id) }" @click="open(s.id)">
-          <Icon :name="s.icon" :size="22" /><span v-if="step !== s.id && visited.includes(s.id)" class="chk" aria-hidden="true">✓</span>
+          <Icon :name="s.icon" :size="22" />
         </button>
       </li>
     </ol>
@@ -221,7 +221,6 @@ const lastApplied = computed(() => {
 .tabs button { position: relative; flex: 1; display: grid; place-items: center; min-height: 44px; border: 0; border-radius: 999px; background: none; color: var(--ink-soft); cursor: pointer; }
 .tabs button[aria-selected=true] { background: var(--forest); color: #fff; }
 .tabs button:focus-visible { outline: 3px solid #1B6FD6; outline-offset: 2px; }
-.tabs .chk { position: absolute; top: 4px; right: 8px; font: 800 11px var(--font-display); color: var(--forest); }
 .step-title { font: 800 20px var(--font-display); color: var(--forest); margin-bottom: 12px; }
 .btns.go { margin: 0 0 16px; } .btns.go button { flex: none; padding: 12px 18px; }
 .back-scan { display: inline-block; margin-bottom: 8px; color: var(--forest); font-weight: 700; }

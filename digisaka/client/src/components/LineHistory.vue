@@ -33,14 +33,16 @@ const shooting = computed(() => insights.latest('leaves_at_shooting'));
 const leaves = computed(() => insights.latest('functional_leaves'));
 const last = computed(() => insights.lastTreatment);
 const progression = computed(() => progressionReading(data.value?.readings));
-const status = computed(() => data.value?.series.find((w) => w.week === data.value.week)?.canopy_status ?? null);
+// The newest series entry: the week the scheduler last read, named by its key.
+const newest = computed(() => data.value?.series.at(-1));
+const status = computed(() => newest.value?.canopy_status ?? null);
 const target = computed(() => data.value?.functional_leaves_target ?? null);
 const threshold = computed(() => data.value?.functional_leaves_threshold ?? null);
 const scale = computed(() => canopyScale(leaves.value?.functional_leaves, target.value));
 const at = (v) => ({ left: `${percentOf(v, scale.value)}%` });
 const rainfall = computed(() => {
-  const mm = data.value?.series.find((w) => w.week === data.value.week)?.rainfall_mm;
-  return mm == null ? 'No rainfall recorded this week' : `${mm} mm recorded this week`;
+  const mm = newest.value?.rainfall_mm, wk = newest.value ? Number(newest.value.week.split('W').pop()) : null;
+  return mm == null ? `No rainfall recorded${wk ? ` for week ${wk}` : ''}` : `${mm} mm recorded in week ${wk}`;
 });
 const rainfallContext = computed(() => `${rainfall.value}. ${rainOutlookText(data.value?.rain_outlook)}`);
 const result = computed(() => {
@@ -80,7 +82,6 @@ const result = computed(() => {
           </article>
           <article class="metric">
             <span>Progression</span><strong>{{ progression?.finding ?? 'Not assessed' }}</strong>
-            <small>{{ progression?.text ?? 'No disease trend reading for this week' }}</small>
           </article>
           <article class="metric">
             <span>Last treatment</span>

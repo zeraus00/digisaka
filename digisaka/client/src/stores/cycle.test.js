@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { setTokenProvider } from '../api.js';
-import { useCycleStore, POLL_LIMIT } from './cycle.js';
+import { useCycleStore, POLL_LIMIT, pollLimit } from './cycle.js';
 
 const json = (status, body) => ({ status, ok: status < 400, json: async () => body });
 const cyc = (over = {}) => ({ cycle_id: 'c1', line_id: 'L04', week: '2026-W24', status: 'running', outcome: null, outcome_reason: null, failure_reason: null, ...over });
@@ -81,5 +81,12 @@ describe('failed cycle and retry', () => {
     fetchMock.mockResolvedValueOnce(json(409, { error: 'cycle_slot_taken', detail: 'x' }));
     await s.retry(wait);
     expect(s).toMatchObject({ phase: 'failed', error: expect.stringMatching(/Another cycle is already running/) });
+  });
+});
+
+describe('pollLimit', () => {
+  it('takes a positive whole number and keeps 90 for anything else', () => {
+    expect(pollLimit('10')).toBe(10);
+    for (const raw of [undefined, '', '0', '-3', '2.5', 'abc']) expect(pollLimit(raw)).toBe(90);
   });
 });

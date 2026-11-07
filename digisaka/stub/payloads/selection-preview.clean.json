@@ -13,8 +13,8 @@
   "line_id": "L1",
   "status": "approved",
   "approval_period": {
-   "start": "2026-05-25",
-   "end": "2026-06-24",
+   "start": "2026-06-01",
+   "end": "2026-07-01",
    "days": 30
   },
   "approvable": true,
@@ -162,10 +162,10 @@
   ]
  },
  "preview": {
-  "generated_on": "2026-06-08",
+  "generated_on": "2026-06-15",
   "horizon": {
-   "start": "2026-06-08",
-   "end": "2026-07-08",
+   "start": "2026-06-15",
+   "end": "2026-07-15",
    "days": 30
   },
   "replan": {
@@ -232,7 +232,7 @@
   },
   "days": [
    {
-    "date": "2026-06-08",
+    "date": "2026-06-15",
     "weekday": "Mon",
     "state": "approved",
     "monitoring": {
@@ -244,7 +244,7 @@
     }
    },
    {
-    "date": "2026-06-10",
+    "date": "2026-06-17",
     "weekday": "Wed",
     "state": "approved",
     "application": {
@@ -253,43 +253,13 @@
      "moa": "D1",
      "frac": "D1",
      "timing_window": {
-      "start": "2026-06-10",
-      "end": "2026-06-16",
+      "start": "2026-06-17",
+      "end": "2026-06-23",
       "basis": "last application 2026-06-02 + 8 to 14 days"
      },
      "weather": {
       "status": "ok",
       "detail": "No rain forecast within 3 h of application"
-     }
-    }
-   },
-   {
-    "date": "2026-06-15",
-    "weekday": "Mon",
-    "state": "approved",
-    "monitoring": {
-     "label": "Weekly assessment"
-    },
-    "reassessment": {
-     "of": "planned 2026-06-10 pyrimethanil"
-    }
-   },
-   {
-    "date": "2026-06-19",
-    "weekday": "Fri",
-    "state": "approved",
-    "application": {
-     "unit_id": "u-fenpropimorph",
-     "product": "Fenpropimorph",
-     "moa": "G2",
-     "frac": "G2",
-     "timing_window": {
-      "start": "2026-06-19",
-      "end": "2026-06-24",
-      "basis": "2026-06-10 + 9 to 14 days"
-     },
-     "weather": {
-      "status": "ok"
      }
     }
    },
@@ -301,11 +271,41 @@
      "label": "Weekly assessment"
     },
     "reassessment": {
-     "of": "planned 2026-06-19 fenpropimorph"
+     "of": "planned 2026-06-10 pyrimethanil"
+    }
+   },
+   {
+    "date": "2026-06-26",
+    "weekday": "Fri",
+    "state": "approved",
+    "application": {
+     "unit_id": "u-fenpropimorph",
+     "product": "Fenpropimorph",
+     "moa": "G2",
+     "frac": "G2",
+     "timing_window": {
+      "start": "2026-06-26",
+      "end": "2026-07-01",
+      "basis": "2026-06-10 + 9 to 14 days"
+     },
+     "weather": {
+      "status": "ok"
+     }
     }
    },
    {
     "date": "2026-06-29",
+    "weekday": "Mon",
+    "state": "approved",
+    "monitoring": {
+     "label": "Weekly assessment"
+    },
+    "reassessment": {
+     "of": "planned 2026-06-19 fenpropimorph"
+    }
+   },
+   {
+    "date": "2026-07-06",
     "weekday": "Mon",
     "state": "needs_approval",
     "monitoring": {
@@ -317,8 +317,8 @@
      "moa": "M",
      "frac": "M",
      "timing_window": {
-      "start": "2026-06-29",
-      "end": "2026-07-03",
+      "start": "2026-07-06",
+      "end": "2026-07-10",
       "basis": "2026-06-19 + 10 to 14 days"
      },
      "weather": {
@@ -328,7 +328,7 @@
     }
    },
    {
-    "date": "2026-07-06",
+    "date": "2026-07-13",
     "weekday": "Mon",
     "state": "needs_approval",
     "monitoring": {
@@ -339,7 +339,7 @@
     }
    },
    {
-    "date": "2026-07-07",
+    "date": "2026-07-14",
     "weekday": "Tue",
     "state": "needs_approval",
     "application": {
@@ -348,8 +348,8 @@
      "moa": "D1",
      "frac": "D1",
      "timing_window": {
-      "start": "2026-07-07",
-      "end": "2026-07-13",
+      "start": "2026-07-14",
+      "end": "2026-07-20",
       "basis": "2026-06-29 + 8 to 14 days"
      },
      "weather": {
@@ -441,7 +441,7 @@
     "lon": 121.0,
     "scope": "farm (stopgap)"
    },
-   "covered_until": "2026-06-24",
+   "covered_until": "2026-07-01",
    "status": "ok"
   },
   "alerts": [

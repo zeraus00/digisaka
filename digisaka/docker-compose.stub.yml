@@ -32,3 +32,5 @@ services:
       VITE_SUPABASE_ANON_KEY: stub-anon-key
       # Scan screen adds sample leaves by itself; never set against the real backends.
       VITE_STUB_SAMPLES: "1"
+      # The follow gives up on a stuck scan run after 10 polls (about 20 s) instead of 90; changing it needs up -d --build.
+      VITE_STUB_POLL_LIMIT: "10"

@@ -3,9 +3,9 @@
 // SuggestionView; a line with no finished run has none. Also the scheduler's dev-date routes (the stub's
 // "today").
 import { readFileSync } from 'node:fs';
-import { BASE, fail, ok, authed } from './common.js';
+import { BASE, TODAY, todayOf, fail, ok, authed } from './common.js';
 
-// The 0004 clean and stressed payloads, shifted 20 weeks earlier so their dates meet the app's demo today
+// The 0004 clean and stressed payloads, shifted 19 weeks earlier so their dates meet the app's demo today
 // (see client/src/helpers/today.js). `draft` is the stressed one with nothing blocking: it only needs an acknowledgement.
 const load = (name) => JSON.parse(readFileSync(new URL(`./payloads/selection-preview.${name}.json`, import.meta.url), 'utf8'));
 // `real` is recorded from a fresh-line run of the scheduler (its tests/scheduler/fixtures copy); it changes only when re-recorded.
@@ -23,7 +23,6 @@ monitoring.selection.units = monitoring.selection.units.map((u, i, all) => ({
 Object.assign(monitoring.preview, { days: [], alerts: [] });
 const PAYLOADS = { clean, stressed, draft, real, monitoring };
 
-export const TODAY = '2026-06-08';
 const DAY = 86400000;
 const addDays = (iso, n) => new Date(Date.parse(iso) + n * DAY).toISOString().slice(0, 10);
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -114,8 +113,7 @@ export function suggestionAfter(line, run, finishedAt) {
 }
 
 export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Date.now }) {
-  // The date the stub treats as today: the dev date when one is set, else TODAY (the scheduler's DevClock).
-  const today = () => store.data.devToday ?? TODAY;
+  const today = () => todayOf(store);
   const todayView = () => ok({ today: today(), default: TODAY, pinned: store.data.devToday != null });
   const validDay = (v) => typeof v === 'string' && DATE.test(v) && !Number.isNaN(Date.parse(v)) && new Date(v).toISOString().startsWith(v);
   const unknownLine = (id) => fail(404, 'unknown_line', `No line ${id}`);
@@ -177,6 +175,15 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
       }),
     },
     { method: 'DELETE', path: `${BASE}/dev/today`, handle: authed(() => { delete store.data.devToday; return todayView(); }) },
+    { method: 'GET', path: `${BASE}/dev/run-mode`, handle: authed(() => ok({ mode: store.data.runMode ?? 'normal' })) },
+    {
+      method: 'PUT', path: `${BASE}/dev/run-mode`,
+      handle: authed(({ body }) => {
+        if (!['normal', 'fail', 'stuck'].includes(body?.mode)) return fail(400, 'validation_error', 'mode: must be normal, fail or stuck');
+        store.data.runMode = body.mode;
+        return ok({ mode: body.mode });
+      }),
+    },
     {
       method: 'GET', path: `${BASE}/lines/:id/suggestion`,
       handle: authed(({ params }) => {

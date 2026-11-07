@@ -17,12 +17,12 @@ describe('suggestion store against the stub', () => {
   it('loads the groups, basis, schedule days and history of a line', async () => {
     const s = useSuggestionStore();
     await s.load('L02', wait);
-    expect(s).toMatchObject({ phase: 'ready', updating: false, revision: 'c-L02-23' });
+    expect(s).toMatchObject({ phase: 'ready', updating: false, revision: 'c-L02-24' });
     expect(s.suggestion).toMatchObject({ basis: 'stage_confirmed', changes: null, trigger: 'scan' });
     expect(s.units.length).toBe(s.groups.recommended.length + s.groups.eligible.length + s.groups.excluded.length);
     expect(s.days.length).toBeGreaterThan(0);
     expect(s.history.map((a) => a.applied_on)).toEqual(['2026-06-02']);
-    expect(s.cycles.map((c) => c.cycle_id)).toEqual(['c-L02-23']);
+    expect(s.cycles.map((c) => c.cycle_id)).toEqual(['c-L02-24']);
   });
 
   it('a line with no finished run is notfound; an unknown line too', async () => {
@@ -39,7 +39,7 @@ describe('suggestion store against the stub', () => {
     const unit = s.groups.recommended.find((u) => !u.needs_confirmation);
     expect(await s.record(unit.product_id, '2026-06-05', wait)).toBe('recorded');
     expect(s).toMatchObject({ error: '', pending: null, updating: false });
-    expect(s.revision).not.toBe('c-L02-23');
+    expect(s.revision).not.toBe('c-L02-24');
     expect(s.suggestion.trigger).toBe('application');
     expect(s.history.map((a) => a.applied_on)).toEqual(['2026-06-02', '2026-06-05']);
   });
@@ -63,7 +63,7 @@ describe('suggestion store against the stub', () => {
     const unit = s.groups.recommended.find((u) => !u.needs_confirmation);
     s.suggestion.revision = 'c-old';
     expect(await s.record(unit.product_id, '2026-06-05', wait)).toBe('confirm');
-    expect(s.pending.revision).toBe('c-L02-23');
+    expect(s.pending.revision).toBe('c-L02-24');
     expect(await s.confirm(wait)).toBe('recorded');
   });
 
@@ -84,11 +84,11 @@ describe('suggestion store against the stub', () => {
 describe('a scan reschedule against the stub', () => {
   it('the suggestion shows the new revision once the run is done; a failed run is reported and can be retried', async () => {
     const scan = useScanStore();
-    scan.select('L06', '2026-W24');
+    scan.select('L06', '2026-W25');
     scan.addFiles([{ name: 'a-healthy.jpg' }]);
     await scan.assess();
     const id = scan.leaves[0].reschedule?.cycle_id;
-    expect(id).toBe('c-L06-24');
+    expect(id).toBe('c-L06-25');
     const s = useSuggestionStore();
     await s.load('L06', wait);
     expect(await s.follow(id, wait)).toBe('failed');
@@ -105,7 +105,7 @@ describe('a scan reschedule against the stub', () => {
 describe('what a scan leaves for the Results step', () => {
   const scanned = async (line, ...names) => {
     const scan = useScanStore();
-    scan.select(line, '2026-W24');
+    scan.select(line, '2026-W25');
     scan.addFiles(names.map((n) => ({ name: `${n}.jpg` })));
     await scan.assess();
     return scan;
@@ -122,7 +122,7 @@ describe('what a scan leaves for the Results step', () => {
     const scan = await scanned('L01', 'a-healthy');
     const s = useSuggestionStore();
     expect(await s.track('L01', scan.reschedule.cycle_id, wait)).toBe('ready');
-    expect(s.revision).toBe('c-L01-24');
+    expect(s.revision).toBe('c-L01-25');
   });
   it('scans that verify nothing leave the line stage unchanged', async () => {
     const scan = await scanned('L04', 'a-not_leaf', 'b-referral');
@@ -131,7 +131,7 @@ describe('what a scan leaves for the Results step', () => {
   });
   it('a later verified scan of the same line-week does not start another run', async () => {
     const scan = await scanned('L04', 'a-healthy', 'b-healthy');
-    expect(scan.leaves.map((l) => l.reschedule?.cycle_id ?? null)).toEqual(['c-L04-24', null]);
-    expect(scan.reschedule.cycle_id).toBe('c-L04-24');
+    expect(scan.leaves.map((l) => l.reschedule?.cycle_id ?? null)).toEqual(['c-L04-25', null]);
+    expect(scan.reschedule.cycle_id).toBe('c-L04-25');
   });
 });

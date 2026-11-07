@@ -143,35 +143,35 @@
     "rain_above_mm": 0.0,
     "days": [
       {
-        "date": "2026-06-08",
+        "date": "2026-06-15",
         "status": "rain",
         "precipitation_mm": 12.4,
         "temperature_c": 24.1,
         "wind_kmh": 9.0
       },
       {
-        "date": "2026-06-09",
+        "date": "2026-06-16",
         "status": "rain",
         "precipitation_mm": 3.1,
         "temperature_c": 25.0,
         "wind_kmh": 11.5
       },
       {
-        "date": "2026-06-10",
+        "date": "2026-06-17",
         "status": "dry",
         "precipitation_mm": 0.0,
         "temperature_c": 26.2,
         "wind_kmh": 8.0
       },
       {
-        "date": "2026-06-11",
+        "date": "2026-06-18",
         "status": "not_reported",
         "precipitation_mm": null,
         "temperature_c": 25.5,
         "wind_kmh": 7.0
       },
       {
-        "date": "2026-06-12",
+        "date": "2026-06-19",
         "status": "dry",
         "precipitation_mm": 0.0,
         "temperature_c": 26.0,

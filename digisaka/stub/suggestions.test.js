@@ -25,7 +25,7 @@ const units = (s) => Object.values(s.groups).flat();
 test('the suggestion has the contract fields, three groups and the schedule days', async () => {
   const s = await suggestion('L02');
   assert.deepEqual(Object.keys(s).sort(), ['alerts', 'basis', 'changes', 'created_at', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
-  assert.deepEqual([s.revision, s.trigger, s.basis, s.running, s.changes], ['c-L02-23', 'scan', 'stage_confirmed', false, null]);
+  assert.deepEqual([s.revision, s.trigger, s.basis, s.running, s.changes], ['c-L02-24', 'scan', 'stage_confirmed', false, null]);
   assert.deepEqual(Object.keys(s.groups), ['recommended', 'eligible', 'excluded']);
   assert.equal(s.groups.recommended.length > 0, true);
   assert.ok(s.schedule.length > 0 && s.schedule[0].date);
@@ -103,7 +103,7 @@ test('recording a recommended unit with no alerts succeeds and asks for a resche
   assert.deepEqual(Object.keys(r.body.application), ['application_id', 'product_id', 'applied_on', 'recorded_by', 'recorded_at', 'confirmation']);
   assert.deepEqual(r.body.application.confirmation, { tier: 'recommended', reason: null, alerts: [], revision: s.revision, confirmed: false });
   const cycle = r.body.reschedule.cycle_id;
-  assert.match(cycle, /^c-L02-23-\d+$/);
+  assert.match(cycle, /^c-L02-24-\d+$/);
   assert.equal((await call('GET', '/lines/L02')).body.applications.at(-1).applied_on, '2026-06-05');
   assert.equal((await suggestion('L02')).running, true);
   t += 3000;
@@ -143,7 +143,7 @@ test('a product the suggestion does not offer, a repeat, a future date and a bad
   assert.deepEqual([409, 'product_not_offered'], await record('L02', { ...ok, product_id: 'u-nothing' }).then((r) => [r.status, r.body.error]));
   assert.equal((await record('L02', ok)).status, 201);
   assert.equal((await record('L02', ok)).body.error, 'application_already_recorded');
-  assert.equal((await record('L02', { ...ok, applied_on: '2026-06-09' })).body.error, 'validation_error');
+  assert.equal((await record('L02', { ...ok, applied_on: '2026-06-16' })).body.error, 'validation_error');
   assert.equal((await record('L02', { product_id: 'x' })).status, 400);
   assert.equal((await record('L01', ok)).body.error, 'unknown_cycle');
   assert.equal((await record('L99', ok)).status, 404);
@@ -151,8 +151,8 @@ test('a product the suggestion does not offer, a repeat, a future date and a bad
 
 test('the removed approval routes answer 404', async () => {
   for (const [method, path] of [
-    ['GET', '/cycles/c-L02-23/selection'], ['POST', '/selections/sel-L03-24/approval'], ['POST', '/selections/sel-L03-24/rejection'],
-    ['POST', '/selections/sel-L02-23/renewal'], ['POST', '/selections/sel-L02-23/applications'], ['POST', '/lines/L04/weeks/2026-W24/close'], ['POST', '/cycles/c-L07-24/reopen'],
+    ['GET', '/cycles/c-L02-24/selection'], ['POST', '/selections/sel-L03-24/approval'], ['POST', '/selections/sel-L03-24/rejection'],
+    ['POST', '/selections/sel-L02-23/renewal'], ['POST', '/selections/sel-L02-23/applications'], ['POST', '/lines/L04/weeks/2026-W24/close'], ['POST', '/cycles/c-L07-25/reopen'],
   ]) {
     const r = await call(method, path, method === 'GET' ? undefined : {});
     assert.deepEqual([path, r.status, r.body.error], [path, 404, 'not_found']);
@@ -160,10 +160,10 @@ test('the removed approval routes answer 404', async () => {
 });
 
 test('the dev date is read, set and reset with the scheduler\'s bodies', async () => {
-  assert.deepEqual((await call('GET', '/dev/today')).body, { today: '2026-06-08', default: '2026-06-08', pinned: false });
-  const set = await call('PUT', '/dev/today', { today: '2026-06-15' });
-  assert.deepEqual([set.status, set.body], [200, { today: '2026-06-15', default: '2026-06-08', pinned: true }]);
-  assert.deepEqual((await call('DELETE', '/dev/today')).body, { today: '2026-06-08', default: '2026-06-08', pinned: false });
+  assert.deepEqual((await call('GET', '/dev/today')).body, { today: '2026-06-15', default: '2026-06-15', pinned: false });
+  const set = await call('PUT', '/dev/today', { today: '2026-06-22' });
+  assert.deepEqual([set.status, set.body], [200, { today: '2026-06-22', default: '2026-06-15', pinned: true }]);
+  assert.deepEqual((await call('DELETE', '/dev/today')).body, { today: '2026-06-15', default: '2026-06-15', pinned: false });
 });
 
 test('a bad dev date is 400 validation_error and the token is needed', async () => {
@@ -174,11 +174,24 @@ test('a bad dev date is 400 validation_error and the token is needed', async () 
   assert.equal((await fetch(base + B + '/dev/today')).status, 401);
 });
 
+test('the dev run mode defaults to normal, reads back each mode, refuses others and needs the token', async () => {
+  assert.deepEqual((await call('GET', '/dev/run-mode')).body, { mode: 'normal' });
+  for (const mode of ['fail', 'stuck', 'normal']) {
+    assert.deepEqual((await call('PUT', '/dev/run-mode', { mode })).body, { mode });
+    assert.equal((await call('GET', '/dev/run-mode')).body.mode, mode);
+  }
+  for (const body of [{ mode: 'slow' }, {}]) {
+    const bad = await call('PUT', '/dev/run-mode', body);
+    assert.deepEqual([bad.status, bad.body.error], [400, 'validation_error']);
+  }
+  assert.equal((await fetch(base + B + '/dev/run-mode')).status, 401);
+});
+
 test('the set date moves the stub\'s future check', async () => {
   const s = await suggestion('L02');
-  const body = { product_id: s.groups.recommended[0].product_id, applied_on: '2026-06-12', revision: s.revision, confirmed: true };
+  const body = { product_id: s.groups.recommended[0].product_id, applied_on: '2026-06-16', revision: s.revision, confirmed: true };
   assert.equal((await record('L02', body)).body.error, 'validation_error');
-  await call('PUT', '/dev/today', { today: '2026-06-15' });
+  await call('PUT', '/dev/today', { today: '2026-06-22' });
   assert.equal((await record('L02', body)).status, 201);
 });
 
