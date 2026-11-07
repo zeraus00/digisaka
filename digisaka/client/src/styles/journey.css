@@ -1,0 +1,51 @@
+/* Treatment review journey (Scan step 4): shared look of its steps. */
+.jr-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+@media (max-width: 760px) { .jr-layout { grid-template-columns: 1fr; } }
+.jr-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px; display: grid; gap: 10px; }
+.jr-card h2, .jr-card h3 { font: 800 15px var(--font-display); color: var(--forest); }
+.jr-hint { color: var(--ink-soft); font-size: 13px; }
+.jr-err { color: var(--danger); }
+.jr-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.jr-metric { padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); display: grid; gap: 2px; }
+.jr-metric span, .jr-metric small { color: var(--ink-soft); font-size: 12px; }
+.jr-metric strong { font: 800 18px var(--font-display); }
+.jr-off { opacity: .55; }
+.jr-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; background: #E3E5E8; color: #444; font: 800 12px var(--font-display); white-space: nowrap; }
+.jr-pill.ok { background: #E1F1E2; color: var(--forest); } .jr-pill.warn { background: #FCE7C8; color: #6B4A0B; } .jr-pill.bad { background: #FBE4E2; color: #A62A20; }
+.jr-row .jr-pill, .jr-check .jr-pill { align-self: center; } /* a flex item stretches to the row's height otherwise */
+.jr-pill.on { background: var(--forest); color: #fff; }
+.jr-rows { display: grid; gap: 6px; }
+.jr-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.jr-row span { color: var(--ink-soft); }
+.jr-days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; }
+.jr-days div { padding: 8px 4px; border: 1px solid var(--line); border-radius: var(--radius-sm); display: grid; gap: 2px; font-size: 13px; }
+.jr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.journey > header { margin-bottom: 16px; }
+.jr-steps { display: flex; list-style: none; padding: 0; margin: 0 0 16px; }
+.jr-steps li { position: relative; flex: 1; display: grid; justify-items: center; gap: 4px; font-size: 12px; color: var(--ink-soft); }
+.jr-steps li span { position: relative; z-index: 1; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--line); font-weight: 800; }
+.jr-steps li:not(:last-child)::after { content: ''; position: absolute; top: 13px; left: calc(50% + 18px); right: calc(-50% + 18px); height: 3px; background: var(--line); }
+.jr-steps li.done:not(:last-child)::after { background: var(--forest); }
+.jr-steps li.active span, .jr-steps li.done span { background: var(--forest); color: #fff; } .jr-steps li.active small { color: var(--forest); font-weight: 800; }
+.jr-nav { display: flex; gap: 8px; justify-content: space-between; margin-bottom: 16px; }
+.jr-nav button, .jr-nav a, .jr-btn { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; text-align: center; display: inline-block; }
+.jr-nav .primary, .jr-btn.primary { background: var(--forest); border-color: var(--forest); color: #fff; font-weight: 800; }
+.jr-tier { display: grid; gap: 8px; }
+.jr-unit { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.jr-unit.combo { border: 2px solid var(--forest); background: #F4FAF5; } .jr-unit.excluded { background: #F4F4F4; }
+.jr-unit .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.jr-unit .pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.jr-unit .more { margin-left: auto; }
+.jr-unit ul { margin: 0 0 0 18px; color: var(--ink-soft); font-size: 13px; }
+.jr-warn { padding: 8px 12px; border-radius: var(--radius-sm); background: #FCE7C8; color: #6B4A0B; font-size: 13px; }
+.jr-bar { height: 10px; border-radius: 6px; background: var(--line); }
+.jr-check { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; padding: 4px 0; }
+.jr-mark { display: inline-flex; align-items: center; flex: 0 0 var(--mark-w, 1.4em); font-weight: 800; color: var(--ink); }
+.jr-mark.met { color: var(--forest); }
+.jr-mark.not_met { color: var(--danger); }
+.jr-row .jr-label { flex: 1; }
+.jr-indent { padding-left: calc(var(--mark-w, 1.4em) + 12px); } /* the mark column plus the row gap */
+.facts { display: grid; gap: 10px; } /* the rows, the Plant mobility label and its pills need air between them */
+.jr-pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.jr-pager button { padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; }
+.jr-pager button:disabled { opacity: .45; }

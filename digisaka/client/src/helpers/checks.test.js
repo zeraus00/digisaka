@@ -56,3 +56,31 @@ describe('explainMoa', () => {
     expect(humanDetail('mixture', 'not checked by the scheduler (carrier: Straight mineral oil; property: Mode of action M)').text).toContain('Needs: Mode of action M (multi-site).');
   });
 });
+
+import { unitFacts, reasonText, planFor } from './checks.js';
+describe('unit facts and reasons', () => {
+  const unit = { unit_id: 'u1', label: 'azoxystrobin', facts: { product: { label: 'azoxystrobin', manufacturer: null, plant_mobility: ['contact'], mode_of_action: { label: 'Mode of action C3', frac_code: 'C3', multisite: false } }, application_rates: [], application_interval: { min_days: 10, max_days: 15 } } };
+  it('reads the pills and leaves an empty fact null', () => {
+    expect(unitFacts(unit)).toMatchObject({ frac: 'C3', site: 'Single-site', mobility: ['Contact'], manufacturer: null, rate: null, interval: '10 to 15 days' });
+    expect(unitFacts({ label: 'x' })).toMatchObject({ name: 'x', frac: null, site: null, mobility: [] });
+    expect(unitFacts({ facts: { product: { mode_of_action: { multisite: true } } } }).site).toBe('Multi-site');
+  });
+  it('words the exclusion reasons and shows an unknown code as served', () => {
+    expect(reasonText('rotation')).toMatch(/^Fails: Rotation/);
+    expect(reasonText('group_cap')).toBe('Fails: Applications per group');
+    expect(reasonText('odd_code')).toBe('odd_code');
+    expect(reasonText(null)).toBeNull();
+  });
+  it('finds the unit in the plan, with its next assessment, or null', () => {
+    const days = [{ date: 'a', application: { unit_id: 'u1', timing_window: { start: '2026-06-08', end: '2026-06-14' } } }, { date: '2026-06-15', monitoring: { label: 'x' } }];
+    expect(planFor(days, unit)).toEqual({ window: '2026-06-08 to 2026-06-14', next: '2026-06-15' });
+    expect(planFor(days, { unit_id: 'zz' })).toBeNull();
+  });
+});
+
+describe('unitFacts interval', () => {
+  const iv = (min_days, max_days) => unitFacts({ unit_id: 'u', label: 'x', facts: { application_interval: { min_days, max_days } } }).interval;
+  it('handles missing bounds', () => {
+    expect([iv(null, null), iv(7, null), iv(null, 14), iv(7, 7)]).toEqual([null, 'At least 7 days', 'Up to 14 days', '7 days']);
+  });
+});

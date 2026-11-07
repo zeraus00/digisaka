@@ -31,9 +31,9 @@ test('the suggestion has the contract fields, three groups and the schedule days
   assert.ok(s.schedule.length > 0 && s.schedule[0].date);
   assert.deepEqual(Object.keys(s.line_stage), ['stage', 'tally', 'window']);
   const u = s.groups.recommended[0];
-  for (const k of ['unit_id', 'product_id', 'label', 'practice_id', 'rank', 'checks', 'alerts', 'needs_confirmation', 'reason']) assert.ok(k in u, k);
+  for (const k of ['unit_id', 'product_id', 'label', 'practice_id', 'rank', 'checks', 'alerts', 'needs_confirmation', 'reason', 'facts']) assert.ok(k in u, k);
   assert.equal(u.rank, 1);
-  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'label', 'needs_confirmation', 'practice_id', 'product_id', 'rank', 'reason', 'unit_id'], 'a unit carries the contract fields only');
+  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'facts', 'label', 'needs_confirmation', 'practice_id', 'product_id', 'rank', 'reason', 'unit_id'], 'a unit carries the contract fields only');
   assert.deepEqual(Object.keys(s.line_stage.window), ['from', 'to']);
 });
 
@@ -54,8 +54,37 @@ test('a unit with its own alert needs confirmation and carries it', async () => 
   const s = await suggestion('L03');
   const spiro = units(s).find((u) => u.product_id === 'u-spiroxamine');
   assert.equal(spiro.needs_confirmation, true);
-  assert.deepEqual(Object.keys(spiro.alerts[0]), ['id', 'unit_id', 'kind', 'level', 'text', 'blocks_approval']);
+  assert.deepEqual(Object.keys(spiro.alerts[0]), ['id', 'unit_id', 'kind', 'level', 'text', 'cause', 'blocks_approval']);
   assert.equal(spiro.alerts[0].unit_id, 'u-spiroxamine');
+});
+
+test('every unit carries facts with the decided members; unknown ones are null or empty', async () => {
+  for (const line of ['L02', 'L03', 'L04']) {
+    const all = units(await suggestion(line));
+    assert.ok(all.length);
+    for (const u of all) {
+      const f = u.facts;
+      assert.deepEqual(Object.keys(f).sort(), ['application_interval', 'application_methods', 'application_rates', 'coverage', 'dilutions', 'mixture_conditions', 'product', 'repeat_condition', 'weather_requirement'], u.unit_id);
+      assert.equal(f.product.label.toLowerCase(), u.label);
+      assert.deepEqual([f.product.manufacturer, f.weather_requirement], [null, null]);
+      assert.ok('frac_code' in f.product.mode_of_action, 'a group with no FRAC code is null, not missing');
+      assert.deepEqual(f.application_interval, { min_days: 10, max_days: 15 });
+      assert.ok(Array.isArray(f.mixture_conditions));
+    }
+  }
+});
+
+test('alerts carry a cause, the schedule drops frac and an ok weather detail', async () => {
+  const s = await suggestion('L03');
+  for (const a of [...s.alerts, ...units(s).flatMap((u) => u.alerts)]) assert.ok('cause' in a, a.id);
+  const apps = s.schedule.filter((d) => d.application).map((d) => d.application);
+  assert.ok(apps.length);
+  for (const a of apps) {
+    assert.equal('frac' in a, false);
+    if (a.weather?.status === 'ok') assert.deepEqual(a.weather, { status: 'ok' });
+  }
+  const ok = (await suggestion('L02')).schedule.filter((d) => d.application?.weather?.status === 'ok');
+  assert.ok(ok.length, 'a clean-payload week serves an ok weather entry');
 });
 
 test('a line with no finished run has no suggestion; unknown lines are unknown_line', async () => {
@@ -77,7 +106,13 @@ test('recording a recommended unit with no alerts succeeds and asks for a resche
   t += 3000;
   const after = await suggestion('L02');
   assert.deepEqual([after.running, after.revision, after.trigger], [false, cycle, 'application']);
-  assert.match(after.changes.summary, /application/);
+  // The stub's run ends in monitoring, so the plan goes: the diff names the stage, every unit moved and the plan, as the live one does.
+  const c = after.changes;
+  assert.deepEqual(Object.keys(c).sort(), ['alerts', 'plan_steps_changed', 'stage', 'summary', 'trigger', 'units_moved'].filter((k) => k in c));
+  assert.deepEqual([c.trigger, c.plan_steps_changed, c.summary], ['application', true, 'The data suggests the line stage changed; a scan is suggested to verify.']);
+  assert.deepEqual(c.stage, { basis: ['stage_confirmed', 'stage_confirmed'], stage: [2, null] });
+  assert.ok(c.units_moved.length && c.units_moved.every((m) => m.to === null && typeof m.unit_id === 'string' && ['recommended', 'eligible', 'excluded'].includes(m.from)));
+  assert.ok(Array.isArray(c.alerts?.added ?? []) && Array.isArray(c.alerts?.removed ?? []));
 });
 
 test('an excluded unit answers confirmation_required with its tier and alerts, then records once confirmed', async () => {

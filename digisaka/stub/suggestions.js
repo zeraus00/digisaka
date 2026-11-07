@@ -34,17 +34,74 @@ const BASIS_TEXT = {
   no_confirmed_stage: 'The data suggests no stage is confirmed for this line yet; a scan is suggested to verify.',
 };
 
+// A unit's `facts`, as the live scheduler serves them: the QA `KgFacts` pieces its checks used. They come from the
+// recorded `real` payload's per-product sections, matched by product name (the clean and stressed payloads have none).
+const REAL_BY_NAME = new Map(real.selection.units.map((u) => [u.product.toLowerCase(), u]));
+// shortcut: 10 to 15 days for every unit (the sample ABox's general fungicide guidance), not read per product; upgrade when the live run serves it.
+const INTERVAL = { min_days: 10, max_days: 15 };
+const named = (xs) => xs.map(({ id, label }) => ({ id, label }));
+function factsOf(u) {
+  const r = REAL_BY_NAME.get(u.product.toLowerCase());
+  if (!r) return null;
+  const { details, resistance, efficacy_use: use } = r;
+  const moa = { id: details.mode_of_action, label: details.mode_of_action, frac_code: details.frac_code ?? null, multisite: resistance.multisite ?? null };
+  const carriers = r.conditions.filter((c) => c.kind === 'carrier'), excluded = r.conditions.filter((c) => c.kind === 'excluded');
+  return {
+    product: { id: productOf(u.unit_id), label: u.product, active_ingredient: details.active_ingredient ?? null, chemical_group: details.chemical_group ?? null, manufacturer: null, mode_of_action: moa, plant_mobility: details.plant_mobility ?? [], registrations: details.registrations ?? [], sources: [] },
+    repeat_condition: resistance.repeat_condition ?? null,
+    mixture_conditions: carriers.length || excluded.length ? [{ required_partners: named(carriers), excluded_partners: named(excluded), requires_different_mode_of_action: null, sources: [] }] : [],
+    weather_requirement: null,
+    application_rates: use.application_rates ?? [], dilutions: use.dilutions ?? [], coverage: use.coverage ?? [], application_methods: use.application_methods ?? [],
+    application_interval: INTERVAL,
+  };
+}
+
+// The schedule as the live scheduler serves it: no `frac` on an application, no `detail` on an `ok` weather entry.
+const scheduleOf = (days) => days.map((d) => {
+  if (!d.application) return d;
+  const { frac, ...application } = d.application;
+  if (application.weather?.status === 'ok') application.weather = { status: 'ok' };
+  return { ...d, application };
+});
+
 // recommended: the sequencer's pick; eligible: passed but not picked; excluded: failed a check or not for the stage.
 const groupOf = (u) => (u.selectable === false || (u.checks ?? []).some((c) => c.result === 'fail') ? 'excluded' : u.excluded_from_schedule ? 'eligible' : 'recommended');
 const reasonOf = (u) => (u.selectable === false ? 'not_for_stage' : (u.checks ?? []).find((c) => c.result === 'fail')?.check ?? 'not_for_stage');
 
+// What a payload shows, as the diff reads it: unit tiers, alert ids, the line stage and the schedule.
+const tiersOf = (name) => Object.fromEntries((name ? PAYLOADS[name].selection.units : []).map((u) => [u.unit_id, groupOf(u)]));
+const alertIdsOf = (name) => new Set((name ? PAYLOADS[name].preview.alerts : []).map((a, i) => a.id ?? `${a.kind}-${i}`));
+const stageOf = (name, basis) => (name && basis === 'stage_confirmed' ? 2 : null);
+const planOf = (name) => JSON.stringify(scheduleOf(name ? PAYLOADS[name].preview.days : []));
+
+// The note on what changed, with the keys the live diff sets only when they apply (reschedule.describe_changes).
+function changesOf(prior, payload, trigger) {
+  const was = tiersOf(prior.payload), now = tiersOf(payload);
+  const moved = [...new Set([...Object.keys(was), ...Object.keys(now)])].sort()
+    .filter((u) => was[u] !== now[u]).map((u) => ({ unit_id: u, from: was[u] ?? null, to: now[u] ?? null }));
+  const oldIds = alertIdsOf(prior.payload), newIds = alertIdsOf(payload);
+  const added = [...newIds].filter((id) => !oldIds.has(id)).sort(), removed = [...oldIds].filter((id) => !newIds.has(id)).sort();
+  const [oldStage, newStage] = [stageOf(prior.payload, prior.basis), stageOf(payload, prior.basis)];
+  const diff = { trigger };
+  if (oldStage !== newStage) diff.stage = { basis: [prior.basis, prior.basis], stage: [oldStage, newStage] };
+  if (moved.length) diff.units_moved = moved;
+  if (added.length || removed.length) diff.alerts = { added, removed };
+  if (planOf(prior.payload) !== planOf(payload)) diff.plan_steps_changed = true;
+  const headline = diff.stage ? 'the line stage changed' : `the suggestion changed after ${trigger === 'application' ? 'an' : 'a'} ${trigger}`;
+  diff.summary = `The data suggests ${headline}; a scan is suggested to verify.`;
+  return diff;
+}
+
 // The suggestion a finished run leaves on the line: its payload, basis, and the note on what changed.
+// shortcut: the run keeps the prior payload unless it is a monitoring outcome, so a change shows only when the payload
+// flips between a plan and none; the live scheduler also diffs after an application removes a product from the plan.
 export function suggestionAfter(line, run, finishedAt) {
   const prior = line.suggestion ?? DEFAULT;
   const monitoring = run.plan.outcome === 'continue_monitoring';
+  const payload = monitoring ? null : prior.payload ?? DEFAULT.payload;
   return {
-    ...prior, payload: monitoring ? null : prior.payload ?? DEFAULT.payload, revision: run.cycle_id, trigger: run.trigger, created_at: new Date(finishedAt).toISOString(),
-    changes: { trigger: run.trigger, summary: run.trigger === 'scan' ? 'A new scan of this line moved the suggestion.' : 'The recorded application moved the schedule.', units_moved: 0 },
+    ...prior, payload, revision: run.cycle_id, trigger: run.trigger, created_at: new Date(finishedAt).toISOString(),
+    changes: line.suggestion ? changesOf(prior, payload, run.trigger) : null, // a first run has nothing to differ from
   };
 }
 
@@ -65,7 +122,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
   }
 
   function alertView(a, i, unitId) {
-    return { id: a.id ?? `${a.kind}-${i}`, unit_id: unitId, kind: a.kind, level: a.level, text: a.text, blocks_approval: !!a.blocks_approval };
+    return { id: a.id ?? `${a.kind}-${i}`, unit_id: unitId, kind: a.kind, level: a.level, text: a.text, cause: a.cause ?? null, blocks_approval: !!a.blocks_approval };
   }
 
   function view(lineId) {
@@ -83,17 +140,17 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
       groups[g].push({
         unit_id: u.unit_id, product_id: productOf(u.unit_id), label: u.product.toLowerCase(), practice_id: u.practice ?? u.unit_id.split('|')[0], rank: groups[g].length + 1,
         checks: (u.checks ?? []).map((c) => ({ check: c.check, level: c.level, detail: c.detail ?? null, result: c.result })), alerts: mine,
-        needs_confirmation: g === 'excluded' || mine.length > 0, reason: g === 'excluded' ? reasonOf(u) : null,
+        needs_confirmation: g === 'excluded' || mine.length > 0, reason: g === 'excluded' ? reasonOf(u) : null, facts: factsOf(u),
       });
     }
-    const basisAlert = BASIS_TEXT[cur.basis] ? [{ id: 'stage_basis', unit_id: null, kind: 'stage_basis', level: 'info', text: BASIS_TEXT[cur.basis], blocks_approval: false }] : [];
+    const basisAlert = BASIS_TEXT[cur.basis] ? [{ id: 'stage_basis', unit_id: null, kind: 'stage_basis', level: 'info', text: BASIS_TEXT[cur.basis], cause: null, blocks_approval: false }] : [];
     const confirmed = cur.basis === 'stage_confirmed' && frozen;
     const outcome = SERVED_OUTCOMES.includes(cycle?.outcome) ? cycle.outcome : null;
     return {
       revision: cur.revision, trigger: cur.trigger, created_at: cur.created_at, basis: cur.basis,
       line_stage: { stage: confirmed ? 2 : null, tally: confirmed ? { 2: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
       groups, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
-      schedule: frozen?.preview.days ?? [], alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
+      schedule: scheduleOf(frozen?.preview.days ?? []), alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
       running: runsOf(lineId).some((r) => r.status === 'running'), outcome, outcome_reason: outcome ? cycle.outcome_reason ?? null : null,
     };
   }

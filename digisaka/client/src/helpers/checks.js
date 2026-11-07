@@ -70,3 +70,49 @@ export const stripChecks = (unit) => (unit.checks ?? []).filter((c) => WORST.inc
 // A product name arrives as the source wrote it ("azoxystrobin"); capitalise each word, leaving the rest as written.
 export const titleCase = (s) => (s ?? '').replace(/(^|\s)(\p{L})/gu, (_, sp, c) => sp + c.toUpperCase());
 export const sentenceCase = (s) => (s ?? '').charAt(0).toUpperCase() + (s ?? '').slice(1);
+
+// The facts a unit card shows, read from the unit's `facts`. An empty fact is null (or []): the component says "Unknown".
+// A bound the KG does not hold is null: say what is known, and "Unknown" (null) when neither is.
+function intervalText(iv) {
+  const lo = iv?.min_days ?? null, hi = iv?.max_days ?? null;
+  if (lo == null && hi == null) return null;
+  if (lo == null) return `Up to ${hi} days`;
+  if (hi == null) return `At least ${lo} days`;
+  return lo === hi ? `${lo} days` : `${lo} to ${hi} days`;
+}
+
+export function unitFacts(unit) {
+  const p = unit.facts?.product ?? null;
+  const moa = p?.mode_of_action ?? null;
+  const site = moa?.multisite;
+  return {
+    name: p?.label ?? unit.label ?? null,
+    manufacturer: p?.manufacturer ?? null,
+    activeIngredient: p?.active_ingredient ?? null,
+    chemicalGroup: p?.chemical_group ?? null,
+    frac: moa?.frac_code ?? null,
+    modeOfAction: moa?.label ?? null,
+    site: site == null ? null : site ? 'Multi-site' : 'Single-site',
+    mobility: (p?.plant_mobility ?? []).map(sentenceCase),
+    rate: unit.facts?.application_rates?.[0]?.text ?? null,
+    rainfast: unit.facts?.weather_requirement?.rainfast_period ?? null,
+    interval: intervalText(unit.facts?.application_interval),
+  };
+}
+
+// Why a unit is excluded: three codes have their own sentence, a failed check is named, and an unknown code is shown as served.
+const REASON = {
+  rotation: 'Fails: Rotation. Its mode of action was used too recently.',
+  no_interval: 'No application interval is known for this product.',
+  not_for_stage: 'Not for the line\'s current growth stage.',
+};
+export const reasonText = (code) => (code == null ? null : REASON[code] ?? (CHECK_LABEL[code] ? `Fails: ${CHECK_LABEL[code]}` : code));
+
+// This unit's place in the schedule: the window of its application and the first monitoring day after it ("Not in this plan" when it has none).
+export function planFor(days, unit) {
+  const i = (days ?? []).findIndex((d) => d.application?.unit_id === unit.unit_id);
+  if (i < 0) return null;
+  const w = days[i].application.timing_window ?? null;
+  const next = days.slice(i + 1).find((d) => d.monitoring)?.date ?? null;
+  return { window: w ? `${w.start} to ${w.end}` : null, next };
+}

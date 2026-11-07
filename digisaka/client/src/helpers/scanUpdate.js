@@ -5,3 +5,6 @@ export function updateState({ reschedule, tracked, updating }) {
   if (updating || !tracked) return 'updating';
   return tracked; // ready, failed, timeout or error
 }
+
+// The suggestion is current when it is read, no run is updating it, and the update ended ready or unchanged.
+export const isCurrent = ({ phase, updating, state }) => phase === 'ready' && !updating && (state === 'ready' || state === 'unchanged');

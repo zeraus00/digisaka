@@ -4,6 +4,8 @@ import { computed, onMounted, onBeforeUnmount, ref, nextTick, watch } from 'vue'
 import PageHeader from '../components/PageHeader.vue';
 import Icon from '../components/Icon.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
+import SuggestionUpdate from '../components/SuggestionUpdate.vue';
+import TreatmentJourney from '../components/TreatmentJourney.vue';
 import LineHistory from '../components/LineHistory.vue';
 import { useScanStore, outcomeLabel, MAX_LEAVES } from '../stores/scan.js';
 import { useFarmStore } from '../stores/farm.js';
@@ -12,12 +14,12 @@ import { useSuggestionStore } from '../stores/suggestion.js';
 import { updateState } from '../helpers/scanUpdate.js';
 import { groupLeaves } from '../helpers/groups.js';
 import { previousWeek, nextWeek, isoWeekOf, weekStart, weekEnd } from '../helpers/week.js';
-import { outcomeReasonText, REFERRAL_TEXT } from '../helpers/messages.js';
+import { REFERRAL_TEXT } from '../helpers/messages.js';
 import { todayIso, fromIso, keepIfEdited } from '../helpers/today.js';
 import { samplesEnabled, addDefaultSamples, sampleFile, SAMPLE_SCENARIOS, RETAKE_SAMPLE } from '../helpers/stubSamples.js';
 
 const scan = useScanStore(), farm = useFarmStore(), cycle = useCycleStore(), suggestion = useSuggestionStore();
-const step = ref(1); // 1 Select Leaves, 2 Bulk Assess, 3 Results
+const step = ref(1); // 1 Select Leaves, 2 Bulk Assess, 3 Results, 4 Treatment review
 const STEPS = ['Select Leaves', 'Bulk Assess', 'Results'];
 const AGENT_STEPS = ['Leaf Images Collected', 'Black Sigatoka Validation', 'Individual Stage Assessment', 'Stage Groups Organized', 'Human Verification', 'Treatment Recommendation', 'Schedule Review'];
 const maxDate = computed(() => todayIso()); // scans can't be added to a future week
@@ -68,17 +70,10 @@ const groups = computed(() => groupLeaves(scan.leaves));
 function stopUpdate() { cycle.reset(); suggestion.stop(); suggestion.tracked = ''; }
 const reschedule = computed(() => scan.reschedule);
 const update = computed(() => updateState({ reschedule: reschedule.value, tracked: suggestion.tracked, updating: suggestion.updating }));
-const track = () => (reschedule.value ? suggestion.track(scan.line, reschedule.value.cycle_id) : undefined);
-watch(step, (now) => { if (now === 3) track(); else stopUpdate(); });
-// A failed run is read as a cycle to retry, then followed again.
-async function retryUpdate() {
-  suggestion.tracked = '';
-  await cycle.attach(reschedule.value.cycle_id);
-  if (cycle.phase === 'failed') await cycle.retry();
-  if (cycle.phase === 'failed') suggestion.tracked = 'failed';
-  else await suggestion.track(scan.line, cycle.cycle?.cycle_id ?? reschedule.value.cycle_id);
-}
-const treatmentPath = computed(() => `/treatment/${encodeURIComponent(scan.line)}/${encodeURIComponent(scan.week)}`);
+// Going on to step 4 keeps the update running, and coming back from it does not start it again.
+watch(step, (now, old) => {
+  if (now === 3 && old !== 4) { if (reschedule.value) suggestion.track(scan.line, reschedule.value.cycle_id); } else if (now < 3) stopUpdate();
+});
 
 const needsAnswer = computed(() => scan.leaves.filter((l) => l.phase === 'confirm' || l.phase === 'rescan'));
 const failed = computed(() => scan.leaves.filter((l) => l.phase === 'failed'));
@@ -93,6 +88,8 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
 
 <template>
   <div class="page">
+    <TreatmentJourney v-if="step === 4" :line="scan.line" :week="scan.week" :reschedule="reschedule" @back="step = 3" />
+    <template v-else>
     <PageHeader :title="step === 2 ? 'Black Sigatoka Validation' : step === 3 ? 'Bulk Assessment Result' : 'Leaf Scan'"
                 :subtitle="step === 1 ? 'Scan or select banana leaves to check for signs of Black Sigatoka' : ''" />
 
@@ -245,35 +242,11 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
         <p class="hint">This is an AI-assisted assessment and not a confirmed diagnosis. Results should be verified by an agricultural specialist before treatment decisions.</p>
       </section>
 
-      <section class="card" aria-live="polite">
-        <p v-if="cycle.error || suggestion.error" class="err" role="alert">{{ cycle.error || suggestion.error }}</p>
-        <template v-if="update === 'unchanged'">
-          <h2>The treatment suggestion is unchanged</h2>
-          <p class="hint">These scans did not change it, so the current treatment suggestion still stands.</p>
-          <RouterLink class="btn primary" :to="treatmentPath">Open the current suggestion</RouterLink>
-        </template>
-        <template v-else-if="update === 'updating'">
-          <h2>Updating the treatment suggestion...</h2>
-          <p class="hint">This usually takes under a minute.</p>
-        </template>
-        <template v-else-if="update === 'ready'">
-          <h2>The treatment suggestion is updated</h2>
-          <p v-if="suggestion.suggestion?.outcome === 'continue_monitoring'" class="hint">No treatment is suggested yet. Keep monitoring this line and scan again next week.</p>
-          <p v-else-if="suggestion.suggestion?.outcome === 'human_review_required'" class="hint">The data suggests an expert should look at this line{{ suggestion.suggestion.outcome_reason ? `: ${outcomeReasonText(suggestion.suggestion.outcome_reason)}` : '' }}</p>
-          <RouterLink class="btn primary" :to="treatmentPath">Open the suggestion</RouterLink>
-        </template>
-        <template v-else-if="update === 'failed'">
-          <h2>The update failed</h2>
-          <p v-if="cycle.cycle?.failure_reason">Reason: {{ cycle.cycle.failure_reason }}</p>
-          <button class="primary" :disabled="cycle.busy" @click="retryUpdate">Retry</button>
-        </template>
-        <template v-else>
-          <h2>{{ update === 'timeout' ? 'This is taking too long' : 'Could not load the suggestion' }}</h2>
-          <button class="primary" @click="track">Check again</button>
-        </template>
-      </section>
-      <EvidenceCharts v-if="update === 'ready'" :cycle-id="suggestion.revision ?? ''" />
+      <SuggestionUpdate :line="scan.line" :week="scan.week" :reschedule="reschedule" :show-done="false" />
+      <button class="primary wide" @click="step = 4">Continue to weather risk</button>
+      <EvidenceCharts v-if="update === 'ready'" :cycle-id="suggestion.revision ?? ''" :line="scan.line" :week="scan.week" />
       <div class="nav"><button :disabled="update === 'updating'" @click="step = 2">Back</button><button v-if="update !== 'updating'" @click="startOver">New scan</button></div>
+    </template>
     </template>
   </div>
 </template>

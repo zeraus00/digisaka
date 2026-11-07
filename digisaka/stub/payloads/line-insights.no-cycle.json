@@ -3,6 +3,7 @@
   "week": "2026-W24",
   "window_weeks": 8,
   "functional_leaves_threshold": 8.0,
+  "functional_leaves_target": 10.0,
   "series": [
     {
       "week": "2026-W17",
@@ -10,7 +11,9 @@
       "yls": null,
       "functional_leaves": null,
       "leaves_at_shooting": null,
-      "rainfall_mm": null
+      "rainfall_mm": null,
+      "leaf_wetness_hours": null,
+      "canopy_status": null
     },
     {
       "week": "2026-W18",
@@ -18,7 +21,9 @@
       "yls": null,
       "functional_leaves": null,
       "leaves_at_shooting": null,
-      "rainfall_mm": null
+      "rainfall_mm": null,
+      "leaf_wetness_hours": null,
+      "canopy_status": null
     },
     {
       "week": "2026-W19",
@@ -26,7 +31,9 @@
       "yls": null,
       "functional_leaves": null,
       "leaves_at_shooting": null,
-      "rainfall_mm": null
+      "rainfall_mm": null,
+      "leaf_wetness_hours": null,
+      "canopy_status": null
     },
     {
       "week": "2026-W20",
@@ -34,7 +41,9 @@
       "yls": 9,
       "functional_leaves": 8,
       "leaves_at_shooting": 12,
-      "rainfall_mm": 18
+      "rainfall_mm": 18,
+      "leaf_wetness_hours": 28.0,
+      "canopy_status": "watch"
     },
     {
       "week": "2026-W21",
@@ -42,7 +51,9 @@
       "yls": 9,
       "functional_leaves": 8,
       "leaves_at_shooting": 12,
-      "rainfall_mm": 22
+      "rainfall_mm": 22,
+      "leaf_wetness_hours": 31.5,
+      "canopy_status": "watch"
     },
     {
       "week": "2026-W22",
@@ -50,7 +61,9 @@
       "yls": 8,
       "functional_leaves": 7,
       "leaves_at_shooting": 11,
-      "rainfall_mm": 30
+      "rainfall_mm": 30,
+      "leaf_wetness_hours": 35.0,
+      "canopy_status": "critical"
     },
     {
       "week": "2026-W23",
@@ -58,7 +71,9 @@
       "yls": 8,
       "functional_leaves": 7,
       "leaves_at_shooting": 11,
-      "rainfall_mm": 26
+      "rainfall_mm": 26,
+      "leaf_wetness_hours": 33.0,
+      "canopy_status": "critical"
     },
     {
       "week": "2026-W24",
@@ -66,7 +81,9 @@
       "yls": null,
       "functional_leaves": null,
       "leaves_at_shooting": null,
-      "rainfall_mm": 12
+      "rainfall_mm": 12,
+      "leaf_wetness_hours": null,
+      "canopy_status": null
     }
   ],
   "readings": [
@@ -127,7 +144,7 @@
   },
   "history": [],
   "history_coverage": null,
-  "resistance_alerts": [],
+  "group_usage": [],
   "actions": {
     "status": "not_yet_assessed",
     "kinds": [
@@ -156,6 +173,7 @@
         "active": false,
         "options": []
       }
-    ]
+    ],
+    "summary": null
   }
 }

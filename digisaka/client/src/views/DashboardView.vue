@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useLinesStore, dashboardSummary } from '../stores/lines.js';
@@ -11,10 +11,19 @@ const spin = ref(false);
 const name = computed(() => { const w = auth.email.split('@')[0].split(/[._-]/)[0]; return w ? w[0].toUpperCase() + w.slice(1) : ''; });
 const greeting = computed(() => `WELCOME BACK${name.value ? ', ' + name.value.toUpperCase() : ''}`);
 const date = computed(() => today().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }));
+const now = ref(Date.now());
+const time = computed(() => new Date(now.value).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }));
 const sum = computed(() => dashboardSummary(lines.statuses));
+const refreshed = ref(Date.now());
+const updatedText = computed(() => {
+  const mins = Math.floor((now.value - refreshed.value) / 60000);
+  return mins < 1 ? 'just now' : `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
+});
 
-async function refresh() { spin.value = true; await lines.load(); setTimeout(() => (spin.value = false), 500); }
-onMounted(() => lines.load());
+async function refresh() { spin.value = true; await lines.load(); refreshed.value = now.value = Date.now(); setTimeout(() => (spin.value = false), 500); }
+let tick;
+onMounted(() => { lines.load(); tick = setInterval(() => (now.value = Date.now()), 30000); });
+onUnmounted(() => clearInterval(tick));
 const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${encodeURIComponent(r.week)}`);
 </script>
 
@@ -25,8 +34,10 @@ const open = (r) => router.push(`/treatment/${encodeURIComponent(r.lineId)}/${en
         <p class="eyebrow">{{ greeting }}</p>
         <h1>Welcome back to <em>Digisaka</em></h1>
         <p class="lead">Monitor banana crop health and review Black Sigatoka scans, suggestions and treatments across your lines.</p>
+        <p class="updated">Last updated: <b>{{ updatedText }}</b></p>
       </div>
       <div class="hero-side">
+        <div class="time">{{ time }}</div>
         <div class="date">{{ date }}</div>
         <button class="refresh" :class="{ spin }" type="button" @click="refresh"><Icon name="refresh" :size="15" />Refresh</button>
       </div>
@@ -82,6 +93,7 @@ h1 em { font-style: normal; color: var(--banana); }
 .lead { max-width: 34em; color: rgba(255, 255, 255, .88); }
 .updated { margin-top: 14px; font-size: 14px; color: rgba(255, 255, 255, .78); }
 .hero-side { position: relative; z-index: 1; text-align: right; }
+.time { font: 800 32px/1 var(--font-display); }
 .date { margin: 2px 0 14px; font-weight: 700; color: rgba(255, 255, 255, .78); }
 .refresh { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border: 1px solid rgba(255, 255, 255, .3); border-radius: 999px; background: rgba(255, 255, 255, .14); color: #fff; font-weight: 800; }
 .refresh:hover { background: rgba(255, 255, 255, .22); }
@@ -118,7 +130,7 @@ h1 em { font-style: normal; color: var(--banana); }
 .badge.ok { background: var(--tint); color: var(--forest); } .badge.warn { background: var(--warn-tint); color: #B4432A; }
 @media (max-width: 900px) {
   .hero { flex-direction: column; gap: 14px; padding: 22px; }
-  h1 { font-size: 26px; } .hero-side { text-align: left; } .time, .date { display: none; }
+  h1 { font-size: 26px; } .hero-side { text-align: left; } .date { display: none; } .refresh { margin-top: 14px; }
   .actions { grid-template-columns: 1fr; gap: 12px; }
   .stats { gap: 10px; } .stat b { font-size: 26px; }
 }

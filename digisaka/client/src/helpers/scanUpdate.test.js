@@ -13,3 +13,14 @@ describe('updateState', () => {
     expect(updateState({ reschedule: { cycle_id: 'c1' }, tracked, updating: false })).toBe(tracked);
   });
 });
+
+import { isCurrent } from './scanUpdate.js';
+describe('suggestion gate', () => {
+  it('is current only when read, not updating, and ready or unchanged', () => {
+    expect(isCurrent({ phase: 'ready', updating: false, state: 'ready' })).toBe(true);
+    expect(isCurrent({ phase: 'ready', updating: false, state: 'unchanged' })).toBe(true);
+    expect(isCurrent({ phase: 'ready', updating: true, state: 'ready' })).toBe(false);
+    expect(isCurrent({ phase: 'loading', updating: false, state: 'ready' })).toBe(false);
+    expect(isCurrent({ phase: 'ready', updating: false, state: 'failed' })).toBe(false);
+  });
+});

@@ -3,7 +3,8 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import EvidenceCharts from '../components/EvidenceCharts.vue';
-import ProductCard from '../components/ProductCard.vue';
+import FungicideOptions from '../components/FungicideOptions.vue';
+import FungicideDetails from '../components/FungicideDetails.vue';
 import ScheduleCalendar from '../components/ScheduleCalendar.vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import { outcomeReasonText } from '../helpers/messages.js';
@@ -21,12 +22,14 @@ const BASIS = {
   no_confirmed_stage: 'No stage is confirmed for this line yet',
 };
 const OUTCOME = { human_review_required: 'Human Review Required', continue_monitoring: 'Continue monitoring' };
-const GROUPS = [['recommended', 'Recommended'], ['eligible', 'Eligible'], ['excluded', 'Fails a check or not for this stage']];
+const GROUPS = [['recommended', 'Recommended'], ['eligible', 'Eligible'], ['excluded', 'Excluded options']];
 const lineAlerts = computed(() => orderAlerts(sug.value?.alerts ?? []));
 
+const detailId = ref(''), optionPage = ref(1);
+const detail = computed(() => store.units.find((u) => u.unit_id === detailId.value) ?? null);
 const productId = ref(''), appliedOn = ref(todayIso());
 // A new line starts with no product chosen.
-const load = () => { productId.value = ''; return store.load(lineId.value); };
+const load = () => { productId.value = ''; detailId.value = ''; return store.load(lineId.value); };
 onMounted(load);
 watch(lineId, load);
 onBeforeUnmount(() => store.stop());
@@ -67,23 +70,15 @@ const lastApplied = computed(() => {
       <section class="prop-card">
         <h3>Products</h3>
         <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.join(', ') }} on {{ lastApplied.on }}.</p>
-        <p class="meta counts">{{ GROUPS.map(([g, label]) => `${store.groups[g].length} ${g}`).join(' · ') }}</p>
         <section v-if="lineAlerts.length" class="ack notes">
           <h4>Alerts</h4>
           <ul><li v-for="a in lineAlerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
         </section>
-        <template v-for="[g, label] in GROUPS" :key="g">
-          <details v-if="store.groups[g].length" class="grp" :open="g !== 'excluded'" :data-group="g">
-            <summary><b>{{ label }}</b> · {{ store.groups[g].length }}</summary>
-            <ul class="units">
-              <li v-for="u in store.groups[g]" :id="`unit-${u.unit_id}`" :key="u.unit_id">
-                <ProductCard :unit="u" :group="g" />
-                <p v-if="u.needs_confirmation" class="confirm-mark">Needs confirmation to record</p>
-                <ul v-if="u.alerts.length" class="ualerts"><li v-for="a in u.alerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
-              </li>
-            </ul>
-          </details>
+        <template v-if="detail">
+          <FungicideDetails :unit="detail" />
+          <div class="btns"><button type="button" class="ghost" @click="detailId = ''">Back to options</button></div>
         </template>
+        <FungicideOptions v-else v-model:page="optionPage" @select="(u) => (detailId = u.unit_id)" />
         <section v-if="sug.other_guidance.length" class="ack notes guidance">
           <h4>Other guidance</h4>
           <ul><li v-for="o in sug.other_guidance" :key="o.practice_id">{{ guidanceName(o.label) }}</li></ul>
@@ -113,7 +108,7 @@ const lastApplied = computed(() => {
 
       <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" />
 
-      <EvidenceCharts :cycle-id="sug.revision" />
+      <EvidenceCharts :cycle-id="sug.revision" :line="lineId" :week="week" />
     </template>
     <p class="disclaimer">AI-assisted scheduling should be verified by an agricultural specialist before treatment decisions.</p>
   </div>
@@ -143,13 +138,12 @@ const lastApplied = computed(() => {
 .mark { margin-top: 10px; padding: 10px 16px; border: 0; border-radius: 12px; background: var(--forest); color: #fff; font: 800 14px var(--font-display); }
 .mark:disabled { opacity: .45; }
 .datefield { width: 100%; padding: 12px; margin-bottom: 14px; border: 1px solid var(--line); border-radius: 12px; font: 600 15px var(--font-body); }
-.prop-card .units { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-.units li { scroll-margin-top: 12px; }
 .excl { margin-top: 12px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 18px; background: #F4F4F4; } .excl summary { cursor: pointer; color: var(--forest); }
 .soon { margin-top: 10px; font-size: 13px; }
 .meta small { color: var(--ink-soft); }
 .ack.notes { background: #E3F2F0; color: var(--ink); } .ack.notes h4 small { font: 600 12px var(--font-body); color: var(--ink-soft); margin-left: 6px; }
 .ack.notes:has(.error) { background: #FBE4E2; }
+.ack.notes:not(.guidance) { margin-bottom: 12px; }
 .ack { margin-top: 12px; padding: 14px; border-radius: 18px; background: #FCE7C8; color: #6B4A0B; } .ack h4 { font: 800 16px var(--font-display); }
 .ack ul { margin: 8px 0 0 18px; display: grid; gap: 12px; font-size: 14px; }
 .ack li { min-width: 0; overflow-wrap: anywhere; }
@@ -163,7 +157,4 @@ const lastApplied = computed(() => {
 
 .banner.ok { background: #D5E9DB; } .banner .updating { margin-left: auto; font: 700 13px var(--font-body); }
 .meta.reason, .meta.basis, .meta.changes { margin: 0 0 8px; } .meta ~ .prop-card { margin-top: 16px; }
-.grp { margin-top: 12px; } .grp summary { cursor: pointer; color: var(--forest); }
-.confirm-mark { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: var(--warn); }
-.ualerts { margin: 4px 0 0 18px; font-size: 13px; }
 </style>

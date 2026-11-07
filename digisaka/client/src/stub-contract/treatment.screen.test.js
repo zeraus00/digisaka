@@ -15,22 +15,21 @@ describe('treatment screen', () => {
     await s.load('L04', wait);
     const html = await show('L04');
     expect(html).toContain('Based on healthy images only');
-    for (const g of ['recommended', 'eligible']) expect(html).toContain(`data-group="${g}"`);
+    expect(html).toContain('Fungicide options');
+    expect(html).toContain('Recommended</span>');
     expect(html).toContain('Other guidance');
-    expect(html).toMatch(/<h4[^>]*>[A-Z][a-z]+<\/h4><span class="[^"]*eligible[^"]*"[^>]*>Eligible</);
-    expect(html).not.toMatch(/<h4[^>]*><\/h4>/);
+    expect(html).not.toMatch(/<b><\/b>/);
     expect(html).toContain('Record application');
     expect(html).toContain('The data suggests the line is healthy');
     for (const gone of ['Approve', 'Reject', 'Renew', 'Approval period', 'acknowledge']) expect(html).not.toContain(gone);
   });
 
-  it('marks a unit that needs confirmation, lists excluded units in the record form, and shows the human review banner', async () => {
+  it('lists excluded units in the record form, and shows the human review banner', async () => {
     await useSuggestionStore().load('L05', wait);
     const html = await show('L05');
-    expect(html).toContain('Needs confirmation to record');
     expect(html).toMatch(/<option[^>]*>[^<]*\(excluded\)<\/option>/);
     expect(html).toContain('Human Review Required');
-    expect(html).toContain('data-group="excluded"');
+    expect(html).toContain('Fungicide options');
   });
 
   it('shows the what-changed note and the updating marker while a run is in progress, and clears them on the new revision', async () => {
@@ -46,7 +45,7 @@ describe('treatment screen', () => {
     await pending;
     const html = await show('L02');
     expect(html).not.toContain('Updating…');
-    expect(html).toContain('What changed: The recorded application moved the schedule.');
+    expect(html).toContain('What changed: The data suggests the line stage changed; a scan is suggested to verify.');
     expect(s.revision).not.toBe(base);
   });
 
