@@ -14,7 +14,7 @@ const STALE = ['application_already_recorded'];
 
 // A line's current treatment suggestion, the line's recorded applications, and recording against it.
 // phase: idle, loading, ready, notfound, error. `updating` is true while a newer run is in progress.
-// `pending` holds a record the scheduler asked to confirm: {product_id, applied_on, revision, tier, alerts}.
+// `pending` holds a record the scheduler asked to confirm: {product_id, applied_on, revision, tier, reason, alerts}.
 export const useSuggestionStore = defineStore('suggestion', {
   state: () => ({ phase: 'idle', lineId: '', suggestion: null, history: [], cycles: [], error: '', busy: false, updating: false, pending: null, tracked: '', run: 0 }),
   getters: {
@@ -98,7 +98,7 @@ export const useSuggestionStore = defineStore('suggestion', {
       } catch (err) {
         if (run !== this.run) return 'error';
         if (err.code === 'confirmation_required') {
-          this.pending = { product_id: body.product_id, applied_on: body.applied_on, revision: err.data?.revision ?? body.revision, tier: err.data?.tier ?? null, alerts: err.data?.alerts ?? [] };
+          this.pending = { product_id: body.product_id, applied_on: body.applied_on, revision: err.data?.revision ?? body.revision, tier: err.data?.tier ?? null, reason: err.data?.reason ?? null, alerts: err.data?.alerts ?? [] };
           return 'confirm';
         }
         this.error = messageFor(err);

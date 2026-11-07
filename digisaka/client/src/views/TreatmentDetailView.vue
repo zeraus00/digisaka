@@ -9,6 +9,7 @@ import ScheduleCalendar from '../components/ScheduleCalendar.vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import { outcomeReasonText } from '../helpers/messages.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
+import { reasonText } from '../helpers/checks.js';
 import { todayIso, keepIfEdited } from '../helpers/today.js';
 
 const route = useRoute(), store = useSuggestionStore();
@@ -97,6 +98,7 @@ const lastApplied = computed(() => {
         </div>
         <div v-if="store.pending" class="off-schedule" role="alert">
           <p>{{ productName(store.pending.product_id) }} needs your confirmation{{ store.pending.tier ? ` (${store.pending.tier})` : '' }}:</p>
+          <p v-if="store.pending.reason">{{ reasonText(store.pending.reason) }}</p>
           <ul><li v-for="a in store.pending.alerts" :key="a.id">{{ a.text }}</li></ul>
           <div class="btns">
             <button type="button" :disabled="store.busy" @click="confirm">Record anyway</button>

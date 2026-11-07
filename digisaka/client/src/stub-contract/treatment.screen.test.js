@@ -45,7 +45,7 @@ describe('treatment screen', () => {
     await pending;
     const html = await show('L02');
     expect(html).not.toContain('Updating…');
-    expect(html).toContain('What changed: The data suggests the line stage changed; a scan is suggested to verify.');
+    expect(html).toContain('What changed: The data suggests the suggestion changed after an application; a scan is suggested to verify.');
     expect(s.revision).not.toBe(base);
   });
 
@@ -57,6 +57,20 @@ describe('treatment screen', () => {
     expect(html).toContain('Record anyway');
     expect(html).toContain('needs your confirmation (excluded)');
     expect(html).not.toContain('>Record application<');
+  });
+
+  it('a monitoring line shows the card and the reason in the confirm step; a suggested line has no card', async () => {
+    const s = useSuggestionStore();
+    await s.load('L06', wait);
+    const unit = s.groups.eligible[0];
+    const card = 'Monitoring is advised, but you may still record applications.';
+    expect(await show('L06')).toContain(card);
+    expect(await show('L06')).not.toContain('The data suggests treatment is not due yet; monitoring is advised.');
+    await s.record(unit.product_id, '2026-06-05', wait);
+    expect(s.pending.reason).toBe('monitoring_advised');
+    expect(await show('L06')).toContain('The data suggests treatment is not due yet; monitoring is advised.');
+    await s.load('L02', wait);
+    expect(await show('L02')).not.toContain(card);
   });
 
   it('a line with no finished run says a scan is suggested', async () => {

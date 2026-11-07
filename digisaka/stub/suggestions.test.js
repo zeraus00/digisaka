@@ -47,7 +47,10 @@ test('each line carries its basis, outcome and units', async () => {
   assert.deepEqual([l5.basis, l5.outcome, l5.outcome_reason], ['no_confirmed_stage', 'human_review_required', 'missing_feed_value']);
   assert.ok(l5.groups.excluded.some((u) => u.reason === 'not_for_stage' && u.needs_confirmation));
   const l6 = await suggestion('L06');
-  assert.deepEqual([l6.outcome, units(l6).length], ['continue_monitoring', 0]);
+  assert.equal(l6.outcome, 'continue_monitoring');
+  assert.deepEqual([l6.groups.recommended.length, l6.schedule.length], [0, 0]);
+  assert.ok(l6.groups.eligible.length && l6.groups.eligible.every((u) => u.reason === 'monitoring_advised' && u.needs_confirmation));
+  assert.ok(l6.groups.excluded.length && l6.groups.excluded.every((u) => u.reason === 'group_cap'));
 });
 
 test('a unit with its own alert needs confirmation and carries it', async () => {
@@ -98,7 +101,7 @@ test('recording a recommended unit with no alerts succeeds and asks for a resche
   const r = await record('L02', { product_id: u.product_id, applied_on: '2026-06-05', revision: s.revision, confirmed: false });
   assert.equal(r.status, 201);
   assert.deepEqual(Object.keys(r.body.application), ['application_id', 'product_id', 'applied_on', 'recorded_by', 'recorded_at', 'confirmation']);
-  assert.deepEqual(r.body.application.confirmation, { tier: 'recommended', alerts: [], revision: s.revision, confirmed: false });
+  assert.deepEqual(r.body.application.confirmation, { tier: 'recommended', reason: null, alerts: [], revision: s.revision, confirmed: false });
   const cycle = r.body.reschedule.cycle_id;
   assert.match(cycle, /^c-L02-23-\d+$/);
   assert.equal((await call('GET', '/lines/L02')).body.applications.at(-1).applied_on, '2026-06-05');
@@ -106,12 +109,11 @@ test('recording a recommended unit with no alerts succeeds and asks for a resche
   t += 3000;
   const after = await suggestion('L02');
   assert.deepEqual([after.running, after.revision, after.trigger], [false, cycle, 'application']);
-  // The stub's run ends in monitoring, so the plan goes: the diff names the stage, every unit moved and the plan, as the live one does.
+  // The stub's run ends in monitoring, so the plan goes: the diff names every unit that moved and the plan, as the live one does.
   const c = after.changes;
-  assert.deepEqual(Object.keys(c).sort(), ['alerts', 'plan_steps_changed', 'stage', 'summary', 'trigger', 'units_moved'].filter((k) => k in c));
-  assert.deepEqual([c.trigger, c.plan_steps_changed, c.summary], ['application', true, 'The data suggests the line stage changed; a scan is suggested to verify.']);
-  assert.deepEqual(c.stage, { basis: ['stage_confirmed', 'stage_confirmed'], stage: [2, null] });
-  assert.ok(c.units_moved.length && c.units_moved.every((m) => m.to === null && typeof m.unit_id === 'string' && ['recommended', 'eligible', 'excluded'].includes(m.from)));
+  assert.deepEqual(Object.keys(c).sort(), ['alerts', 'plan_steps_changed', 'summary', 'trigger', 'units_moved'].filter((k) => k in c));
+  assert.deepEqual([c.trigger, c.plan_steps_changed, c.summary], ['application', true, 'The data suggests the suggestion changed after an application; a scan is suggested to verify.']);
+  assert.ok(c.units_moved.length && c.units_moved.every((m) => ['eligible', 'excluded'].includes(m.to) && typeof m.unit_id === 'string' && ['recommended', 'eligible', 'excluded'].includes(m.from)));
   assert.ok(Array.isArray(c.alerts?.added ?? []) && Array.isArray(c.alerts?.removed ?? []));
 });
 
@@ -178,4 +180,14 @@ test('the set date moves the stub\'s future check', async () => {
   assert.equal((await record('L02', body)).body.error, 'validation_error');
   await call('PUT', '/dev/today', { today: '2026-06-15' });
   assert.equal((await record('L02', body)).status, 201);
+});
+
+test('a monitoring-advised unit answers confirmation_required with its reason and records it once confirmed', async () => {
+  const s = await suggestion('L06');
+  const u = s.groups.eligible[0];
+  const body = { product_id: u.product_id, applied_on: '2026-06-05', revision: s.revision, confirmed: false };
+  const refused = await record('L06', body);
+  assert.deepEqual([refused.status, refused.body.tier, refused.body.reason], [409, 'eligible', 'monitoring_advised']);
+  const done = await record('L06', { ...body, confirmed: true });
+  assert.deepEqual([done.status, done.body.application.confirmation.reason], [201, 'monitoring_advised']);
 });

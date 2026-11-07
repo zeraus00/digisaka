@@ -22,6 +22,7 @@ const showDetails = (u) => emit('select', u);
 <template>
   <article class="jr-card">
     <div class="jr-row"><h2>Fungicide options</h2><span class="jr-hint">{{ counts }}</span></div>
+    <p v-if="suggestion.suggestion?.outcome === 'continue_monitoring'" class="jr-warn">The data suggests treatment is not due yet. Monitoring is advised, but you may still record applications.</p>
     <p class="jr-warn">These are separate product choices, not a combination to mix. Compatibility has not been assessed.</p>
     <p v-if="!suggestion.units.length" class="jr-hint">No fungicide options were suggested for this line.</p>
     <div class="jr-tier">
