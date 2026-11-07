@@ -30,6 +30,11 @@ const PRACTITIONER = 'stub-practitioner';
 const SEED_TIME = '2026-06-01T08:00:00.000Z';
 const DEFAULT = { payload: 'clean', basis: 'stage_confirmed' };
 
+// The scheduler's ranking explanation and its fixed server caveat. Only the clean plan has one: the
+// monitoring list is not ranked, so its `explanation` is null (a fallback or a dropped one is null too).
+const CAVEAT = 'A language model wrote this from product facts that are not yet validated. The checks, not this text, decide which products are allowed.';
+const EXPLANATIONS = { clean: { text: 'The triazole goes first and the strobilurin follows, so the two modes of action alternate.', caveat: CAVEAT } };
+
 // A product here is the part of a unit id after `Option|`, as the scheduler records it.
 const productOf = (unitId) => unitId.split('|').pop();
 // Only these two outcomes are served beside `suggested`; the old approval outcomes are gone.
@@ -156,7 +161,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     return {
       revision: cur.revision, trigger: cur.trigger, created_at: cur.created_at, basis: cur.basis,
       line_stage: { stage: confirmed ? 2 : null, tally: confirmed ? { 2: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
-      groups, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
+      groups, explanation: EXPLANATIONS[cur.payload] ?? null, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
       schedule: scheduleOf(frozen?.preview.days ?? []), alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
       running: runsOf(lineId).some((r) => r.status === 'running'), outcome, outcome_reason: outcome ? cycle.outcome_reason ?? null : null,
     };

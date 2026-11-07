@@ -124,6 +124,11 @@ const lastApplied = computed(() => {
           <h4>Alerts</h4>
           <ul><li v-for="a in lineAlerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
         </section>
+        <section v-if="!detail && sug.explanation" class="ack notes explanation">
+          <h4>Why this order</h4>
+          <p>{{ sug.explanation.text }}</p>
+          <p class="meta caveat">{{ sug.explanation.caveat }}</p>
+        </section>
         <template v-if="detail">
           <FungicideDetails :unit="detail" />
           <div class="btns"><button type="button" class="ghost" @click="detailId = ''">Back to options</button></div>

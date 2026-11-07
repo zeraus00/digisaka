@@ -24,7 +24,7 @@ const units = (s) => Object.values(s.groups).flat();
 
 test('the suggestion has the contract fields, three groups and the schedule days', async () => {
   const s = await suggestion('L02');
-  assert.deepEqual(Object.keys(s).sort(), ['alerts', 'basis', 'changes', 'created_at', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
+  assert.deepEqual(Object.keys(s).sort(), ['alerts', 'basis', 'changes', 'created_at', 'explanation', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
   assert.deepEqual([s.revision, s.trigger, s.basis, s.running, s.changes], ['c-L02-24', 'scan', 'stage_confirmed', false, null]);
   assert.deepEqual(Object.keys(s.groups), ['recommended', 'eligible', 'excluded']);
   assert.equal(s.groups.recommended.length > 0, true);
@@ -203,4 +203,11 @@ test('a monitoring-advised unit answers confirmation_required with its reason an
   assert.deepEqual([refused.status, refused.body.tier, refused.body.reason], [409, 'eligible', 'monitoring_advised']);
   const done = await record('L06', { ...body, confirmed: true });
   assert.deepEqual([done.status, done.body.application.confirmation.reason], [201, 'monitoring_advised']);
+});
+
+test('the explanation is {text, caveat} on a ranked plan and null on a monitoring list', async () => {
+  const ranked = await suggestion('L02');
+  assert.deepEqual(Object.keys(ranked.explanation), ['text', 'caveat']);
+  assert.ok(ranked.explanation.text.length > 0 && /not yet validated/.test(ranked.explanation.caveat));
+  assert.equal((await suggestion('L06')).explanation, null);
 });
