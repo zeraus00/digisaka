@@ -8,16 +8,21 @@ describe('Toka assistant store', () => {
   it('can enable and disable the assistant', () => {
     const store = useTokaAssistantStore();
     expect(store.enabled).toBe(true);
+    store.openExpanded();
+    expect(store.expanded).toBe(true);
     store.toggleEnabled();
     expect(store.enabled).toBe(false);
+    expect(store.expanded).toBe(false);
     store.toggleEnabled();
     expect(store.enabled).toBe(true);
   });
 
-  it('remembers the route to return to after closing the assistant', () => {
+  it('opens and closes the expanded assistant without changing routes', () => {
     const store = useTokaAssistantStore();
-    store.setReturnPath('/history?line=L01');
-    expect(store.returnPath).toBe('/history?line=L01');
+    store.openExpanded();
+    expect(store.expanded).toBe(true);
+    store.closeExpanded();
+    expect(store.expanded).toBe(false);
   });
 
   it('starts with the demo greeting and appends the user prompt and a canned response', () => {

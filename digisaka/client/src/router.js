@@ -39,9 +39,12 @@ const routes = [
 const router = createRouter({ history: createWebHistory(), routes });
 router.beforeEach((to, from) => {
   const tokaAssistant = useTokaAssistantStore();
-  if (to.path === '/assistant' && !tokaAssistant.enabled) return '/';
-  if (to.path === '/assistant' && from.path !== '/assistant' && from.meta.auth) {
-    tokaAssistant.setReturnPath(from.fullPath);
+  if (to.path === '/assistant') {
+    const authRedirect = redirectFor(to, useAuthStore());
+    if (authRedirect) return authRedirect;
+    if (!tokaAssistant.enabled) return from.meta.auth ? from.fullPath : '/';
+    tokaAssistant.openExpanded();
+    return from.meta.auth && from.path !== '/assistant' ? from.fullPath : '/';
   }
   return redirectFor(to, useAuthStore());
 });

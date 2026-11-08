@@ -162,7 +162,7 @@ The Toka assistant is a local demo UI, not a live AI integration:
 
 - The top-bar Toka control turns the floating assistant on or off. It is on by default, and this preference is
   held in client memory only (it resets on reload). When off, the launcher is hidden, the Assistant item in More
-  is disabled, and `/assistant` redirects back to the dashboard.
+  is disabled, and the expanded chat closes.
 - The assistant launcher is hidden on More and Profile. Its on/off control and launcher both animate, with
   motion disabled for users who request reduced motion. The practitioner desktop sidebar is 220px wide.
 - When enabled, the Toka orb opens a compact chat panel. The chat uses local canned prompts and deterministic
@@ -171,15 +171,14 @@ The Toka assistant is a local demo UI, not a live AI integration:
 - When the panel is closed, the orb can be dragged around the viewport and snaps to the nearest screen edge
   when released. On mobile it sits lower, above the bottom navigation. When the chat is open, it returns to
   the lower-right corner; the panel is positioned just above the orb on mobile so it follows the launcher
-  without covering it. The orb is hidden while `/assistant` is open.
-- The panel can expand to `/assistant`. On desktop this authenticated route keeps the dashboard and app shell
-  visible underneath a full-height right-side conversation panel; on narrow screens the panel fills the viewport.
-  The Assistant item on More opens this route directly. Closing the panel returns to the authenticated page
-  that opened it (or the dashboard when opened directly).
+  without covering it. The orb is hidden while the expanded chat is open.
+- The panel can expand without changing routes. On desktop it opens as a 360px full-height right-side conversation
+  panel over the current page; on narrow screens it fills the viewport. The Assistant item on More opens the same
+  overlay, and closing it leaves the current page in place.
 
 Relevant implementation: `client/src/components/AppLayout.vue`, `TokaAssistant.vue`,
 `TokaAssistantChat.vue`, `client/src/stores/tokaAssistant.js`, `client/src/stubs/tokaAssistant.js`,
-`client/src/views/AssistantView.vue`, `client/src/views/MoreView.vue`, and `client/src/router.js`.
+`client/src/views/MoreView.vue`, and `client/src/router.js`.
 
 ## Layout
 ```
@@ -187,7 +186,7 @@ client/                 Vue 3 + Vite + Vue Router + Pinia
   src/router.js          routes and the auth/admin guards
   src/stores/             auth, farm (lines), scan, cycle, lines, suggestion, useCase, tokaAssistant
   src/components/         AppLayout, Toka assistant chat/launcher, Icon, PageHeader
-  src/views/              Login, Scan, History, ScheduleList, ScheduleLine, TreatmentDetail, Assistant
+  src/views/              Login, Scan, History, ScheduleList, ScheduleLine, TreatmentDetail
   src/admin/              admin console: layout + the nine admin screens, Modal, Pill, GraphCanvas, util.js
   src/styles/             tokens.css (design tokens) + base.css; every component styles itself
                           (admin.css holds the shared `a-` building blocks for the admin screens)

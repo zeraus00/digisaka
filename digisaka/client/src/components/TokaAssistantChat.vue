@@ -36,7 +36,7 @@ onMounted(scrollToLatest);
       <button v-if="!fullPage" type="button" class="header-button" aria-label="Open full-screen chat" title="Open full-screen chat" @click="emit('expand')">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M4 16v4h4M20 16v4h-4"/></svg>
       </button>
-      <button type="button" class="header-button" :aria-label="fullPage ? 'Back to dashboard' : 'Close chat'" @click="emit('close')">
+      <button type="button" class="header-button" :aria-label="fullPage ? 'Close expanded chat' : 'Close chat'" @click="emit('close')">
         <svg v-if="fullPage" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6M9 12h11"/></svg>
         <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>

@@ -1,7 +1,6 @@
 <script setup>
 import PageHeader from '../components/PageHeader.vue';
 import Icon from '../components/Icon.vue';
-import { RouterLink } from 'vue-router';
 import { useTokaAssistantStore } from '../stores/tokaAssistant.js';
 
 const assistant = useTokaAssistantStore();
@@ -20,7 +19,7 @@ const MORE_ITEMS = [
     icon: 'assistant',
     title: 'Toka AI Assistant',
     description: 'Get help understanding scans and treatment suggestions.',
-    to: '/assistant',
+    action: 'assistant',
   },
 ];
 </script>
@@ -30,23 +29,22 @@ const MORE_ITEMS = [
     <PageHeader title="More" subtitle="Additional tools and preferences for your Toka AI account." />
 
     <section class="more-list" aria-label="More features">
-      <component
-        :is="item.to && assistant.enabled ? RouterLink : 'button'"
+      <button
         v-for="item in MORE_ITEMS"
         :key="item.title"
-        :to="item.to && assistant.enabled ? item.to : undefined"
         type="button"
         class="more-item"
-        :class="{ 'more-item--available': item.to && assistant.enabled }"
-        :disabled="!item.to || !assistant.enabled"
+        :class="{ 'more-item--available': item.action && assistant.enabled }"
+        :disabled="!item.action || !assistant.enabled"
+        @click="item.action === 'assistant' && assistant.openExpanded()"
       >
         <span class="more-icon"><Icon :name="item.icon" :size="22" /></span>
         <span class="more-copy">
           <strong>{{ item.title }}</strong>
           <span>{{ item.description }}</span>
         </span>
-        <span class="coming-soon">{{ item.to ? (assistant.enabled ? 'Open assistant' : 'Assistant off') : 'Coming soon' }}</span>
-      </component>
+        <span class="coming-soon">{{ item.action ? (assistant.enabled ? 'Open assistant' : 'Assistant off') : 'Coming soon' }}</span>
+      </button>
     </section>
   </div>
 </template>

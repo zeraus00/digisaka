@@ -6,7 +6,6 @@ import { useDevClockStore } from '../stores/devClock.js';
 import Icon from './Icon.vue';
 import DevDateBar from './DevDateBar.vue';
 import TokaAssistant from './TokaAssistant.vue';
-import AssistantView from '../views/AssistantView.vue';
 import { useTokaAssistantStore } from '../stores/tokaAssistant.js';
 import { useAccountMenu } from './useAccountMenu.js';
 
@@ -199,7 +198,6 @@ onMounted(() => useDevClockStore().load());
     </nav>
     <DevDateBar />
     <TokaAssistant />
-    <AssistantView v-if="route.path === '/assistant'" />
   </div>
 </template>
 

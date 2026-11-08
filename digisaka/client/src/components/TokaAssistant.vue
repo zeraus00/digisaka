@@ -4,11 +4,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { useTokaAssistantStore } from '../stores/tokaAssistant.js';
 import TokaAssistantChat from './TokaAssistantChat.vue';
 
-const route = useRoute(), router = useRouter();
+const route = useRoute();
 const assistant = useTokaAssistantStore();
 const open = ref(false), launcher = ref(null), position = ref(null), popoverStyle = ref();
 const dragging = ref(null), suppressClick = ref(false);
-const assistantVisible = computed(() => assistant.enabled
+const assistantVisible = computed(() => assistant.enabled && !assistant.expanded
   && !['/assistant', '/more', '/profile'].includes(route.path));
 const launcherStyle = computed(() => position.value ? {
   left: `${position.value.x}px`,
@@ -25,7 +25,7 @@ async function positionPopover() {
   const bounds = launcher.value.getBoundingClientRect();
   const headerHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 64;
   const topLimit = headerHeight + 12;
-  const height = Math.max(120, Math.min(580, bounds.top - topLimit - 12));
+  const height = Math.max(120, Math.min(440, bounds.top - topLimit - 12));
   popoverStyle.value = {
     top: `${Math.max(8, bounds.top - height - 12)}px`,
     bottom: 'auto',
@@ -37,7 +37,10 @@ function toggle() {
   if (!open.value) position.value = null;
   open.value = !open.value;
 }
-const expand = () => { close(); router.push('/assistant'); };
+const expand = () => {
+  close();
+  assistant.openExpanded();
+};
 function startDrag(event) {
   if (open.value || event.button !== 0) return;
   const bounds = launcher.value?.getBoundingClientRect();
@@ -143,6 +146,13 @@ onUnmounted(() => {
       </button>
     </div>
   </Transition>
+  <Transition name="assistant-expanded">
+    <div v-if="assistant.expanded && assistant.enabled" class="assistant-expanded">
+      <aside class="assistant-expanded-panel">
+        <TokaAssistantChat full-page @close="assistant.closeExpanded()" />
+      </aside>
+    </div>
+  </Transition>
 </template>
 
 <style scoped>
@@ -158,14 +168,20 @@ onUnmounted(() => {
 .assistant-launcher-enter-from, .assistant-launcher-leave-to { opacity: 0; transform: translateY(12px) scale(.8); }
 .assistant-pop-enter-active, .assistant-pop-leave-active { transition: opacity .16s ease, transform .16s ease; }
 .assistant-pop-enter-from, .assistant-pop-leave-to { opacity: 0; transform: translateY(8px) scale(.98); }
+.assistant-expanded { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+.assistant-expanded-panel { position: absolute; inset: 0 0 0 auto; display: flex; width: min(360px, 100vw); height: 100%; overflow: hidden; background: #f4f6f4; box-shadow: -12px 0 36px rgba(10, 35, 18, .2); pointer-events: auto; }
+.assistant-expanded-enter-active, .assistant-expanded-leave-active { transition: opacity .2s ease, transform .2s ease; }
+.assistant-expanded-enter-from, .assistant-expanded-leave-to { opacity: 0; transform: translateX(24px); }
 @media (max-width: 900px) {
   .assistant-launcher { right: 16px; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 118px); }
   .assistant-orb { width: 58px; height: 58px; }
   .assistant-popover { position: fixed; right: 10px; width: calc(100vw - 20px); }
+  .assistant-expanded-panel { width: 100vw; }
 }
 @media (prefers-reduced-motion: reduce) {
   .assistant-launcher-enter-active, .assistant-launcher-leave-active,
-  .assistant-pop-enter-active, .assistant-pop-leave-active { transition: none; }
+  .assistant-pop-enter-active, .assistant-pop-leave-active,
+  .assistant-expanded-enter-active, .assistant-expanded-leave-active { transition: none; }
   .assistant-orb:hover { transform: none; }
 }
 </style>
