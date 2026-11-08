@@ -163,15 +163,19 @@ The Toka assistant is a local demo UI, not a live AI integration:
 - The top-bar Toka control turns the floating assistant on or off. It is on by default, and this preference is
   held in client memory only (it resets on reload). When off, the launcher is hidden, the Assistant item in More
   is disabled, and `/assistant` redirects back to the dashboard.
+- The assistant launcher is hidden on More and Profile. Its on/off control and launcher both animate, with
+  motion disabled for users who request reduced motion. The practitioner desktop sidebar is 220px wide.
 - When enabled, the Toka orb opens a compact chat panel. The chat uses local canned prompts and deterministic
   sample replies from `client/src/stubs/tokaAssistant.js`; it makes no AI or assistant API calls. The chat
   displays a demo disclaimer and keeps its conversation in the Pinia store while navigating.
 - When the panel is closed, the orb can be dragged around the viewport and snaps to the nearest screen edge
-  when released. When the chat is open, it returns to the lower-right corner, outside the panel. The orb is
-  hidden while `/assistant` is open.
-- The panel can expand to `/assistant`, a standalone authenticated route that fills the viewport. It provides
-  the full conversation layout and a return-to-dashboard control. The Assistant item on More opens this route
-  directly.
+  when released. On mobile it sits lower, above the bottom navigation. When the chat is open, it returns to
+  the lower-right corner; the panel is positioned just above the orb on mobile so it follows the launcher
+  without covering it. The orb is hidden while `/assistant` is open.
+- The panel can expand to `/assistant`. On desktop this authenticated route keeps the dashboard and app shell
+  visible underneath a full-height right-side conversation panel; on narrow screens the panel fills the viewport.
+  The Assistant item on More opens this route directly. Closing the panel returns to the authenticated page
+  that opened it (or the dashboard when opened directly).
 
 Relevant implementation: `client/src/components/AppLayout.vue`, `TokaAssistant.vue`,
 `TokaAssistantChat.vue`, `client/src/stores/tokaAssistant.js`, `client/src/stubs/tokaAssistant.js`,

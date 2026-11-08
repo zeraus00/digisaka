@@ -14,11 +14,11 @@ const routes = [
       { path: 'schedule', component: () => import('./views/ScheduleListView.vue'), meta: { title: 'Treatment Schedule' } },
       { path: 'profile', component: () => import('./views/ProfileView.vue'), meta: { title: 'My Profile' } },
       { path: 'more', component: () => import('./views/MoreView.vue'), meta: { title: 'More' } },
+      { path: 'assistant', component: () => import('./views/DashboardView.vue'), meta: { title: 'Toka AI Assistant' } },
       { path: 'treatment/:lineId/:week', component: () => import('./views/TreatmentDetailView.vue'), meta: { title: 'Treatment' } },
       { path: 'schedule/:lineId', component: () => import('./views/ScheduleLineView.vue'), meta: { title: 'Treatment Schedule' } },
     ],
   },
-  { path: '/assistant', component: () => import('./views/AssistantView.vue'), meta: { auth: true, title: 'Toka AI Assistant' } },
   {
     path: '/admin', component: () => import('./admin/AdminLayout.vue'), meta: { auth: true, admin: true },
     children: [
@@ -37,8 +37,12 @@ const routes = [
 ];
 
 const router = createRouter({ history: createWebHistory(), routes });
-router.beforeEach((to) => {
-  if (to.path === '/assistant' && !useTokaAssistantStore().enabled) return '/';
+router.beforeEach((to, from) => {
+  const tokaAssistant = useTokaAssistantStore();
+  if (to.path === '/assistant' && !tokaAssistant.enabled) return '/';
+  if (to.path === '/assistant' && from.path !== '/assistant' && from.meta.auth) {
+    tokaAssistant.setReturnPath(from.fullPath);
+  }
   return redirectFor(to, useAuthStore());
 });
 

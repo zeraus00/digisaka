@@ -14,6 +14,12 @@ describe('Toka assistant store', () => {
     expect(store.enabled).toBe(true);
   });
 
+  it('remembers the route to return to after closing the assistant', () => {
+    const store = useTokaAssistantStore();
+    store.setReturnPath('/history?line=L01');
+    expect(store.returnPath).toBe('/history?line=L01');
+  });
+
   it('starts with the demo greeting and appends the user prompt and a canned response', () => {
     const store = useTokaAssistantStore();
     store.send('How do I scan a leaf?');

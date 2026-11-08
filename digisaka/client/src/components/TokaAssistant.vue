@@ -1,19 +1,37 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTokaAssistantStore } from '../stores/tokaAssistant.js';
 import TokaAssistantChat from './TokaAssistantChat.vue';
 
 const route = useRoute(), router = useRouter();
 const assistant = useTokaAssistantStore();
-const open = ref(false), launcher = ref(null), position = ref(null);
-const dragging = ref(null);
+const open = ref(false), launcher = ref(null), position = ref(null), popoverStyle = ref();
+const dragging = ref(null), suppressClick = ref(false);
+const assistantVisible = computed(() => assistant.enabled
+  && !['/assistant', '/more', '/profile'].includes(route.path));
 const launcherStyle = computed(() => position.value ? {
   left: `${position.value.x}px`,
   top: `${position.value.y}px`,
   right: 'auto',
   bottom: 'auto',
 } : undefined);
+async function positionPopover() {
+  await nextTick();
+  if (!open.value || !launcher.value || !window.matchMedia('(max-width: 900px)').matches) {
+    popoverStyle.value = undefined;
+    return;
+  }
+  const bounds = launcher.value.getBoundingClientRect();
+  const headerHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 64;
+  const topLimit = headerHeight + 12;
+  const height = Math.max(120, Math.min(580, bounds.top - topLimit - 12));
+  popoverStyle.value = {
+    top: `${Math.max(8, bounds.top - height - 12)}px`,
+    bottom: 'auto',
+    height: `${height}px`,
+  };
+}
 const close = () => { open.value = false; };
 function toggle() {
   if (!open.value) position.value = null;
@@ -51,10 +69,8 @@ function endDrag(event) {
   const drag = dragging.value;
   if (!drag || event.pointerId !== drag.pointerId) return;
   dragging.value = null;
-  if (!drag.moved) {
-    toggle();
-    return;
-  }
+  if (!drag.moved) return;
+  suppressClick.value = true;
   const bounds = launcher.value.getBoundingClientRect();
   const viewportWidth = document.documentElement.clientWidth;
   const viewportHeight = document.documentElement.clientHeight;
@@ -72,7 +88,12 @@ function cancelDrag(event) {
   if (dragging.value?.pointerId === event.pointerId) dragging.value = null;
 }
 function onLauncherClick(event) {
-  if (event.detail === 0) toggle();
+  if (suppressClick.value) {
+    suppressClick.value = false;
+    event.preventDefault();
+    return;
+  }
+  toggle();
 }
 function onKeydown(event) {
   if (event.key === 'Escape' && open.value) {
@@ -80,36 +101,48 @@ function onKeydown(event) {
     launcher.value?.focus();
   }
 }
+watch(() => open.value, (isOpen) => {
+  if (isOpen) positionPopover();
+  else popoverStyle.value = undefined;
+});
 watch(() => route.path, close);
 watch(() => assistant.enabled, (enabled) => { if (!enabled) close(); });
-onMounted(() => document.addEventListener('keydown', onKeydown));
-onUnmounted(() => document.removeEventListener('keydown', onKeydown));
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown);
+  window.addEventListener('resize', positionPopover);
+});
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeydown);
+  window.removeEventListener('resize', positionPopover);
+});
 </script>
 
 <template>
-  <div v-if="assistant.enabled && route.path !== '/assistant'" class="assistant-launcher" :style="launcherStyle">
-    <Transition name="assistant-pop">
-      <div v-if="open" id="toka-assistant-panel" class="assistant-popover">
-        <TokaAssistantChat @close="close" @expand="expand" />
-      </div>
-    </Transition>
-    <button
-      ref="launcher"
-      type="button"
-      class="assistant-orb"
-      :aria-label="open ? 'Close Toka assistant' : 'Open Toka assistant'"
-      :aria-expanded="open"
-      aria-controls="toka-assistant-panel"
-      :class="{ 'assistant-orb--dragging': dragging?.moved, 'assistant-orb--open': open }"
-      @pointerdown="startDrag"
-      @pointermove="moveDrag"
-      @pointerup="endDrag"
-      @pointercancel="cancelDrag"
-      @click="onLauncherClick"
-    >
-      <img src="../assets/toka-chatbot.png" alt="">
-    </button>
-  </div>
+  <Transition name="assistant-launcher">
+    <div v-if="assistantVisible" class="assistant-launcher" :style="launcherStyle">
+      <Transition name="assistant-pop">
+        <div v-if="open" id="toka-assistant-panel" class="assistant-popover" :style="popoverStyle">
+          <TokaAssistantChat @close="close" @expand="expand" />
+        </div>
+      </Transition>
+      <button
+        ref="launcher"
+        type="button"
+        class="assistant-orb"
+        :aria-label="open ? 'Close Toka assistant' : 'Open Toka assistant'"
+        :aria-expanded="open"
+        aria-controls="toka-assistant-panel"
+        :class="{ 'assistant-orb--dragging': dragging?.moved, 'assistant-orb--open': open }"
+        @pointerdown="startDrag"
+        @pointermove="moveDrag"
+        @pointerup="endDrag"
+        @pointercancel="cancelDrag"
+        @click="onLauncherClick"
+      >
+        <img src="../assets/toka-chatbot.png" alt="">
+      </button>
+    </div>
+  </Transition>
 </template>
 
 <style scoped>
@@ -121,14 +154,17 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 .assistant-orb:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(13, 75, 35, .34); }
 .assistant-orb:focus-visible { outline: 3px solid #ffc93c; outline-offset: 3px; }
 .assistant-popover { position: absolute; right: 0; bottom: 78px; width: min(380px, calc(100vw - 32px)); height: min(530px, calc(100dvh - 190px)); overflow: hidden; border: 1px solid #cbd2cb; border-radius: 18px; background: #f4f6f4; box-shadow: 0 16px 42px rgba(10, 35, 18, .24); }
+.assistant-launcher-enter-active, .assistant-launcher-leave-active { transition: opacity .22s ease, transform .22s ease; }
+.assistant-launcher-enter-from, .assistant-launcher-leave-to { opacity: 0; transform: translateY(12px) scale(.8); }
 .assistant-pop-enter-active, .assistant-pop-leave-active { transition: opacity .16s ease, transform .16s ease; }
 .assistant-pop-enter-from, .assistant-pop-leave-to { opacity: 0; transform: translateY(8px) scale(.98); }
 @media (max-width: 900px) {
-  .assistant-launcher { right: 16px; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 158px); }
+  .assistant-launcher { right: 16px; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 118px); }
   .assistant-orb { width: 58px; height: 58px; }
-  .assistant-popover { position: fixed; right: 10px; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 228px); width: calc(100vw - 20px); height: min(580px, calc(100dvh - var(--header-h) - var(--tabbar-h) - env(safe-area-inset-bottom, 0px) - 250px)); }
+  .assistant-popover { position: fixed; right: 10px; width: calc(100vw - 20px); }
 }
 @media (prefers-reduced-motion: reduce) {
+  .assistant-launcher-enter-active, .assistant-launcher-leave-active,
   .assistant-pop-enter-active, .assistant-pop-leave-active { transition: none; }
   .assistant-orb:hover { transform: none; }
 }

@@ -6,6 +6,7 @@ import { useDevClockStore } from '../stores/devClock.js';
 import Icon from './Icon.vue';
 import DevDateBar from './DevDateBar.vue';
 import TokaAssistant from './TokaAssistant.vue';
+import AssistantView from '../views/AssistantView.vue';
 import { useTokaAssistantStore } from '../stores/tokaAssistant.js';
 import { useAccountMenu } from './useAccountMenu.js';
 
@@ -198,24 +199,25 @@ onMounted(() => useDevClockStore().load());
     </nav>
     <DevDateBar />
     <TokaAssistant />
+    <AssistantView v-if="route.path === '/assistant'" />
   </div>
 </template>
 
 <style scoped>
-.shell { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); height: 100dvh; min-height: 100vh; }
+.shell { --sidebar-w: 220px; display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); height: 100dvh; min-height: 100vh; }
 .sidebar { position: relative; width: var(--sidebar-w); height: 100dvh; overflow: hidden; background: #056b43; color: #fff; z-index: 20; }
 .leaf-deco { position: absolute; z-index: 0; pointer-events: none; }
 .leaf-deco--1 { top: 0; right: -10px; width: 80px; height: 120px; }
 .leaf-deco--2 { top: 62%; left: -20px; width: 150px; height: 130px; }
 .leaf-deco--3 { bottom: -24px; left: 100px; width: 160px; height: 170px; }
-.sidebar-brand { position: absolute; top: 22px; left: 24px; z-index: 1; display: flex; align-items: center; gap: 12px; font: 800 24px var(--font-display); letter-spacing: -.3px; }
+.sidebar-brand { position: absolute; top: 22px; left: 18px; z-index: 1; display: flex; align-items: center; gap: 10px; font: 800 22px var(--font-display); letter-spacing: -.3px; }
 .sidebar-mark { display: grid; place-items: center; width: 40px; height: 43px; flex: none; }
 .sidebar-mark img { display: block; width: 40px; height: 40px; object-fit: contain; }
 .sidebar-title { white-space: nowrap; }
-.sidebar-section { position: absolute; top: 97px; left: 24px; z-index: 1; color: rgba(255, 255, 255, .7); font: 700 12px/14px var(--font-display); }
-.sidebar-nav { position: absolute; top: 128px; left: 24px; z-index: 1; width: calc(100% - 48px); }
+.sidebar-section { position: absolute; top: 97px; left: 18px; z-index: 1; color: rgba(255, 255, 255, .7); font: 700 12px/14px var(--font-display); }
+.sidebar-nav { position: absolute; top: 128px; left: 16px; z-index: 1; width: calc(100% - 32px); }
 .sidebar-list { display: flex; flex-direction: column; gap: 4px; }
-.sidebar-link { display: flex; align-items: center; gap: 14px; width: 100%; height: 48px; padding: 0 10px 0 12px; border: 0; border-radius: 8px; background: transparent; color: #fff; font: 600 15px var(--font-body); text-align: left; cursor: pointer; transition: background .15s ease; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; width: 100%; height: 48px; padding: 0 7px; border: 0; border-radius: 8px; background: transparent; color: #fff; font: 600 14px var(--font-body); text-align: left; cursor: pointer; transition: background .15s ease; }
 .sidebar-link:hover:not(.sidebar-link--active) { background: rgba(0, 0, 0, .12); }
 .sidebar-link:focus-visible { outline: 3px solid var(--leaf-soft); outline-offset: 2px; }
 .sidebar-link--active { background: #04583a; color: #fff; }
@@ -232,12 +234,14 @@ onMounted(() => useDevClockStore().load());
 .tools { display: flex; align-items: center; gap: 10px; }
 .pill { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--forest); font: 800 15px var(--font-display); }
 .pill:hover { background: var(--tint); }
-.assistant-toggle { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink-soft); font: 800 12px var(--font-body); cursor: pointer; }
+.assistant-toggle { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink-soft); font: 800 12px var(--font-body); cursor: pointer; transition: transform .18s ease, background-color .22s ease, border-color .22s ease, color .22s ease; }
 .assistant-toggle:focus-visible { outline: 3px solid var(--leaf); outline-offset: 2px; }
-.assistant-toggle img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+.assistant-toggle:active { transform: scale(.94); }
+.assistant-toggle img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; transition: transform .24s ease; }
 .assistant-toggle--enabled { border-color: #b7d9bf; background: #eff8f0; color: var(--forest); }
-.assistant-toggle-state { min-width: 22px; padding: 2px 5px; border-radius: 999px; background: #e9ece9; color: inherit; text-align: center; }
-.assistant-toggle--enabled .assistant-toggle-state { background: var(--forest); color: #fff; }
+.assistant-toggle--enabled img { transform: rotate(12deg) scale(1.06); }
+.assistant-toggle-state { min-width: 22px; padding: 2px 5px; border-radius: 999px; background: #e9ece9; color: inherit; text-align: center; transition: background-color .22s ease, color .22s ease, transform .22s ease; }
+.assistant-toggle--enabled .assistant-toggle-state { background: var(--forest); color: #fff; transform: scale(1.04); }
 .avatar { position: relative; display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--leaf); color: #fff; font: 800 14px var(--font-display); }
 .account { position: relative; }
 .notification-account { position: relative; }
@@ -308,6 +312,6 @@ onMounted(() => useDevClockStore().load());
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .notification-button, .avatar { transition: none; }
+  .notification-button, .avatar, .assistant-toggle, .assistant-toggle img, .assistant-toggle-state { transition: none; }
 }
 </style>

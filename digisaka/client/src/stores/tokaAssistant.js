@@ -4,10 +4,13 @@ import { ASSISTANT_STARTER_MESSAGE, stubReplyFor } from '../stubs/tokaAssistant.
 const starterMessages = () => [structuredClone(ASSISTANT_STARTER_MESSAGE)];
 
 export const useTokaAssistantStore = defineStore('tokaAssistant', {
-  state: () => ({ messages: starterMessages(), nextId: 1, enabled: true }),
+  state: () => ({ messages: starterMessages(), nextId: 1, enabled: true, returnPath: '/' }),
   actions: {
     toggleEnabled() {
       this.enabled = !this.enabled;
+    },
+    setReturnPath(path) {
+      this.returnPath = path;
     },
     send(text) {
       const clean = text.trim();
