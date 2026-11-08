@@ -1,7 +1,10 @@
 <script setup>
 import PageHeader from '../components/PageHeader.vue';
 import Icon from '../components/Icon.vue';
+import { RouterLink } from 'vue-router';
+import { useTokaAssistantStore } from '../stores/tokaAssistant.js';
 
+const assistant = useTokaAssistantStore();
 const MORE_ITEMS = [
   {
     icon: 'settings',
@@ -17,6 +20,7 @@ const MORE_ITEMS = [
     icon: 'assistant',
     title: 'Toka AI Assistant',
     description: 'Get help understanding scans and treatment suggestions.',
+    to: '/assistant',
   },
 ];
 </script>
@@ -26,14 +30,23 @@ const MORE_ITEMS = [
     <PageHeader title="More" subtitle="Additional tools and preferences for your Toka AI account." />
 
     <section class="more-list" aria-label="More features">
-      <button v-for="item in MORE_ITEMS" :key="item.title" type="button" class="more-item" disabled>
+      <component
+        :is="item.to && assistant.enabled ? RouterLink : 'button'"
+        v-for="item in MORE_ITEMS"
+        :key="item.title"
+        :to="item.to && assistant.enabled ? item.to : undefined"
+        type="button"
+        class="more-item"
+        :class="{ 'more-item--available': item.to && assistant.enabled }"
+        :disabled="!item.to || !assistant.enabled"
+      >
         <span class="more-icon"><Icon :name="item.icon" :size="22" /></span>
         <span class="more-copy">
           <strong>{{ item.title }}</strong>
           <span>{{ item.description }}</span>
         </span>
-        <span class="coming-soon">Coming soon</span>
-      </button>
+        <span class="coming-soon">{{ item.to ? (assistant.enabled ? 'Open assistant' : 'Assistant off') : 'Coming soon' }}</span>
+      </component>
     </section>
   </div>
 </template>
@@ -56,6 +69,8 @@ const MORE_ITEMS = [
   cursor: not-allowed;
 }
 .more-item:disabled { opacity: 1; }
+.more-item--available { cursor: pointer; color: inherit; }
+.more-item--available:hover { border-color: var(--leaf); transform: translateY(-1px); }
 .more-icon {
   display: grid;
   place-items: center;

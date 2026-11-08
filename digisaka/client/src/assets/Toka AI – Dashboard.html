@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Toka AI – Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Roboto,Helvetica,Arial,sans-serif;background:#f9fafb;color:#111;display:flex;min-height:100vh}
+.side{position:relative;width:256px;flex:none;background:#0d6a35;color:#fff}
+.brand{position:absolute;left:34px;top:26px;display:flex;align-items:center;gap:9px;font-size:24px;font-weight:700;letter-spacing:-.3px}
+.brand .m{width:40px;height:40px;background:#fff;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.lbl{position:absolute;left:24px;font-size:12px;line-height:14px;font-weight:500;color:rgba(255,255,255,.72)}
+nav{position:absolute;left:24px;width:208px}
+nav a{display:flex;align-items:center;gap:14px;height:48px;margin-bottom:8px;padding-left:12px;border-radius:8px;color:#fff;text-decoration:none;font-size:16px;cursor:pointer}
+nav a.on{background:#0a5a2c;font-weight:500}
+nav a:hover:not(.on){background:rgba(0,0,0,.12)}
+nav svg{width:18px;height:18px;flex:none}
+.main{flex:1;min-width:0;padding:32px 32px 40px}
+.hd{display:flex;justify-content:space-between;align-items:center;height:40px}
+.hd h2{font-size:24px;font-weight:700;letter-spacing:-.2px}
+.act{display:flex;gap:12px;align-items:center}
+.pill{display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border:1px solid #e5e7eb;border-radius:19px;background:#fff;font:500 14px Roboto,sans-serif;color:#111;cursor:pointer}
+.bell{width:40px;height:40px;border:1px solid #e5e7eb;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.av{width:40px;height:40px;border-radius:50%;background:#0d6a35;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center}
+.greet{margin:21px 0 0 25px;font-size:34px;line-height:44px;font-weight:700;color:#0a7a3a;letter-spacing:-.3px}
+.banner{margin-top:15px;height:196px;border-radius:16px;background:#06783d;color:#fff;position:relative}
+.clock{position:absolute;left:58px;top:36px}
+.clock .t{font-size:48px;line-height:58px;font-weight:700;letter-spacing:-.5px}
+.clock .d{font-size:16px;margin-top:6px}
+.clock button{display:block;margin:10px 0 0 34px;width:98px;height:38px;border:0;border-radius:6px;background:#fff;font:500 14px Roboto,sans-serif;color:#111;cursor:pointer}
+.wel{position:absolute;left:340px;top:50px;right:24px}
+.wel h3{font-size:30px;line-height:38px;font-weight:700;letter-spacing:-.2px}
+.wel h3 span{color:#f7cf45}
+.wel p{font-size:16px;margin-top:11px;white-space:nowrap}
+.wel p+p{margin-top:16px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.quick{margin-top:21px}
+.card{background:#fff;border:1px solid #eef0f2;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.q{display:flex;align-items:center;height:97px;padding:0 24px;gap:16px;cursor:pointer}
+.q .ic{width:48px;height:48px;border-radius:12px;background:#e3f1e8;display:flex;align-items:center;justify-content:center;flex:none}
+.q .ic.y{background:#fdf6e0}
+.q div.tx{flex:1;min-width:0}
+.q b{display:block;font-size:16px;line-height:20px;font-weight:700}
+.q small{display:block;font-size:12px;color:#4b5563;margin-top:2px;white-space:nowrap}
+.sec{display:flex;justify-content:space-between;align-items:center;margin-top:23px;height:24px}
+.sec h3{font-size:18px;font-weight:700}
+.sec a{font-size:14px;font-weight:500;color:#0a7a3a;text-decoration:none;margin-right:10px}
+.stats{margin-top:19px}
+.s{height:127px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px}
+.s b{font-size:30px;line-height:36px;font-weight:700}
+.s span{font-size:14px;color:#6b7280;margin-top:2px}
+.rec{margin-top:37px;font-size:18px;font-weight:700;line-height:24px}
+.prop{margin-top:19px;height:93px;display:flex;align-items:center;justify-content:space-between;padding:0 25px;border-radius:12px}
+.prop b{display:block;font-size:16px;font-weight:700;line-height:20px}
+.prop small{display:block;font-size:14px;color:#6b7280;margin-top:5px}
+.badge{width:160px;height:36px;border-radius:18px;background:#f6dcdc;color:#b42318;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+</style></head><body>
+<aside class="side">
+  <div class="brand"><span class="m"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M3 21C3 9 9 3 21 3c0 12-6 18-18 18Z" fill="#12a150"/><path d="M5 19C9 13 13 9 17 7" stroke="#fff" stroke-width="1.6" fill="none"/></svg></span>Toka AI</div>
+  <div class="lbl" style="top:105px">Workspace</div>
+  <nav style="top:136px">
+    <a class="on"><svg viewBox="0 0 24 24" fill="#fff"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Dashboard</a>
+    <a><svg viewBox="0 0 24 24" fill="#fff"><path d="M9 3L7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3z"/><circle cx="12" cy="13" r="3.6" fill="#0d6a35"/></svg>Leaf Scan</a>
+    <a><svg viewBox="0 0 24 24" fill="#fff"><path d="M6 2h8l5 5v15H6z"/><path d="M9 13h7M9 17h7" stroke="#0d6a35" stroke-width="1.5"/></svg>Diagnosis History</a>
+    <a><svg viewBox="0 0 24 24" fill="#fff"><path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v16H3z"/><rect x="7" y="2" width="2" height="4"/><rect x="15" y="2" width="2" height="4"/><path d="M6 11h3v2H6zM10.5 11h3v2h-3zM15 11h3v2h-3zM6 15h3v2H6zM10.5 15h3v2h-3zM15 15h3v2h-3z" fill="#0d6a35"/></svg>Treatment Schedule</a>
+  </nav>
+  <div class="lbl" style="top:385px">Account</div>
+  <nav style="top:415px">
+    <a><svg viewBox="0 0 24 24" fill="#fff"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1L11 21h4l.4-2.9c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5z"/><circle cx="13" cy="12" r="2.8" fill="#0d6a35"/></svg>Profile</a>
+    <a><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M9 12h12M17 8l4 4-4 4"/></svg>Sign out</a>
+  </nav>
+</aside>
+<main class="main">
+  <div class="hd"><h2>Dashboard</h2>
+    <div class="act">
+      <button class="pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="#111"><path d="M9 3L7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3z"/><circle cx="12" cy="13" r="3.6" fill="#fff"/></svg>New Scan</button>
+      <div class="bell"><svg width="16" height="16" viewBox="0 0 24 24" fill="#111"><path d="M12 22a2.4 2.4 0 0 0 2.4-2.4H9.6A2.4 2.4 0 0 0 12 22zM19 17v-6a7 7 0 0 0-5-6.7V3a2 2 0 0 0-4 0v1.3A7 7 0 0 0 5 11v6l-2 2v1h18v-1z"/></svg></div>
+      <div class="av">JD</div>
+    </div>
+  </div>
+  <div class="greet">Good Evening, Juan</div>
+  <section class="banner">
+    <div class="clock"><div class="t">3:55 PM</div><div class="d">Saturday, Oct 17, 2026</div><button>Refresh</button></div>
+    <div class="wel"><h3>Welcome back to <span>Digisaka</span></h3>
+      <p>Monitor banana crop health and review Black Sigatoka scans, proposals and treatments across your lines.</p>
+      <p>Last updated: <b>just now</b></p></div>
+  </section>
+  <div class="row3 quick">
+    <div class="card q"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="#0a6b34"><path d="M9 3L7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3z"/><circle cx="12" cy="13" r="3.6" fill="#e3f1e8"/></svg></div><div class="tx"><b>Disease Detection</b><small>Scan banana leaves for Black Sigatoka</small></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 4l8 8-8 8"/></svg></div>
+    <div class="card q"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="#0a6b34"><path d="M6 2h8l5 5v15H6z"/><path d="M9 13h7M9 17h7" stroke="#e3f1e8" stroke-width="1.6"/></svg></div><div class="tx"><b>Diagnosis History</b><small>Review each line’s weeks and proposals</small></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 4l8 8-8 8"/></svg></div>
+    <div class="card q"><div class="ic y"><svg width="22" height="22" viewBox="0 0 24 24" fill="#d97706"><path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v16H3z"/><rect x="7" y="2" width="2" height="4"/><rect x="15" y="2" width="2" height="4"/><path d="M6 11h3v2H6zM10.5 11h3v2h-3zM15 11h3v2h-3zM6 15h3v2H6zM10.5 15h3v2h-3zM15 15h3v2h-3z" fill="#fdf6e0"/></svg></div><div class="tx"><b>Smart Schedule</b><small>Plan and track treatment</small></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 4l8 8-8 8"/></svg></div>
+  </div>
+  <div class="sec"><h3>Farm Overview</h3><a href="#">View Bulks →</a></div>
+  <div class="row3 stats">
+    <div class="card s"><b>1</b><span>Leaves Scanned</span></div>
+    <div class="card s"><b>1</b><span>Line Weeks Assessed</span></div>
+    <div class="card s"><b>0</b><span>Awaiting Decision</span></div>
+  </div>
+  <div class="rec">Recent proposals</div>
+  <div class="card prop"><div><b>Line L03</b><small>Line L03 · 2026-W24</small></div><div class="badge">Awaiting Decision</div></div>
+</main>
+</body></html>

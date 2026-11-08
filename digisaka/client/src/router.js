@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from './stores/auth.js';
+import { useTokaAssistantStore } from './stores/tokaAssistant.js';
 import { redirectFor } from './routeGuard.js';
 
 const routes = [
@@ -17,6 +18,7 @@ const routes = [
       { path: 'schedule/:lineId', component: () => import('./views/ScheduleLineView.vue'), meta: { title: 'Treatment Schedule' } },
     ],
   },
+  { path: '/assistant', component: () => import('./views/AssistantView.vue'), meta: { auth: true, title: 'Toka AI Assistant' } },
   {
     path: '/admin', component: () => import('./admin/AdminLayout.vue'), meta: { auth: true, admin: true },
     children: [
@@ -35,6 +37,9 @@ const routes = [
 ];
 
 const router = createRouter({ history: createWebHistory(), routes });
-router.beforeEach((to) => redirectFor(to, useAuthStore()));
+router.beforeEach((to) => {
+  if (to.path === '/assistant' && !useTokaAssistantStore().enabled) return '/';
+  return redirectFor(to, useAuthStore());
+});
 
 export default router;

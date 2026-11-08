@@ -5,10 +5,13 @@ import { useAuthStore } from '../stores/auth.js';
 import { useDevClockStore } from '../stores/devClock.js';
 import Icon from './Icon.vue';
 import DevDateBar from './DevDateBar.vue';
+import TokaAssistant from './TokaAssistant.vue';
+import { useTokaAssistantStore } from '../stores/tokaAssistant.js';
 import { useAccountMenu } from './useAccountMenu.js';
 
 const scroller = ref(null);
 const route = useRoute(), auth = useAuthStore();
+const tokaAssistant = useTokaAssistantStore();
 const title = computed(() => route.meta.title || 'Digisaka');
 const notificationsOpen = ref(false);
 const notifications = ref(null), notificationButton = ref(null);
@@ -110,6 +113,19 @@ onMounted(() => useDevClockStore().load());
         <div class="where"><span class="mark small"><img src="../assets/bananaleaf2.png" alt="" aria-hidden="true"></span><h2>{{ title }}</h2></div>
         <div class="tools">
           <RouterLink to="/scan" class="pill"><Icon name="scan" :size="15" />New Scan</RouterLink>
+          <button
+            type="button"
+            class="assistant-toggle"
+            :class="{ 'assistant-toggle--enabled': tokaAssistant.enabled }"
+            :aria-label="tokaAssistant.enabled ? 'Disable Toka assistant' : 'Enable Toka assistant'"
+            :title="tokaAssistant.enabled ? 'Disable Toka assistant' : 'Enable Toka assistant'"
+            :aria-pressed="tokaAssistant.enabled"
+            @click="tokaAssistant.toggleEnabled"
+          >
+            <img src="../assets/toka-chatbot.png" alt="">
+            <span>Toka</span>
+            <span class="assistant-toggle-state">{{ tokaAssistant.enabled ? 'On' : 'Off' }}</span>
+          </button>
           <div ref="notifications" class="notification-account">
             <button
               ref="notificationButton"
@@ -181,6 +197,7 @@ onMounted(() => useDevClockStore().load());
       </RouterLink>
     </nav>
     <DevDateBar />
+    <TokaAssistant />
   </div>
 </template>
 
@@ -215,6 +232,12 @@ onMounted(() => useDevClockStore().load());
 .tools { display: flex; align-items: center; gap: 10px; }
 .pill { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--forest); font: 800 15px var(--font-display); }
 .pill:hover { background: var(--tint); }
+.assistant-toggle { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink-soft); font: 800 12px var(--font-body); cursor: pointer; }
+.assistant-toggle:focus-visible { outline: 3px solid var(--leaf); outline-offset: 2px; }
+.assistant-toggle img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+.assistant-toggle--enabled { border-color: #b7d9bf; background: #eff8f0; color: var(--forest); }
+.assistant-toggle-state { min-width: 22px; padding: 2px 5px; border-radius: 999px; background: #e9ece9; color: inherit; text-align: center; }
+.assistant-toggle--enabled .assistant-toggle-state { background: var(--forest); color: #fff; }
 .avatar { position: relative; display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--leaf); color: #fff; font: 800 14px var(--font-display); }
 .account { position: relative; }
 .notification-account { position: relative; }
@@ -240,6 +263,8 @@ onMounted(() => useDevClockStore().load());
   .topbar-brand img { width: 30px; height: 30px; object-fit: contain; }
   .where { display: none; }
   .pill { display: none; }
+  .assistant-toggle { width: 42px; justify-content: center; padding: 0; }
+  .assistant-toggle > span { display: none; }
   .avatar { width: 40px; height: 40px; background: var(--leaf); color: #fff; cursor: pointer; }
   .menu { display: block; position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; min-width: 220px; max-width: calc(100vw - 2 * var(--gutter)); padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(6, 40, 20, .18); }
   .menu-who { max-width: 100%; padding: 6px 12px 8px; font-size: 12px; }
@@ -270,18 +295,15 @@ onMounted(() => useDevClockStore().load());
   }
   .mobile-nav-link[aria-current="page"] { color: var(--forest); }
   .mobile-nav-icon { display: grid; place-items: center; width: 30px; height: 25px; }
-  .mobile-nav-link--scan { color: var(--forest); }
+  .mobile-nav-link--scan { color: var(--forest); font-weight: 800; }
   .mobile-nav-link--scan .mobile-nav-icon {
-    width: 48px;
-    height: 42px;
-    margin-top: -18px;
-    border: 4px solid #fff;
-    border-radius: 16px;
-    background: var(--forest);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(6, 85, 44, .25);
+    width: 36px;
+    height: 30px;
+    border-radius: 10px;
+    background: var(--tint);
+    color: var(--forest);
   }
-  .mobile-nav-link--scan[aria-current="page"] .mobile-nav-icon { background: var(--forest-deep); }
+  .mobile-nav-link--scan[aria-current="page"] .mobile-nav-icon { background: var(--forest); color: #fff; }
   .mobile-nav-link:focus-visible { outline: 3px solid var(--leaf); outline-offset: -2px; border-radius: 10px; }
 }
 
