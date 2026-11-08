@@ -26,7 +26,7 @@ const MORE_ITEMS = [
 
 <template>
   <div class="page more-page">
-    <PageHeader title="More" subtitle="Additional tools and preferences for your Toka AI account." />
+    <PageHeader title="More Settings" subtitle="Additional tools and preferences for your Toka AI account." />
 
     <section class="more-list" aria-label="More features">
       <button

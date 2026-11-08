@@ -150,8 +150,8 @@ npm --prefix client test
 ## Practitioner shell and Toka assistant
 
 The current practitioner shell is responsive. On desktop it uses a sidebar and top bar; on mobile it replaces
-the sidebar with a bottom navigation bar for **Home** (dashboard), **History** (diagnosis history), **Scan**
-(disease detection), **Calendar** (treatment schedule) and **More**. The top bar includes the Toka AI brand,
+the sidebar with a bottom navigation bar for **Home** (dashboard), **Scan** (disease detection), and **Calendar**
+(treatment schedule). The mobile profile menu provides **Profile** and **More Settings**. The top bar includes the Toka AI brand,
 notifications, and the account/profile control. On mobile, the account control opens a small menu with the
 signed-in email and a Profile link; sign-out is on the Profile page. Profile shows the account email and role,
 basic account information, and Toka AI details. The notification popover currently shows an empty-state

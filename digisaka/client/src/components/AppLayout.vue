@@ -22,11 +22,10 @@ const MENU = [
   { to: '/history', label: 'Diagnosis History', icon: 'history' },
   { to: '/schedule', label: 'Treatment Schedule', icon: 'calendar' },
   { to: '/profile', label: 'Profile', icon: 'user' },
-  { to: '/more', label: 'More', icon: 'more' },
+  { to: '/more', label: 'More Settings', icon: 'more' },
 ];
 const MOBILE_MENU = [
   { to: '/', label: 'Home', icon: 'home' },
-  { to: '/history', label: 'History', icon: 'history' },
   { to: '/scan', label: 'Scan', icon: 'scan' },
   { to: '/schedule', label: 'Calendar', icon: 'calendar' },
 ];
@@ -153,6 +152,7 @@ onMounted(() => useDevClockStore().load());
             <div v-if="menuOpen" id="account-menu" class="menu">
               <p class="menu-who">{{ auth.email }}</p>
               <RouterLink to="/profile" class="menu-profile"><Icon name="user" :size="18" /><span>Profile</span></RouterLink>
+              <RouterLink to="/more" class="menu-profile"><Icon name="more" :size="18" /><span>More Settings</span></RouterLink>
             </div>
           </div>
         </div>
@@ -184,16 +184,6 @@ onMounted(() => useDevClockStore().load());
       >
         <span class="mobile-nav-icon"><Icon :name="item.icon" :size="item.to === '/scan' ? 23 : 21" /></span>
         <span>{{ item.label }}</span>
-      </RouterLink>
-      <RouterLink
-        to="/more"
-        class="mobile-nav-link"
-        :aria-current="route.path === '/more' ? 'page' : undefined"
-      >
-        <span class="mobile-nav-icon">
-          <Icon name="more" :size="22" />
-        </span>
-        <span>More</span>
       </RouterLink>
     </nav>
     <DevDateBar />
@@ -277,7 +267,7 @@ onMounted(() => useDevClockStore().load());
     inset: auto 0 0;
     z-index: 35;
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
     padding: 4px 12px env(safe-area-inset-bottom, 0px);
     border-top: 1px solid var(--line);
