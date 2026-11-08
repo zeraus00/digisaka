@@ -147,13 +147,43 @@ Client tests, including the contract tests in `client/src/stub-contract/` that d
 npm --prefix client test
 ```
 
+## Practitioner shell and Toka assistant
+
+The current practitioner shell is responsive. On desktop it uses a sidebar and top bar; on mobile it replaces
+the sidebar with a bottom navigation bar for **Home** (dashboard), **History** (diagnosis history), **Scan**
+(disease detection), **Calendar** (treatment schedule) and **More**. The top bar includes the Toka AI brand,
+notifications, and the account/profile control. On mobile, the account control opens a small menu with the
+signed-in email and a Profile link; sign-out is on the Profile page. Profile shows the account email and role,
+basic account information, and Toka AI details. The notification popover currently shows an empty-state
+message; it is not connected to a notifications service. Farm preferences and display/accessibility entries
+on More are placeholders; the Assistant entry is functional.
+
+The Toka assistant is a local demo UI, not a live AI integration:
+
+- The top-bar Toka control turns the floating assistant on or off. It is on by default, and this preference is
+  held in client memory only (it resets on reload). When off, the launcher is hidden, the Assistant item in More
+  is disabled, and `/assistant` redirects back to the dashboard.
+- When enabled, the Toka orb opens a compact chat panel. The chat uses local canned prompts and deterministic
+  sample replies from `client/src/stubs/tokaAssistant.js`; it makes no AI or assistant API calls. The chat
+  displays a demo disclaimer and keeps its conversation in the Pinia store while navigating.
+- When the panel is closed, the orb can be dragged around the viewport and snaps to the nearest screen edge
+  when released. When the chat is open, it returns to the lower-right corner, outside the panel. The orb is
+  hidden while `/assistant` is open.
+- The panel can expand to `/assistant`, a standalone authenticated route that fills the viewport. It provides
+  the full conversation layout and a return-to-dashboard control. The Assistant item on More opens this route
+  directly.
+
+Relevant implementation: `client/src/components/AppLayout.vue`, `TokaAssistant.vue`,
+`TokaAssistantChat.vue`, `client/src/stores/tokaAssistant.js`, `client/src/stubs/tokaAssistant.js`,
+`client/src/views/AssistantView.vue`, `client/src/views/MoreView.vue`, and `client/src/router.js`.
+
 ## Layout
 ```
 client/                 Vue 3 + Vite + Vue Router + Pinia
   src/router.js          routes and the auth/admin guards
-  src/stores/             auth, farm (lines), scan, cycle, lines, suggestion, useCase (admin)
-  src/components/         AppLayout (sidebar, header, phone tab bar), Icon, PageHeader
-  src/views/              Login, Scan, History, ScheduleList, ScheduleLine, TreatmentDetail
+  src/stores/             auth, farm (lines), scan, cycle, lines, suggestion, useCase, tokaAssistant
+  src/components/         AppLayout, Toka assistant chat/launcher, Icon, PageHeader
+  src/views/              Login, Scan, History, ScheduleList, ScheduleLine, TreatmentDetail, Assistant
   src/admin/              admin console: layout + the nine admin screens, Modal, Pill, GraphCanvas, util.js
   src/styles/             tokens.css (design tokens) + base.css; every component styles itself
                           (admin.css holds the shared `a-` building blocks for the admin screens)
