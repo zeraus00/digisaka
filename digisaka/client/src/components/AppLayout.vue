@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useDevClockStore } from '../stores/devClock.js';
@@ -10,57 +10,53 @@ import { useAccountMenu } from './useAccountMenu.js';
 const scroller = ref(null);
 const route = useRoute(), router = useRouter(), auth = useAuthStore();
 const title = computed(() => route.meta.title || 'Digisaka');
-const sidebarOpen = ref(false);
-const sidebar = ref(null), hamburger = ref(null);
+const mobileMenuOpen = ref(false);
+const mobileMenu = ref(null), mobileMenuButton = ref(null);
 
 const MENU = [
   { to: '/', label: 'Dashboard', icon: 'home' },
   { to: '/scan', label: 'Disease Detection', icon: 'scan' },
   { to: '/history', label: 'Diagnosis History', icon: 'history' },
   { to: '/schedule', label: 'Treatment Schedule', icon: 'calendar' },
+  { to: '/profile', label: 'Profile', icon: 'user' },
+];
+const MOBILE_MENU = [
+  { to: '/', label: 'Home', icon: 'home' },
+  { to: '/history', label: 'History', icon: 'history' },
+  { to: '/scan', label: 'Scan', icon: 'scan' },
+  { to: '/schedule', label: 'Calendar', icon: 'calendar' },
 ];
 
 const { menuOpen, narrow, account, avatar, toggleMenu, closeMenu } = useAccountMenu(route);
-function signOut() { closeMenu(); auth.signOut(); router.push('/login'); }
-function openSidebar() {
-  sidebarOpen.value = true;
-  nextTick(() => sidebar.value?.querySelector('a, button:not([disabled])')?.focus());
+function signOut() { closeMobileMenu(); closeMenu(); auth.signOut(); router.push('/login'); }
+function closeMobileMenu() { mobileMenuOpen.value = false; }
+function toggleMobileMenu() { mobileMenuOpen.value = !mobileMenuOpen.value; }
+function onDocumentClick(event) {
+  if (mobileMenuOpen.value && !mobileMenu.value?.contains(event.target) && !mobileMenuButton.value?.contains(event.target)) {
+    closeMobileMenu();
+  }
 }
-function closeSidebar(restoreFocus = false) {
-  sidebarOpen.value = false;
-  if (restoreFocus) nextTick(() => hamburger.value?.focus());
+function onDocumentKeydown(event) {
+  if (event.key === 'Escape' && mobileMenuOpen.value) {
+    closeMobileMenu();
+    mobileMenuButton.value?.focus();
+  }
 }
-function onSidebarKeydown(event) {
-  if (event.key === 'Escape' && narrow.value && sidebarOpen.value) closeSidebar(true);
-}
+watch(() => route.path, () => { closeMobileMenu(); closeMenu(); });
 onMounted(() => {
-  useDevClockStore().load();
-  document.addEventListener('keydown', onSidebarKeydown);
+  document.addEventListener('click', onDocumentClick);
+  document.addEventListener('keydown', onDocumentKeydown);
 });
-onUnmounted(() => document.removeEventListener('keydown', onSidebarKeydown));
-watch(() => route.path, () => { if (narrow.value) closeSidebar(true); });
-watch(narrow, () => closeSidebar());
+onUnmounted(() => {
+  document.removeEventListener('click', onDocumentClick);
+  document.removeEventListener('keydown', onDocumentKeydown);
+});
+onMounted(() => useDevClockStore().load());
 </script>
 
 <template>
   <div class="shell">
-    <div
-      v-if="narrow"
-      class="sidebar-backdrop"
-      :class="{ 'sidebar-backdrop--visible': sidebarOpen }"
-      aria-hidden="true"
-      @click="closeSidebar(true)"
-    ></div>
-
-    <aside
-      id="user-sidebar"
-      ref="sidebar"
-      class="sidebar"
-      :class="{ 'sidebar--open': sidebarOpen, 'sidebar--narrow': narrow }"
-      aria-label="User navigation"
-      :aria-hidden="narrow && !sidebarOpen ? 'true' : undefined"
-      :inert="narrow && !sidebarOpen"
-    >
+    <aside class="sidebar" aria-label="User navigation">
       <svg class="leaf-deco leaf-deco--1" aria-hidden="true" width="80" height="120" viewBox="0 0 80 120">
         <path d="M70 6C40 10 20 40 10 110C50 90 76 50 70 6Z" fill="#fff" opacity="0.07"/>
       </svg>
@@ -109,31 +105,23 @@ watch(narrow, () => closeSidebar());
 
     <div class="main">
       <header class="topbar">
-        <button
-          v-if="narrow"
-          ref="hamburger"
-          type="button"
-          class="topbar-hamburger"
-          aria-label="Open navigation"
-          :aria-expanded="sidebarOpen"
-          aria-controls="user-sidebar"
-          @click="openSidebar"
-        >
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
+        <div class="topbar-brand" aria-label="Toka AI">
+          <img src="../assets/bananaleaf-no-border.png" alt="" aria-hidden="true">
+          <span>Toka AI</span>
+        </div>
         <div class="where"><span class="mark small"><img src="../assets/bananaleaf2.png" alt="" aria-hidden="true"></span><h2>{{ title }}</h2></div>
         <div class="tools">
           <RouterLink to="/scan" class="pill"><Icon name="scan" :size="15" />New Scan</RouterLink>
           <div ref="account" class="account">
-            <button ref="avatar" type="button" class="avatar" :title="auth.email" aria-label="Account" :tabindex="narrow ? 0 : -1"
-                    :aria-expanded="narrow ? menuOpen : undefined" :aria-controls="narrow ? 'account-menu' : undefined" @click="toggleMenu">{{ auth.initials }}</button>
+            <button ref="avatar" type="button" class="avatar" :title="auth.email" :aria-label="narrow ? 'Profile' : 'Account'" :tabindex="narrow ? 0 : -1"
+                    :aria-haspopup="narrow ? 'true' : undefined"
+                    :aria-expanded="narrow ? menuOpen : undefined" :aria-controls="narrow ? 'account-menu' : undefined" @click="toggleMenu">
+              <Icon v-if="narrow" name="user" :size="20" />
+              <span v-else>{{ auth.initials }}</span>
+            </button>
             <div v-if="menuOpen" id="account-menu" class="menu">
-              <p class="menu-who">{{ auth.email }}</p>
-              <button type="button" class="menu-out" @click="signOut"><Icon name="logout" :size="18" /><span>Sign out</span></button>
+              <RouterLink to="/profile" class="menu-profile"><Icon name="user" :size="18" /><span>Profile</span></RouterLink>
+              <button type="button" class="menu-out" @click="signOut"><Icon name="logout" :size="18" /><span>Sign Out</span></button>
             </div>
           </div>
         </div>
@@ -146,6 +134,55 @@ watch(narrow, () => closeSidebar());
         </RouterView>
       </main>
     </div>
+    <nav class="mobile-nav" aria-label="Primary navigation">
+      <div v-if="mobileMenuOpen" id="mobile-account-menu" ref="mobileMenu" class="mobile-menu" role="menu" aria-label="Account options">
+        <RouterLink to="/profile" class="mobile-menu-item" role="menuitem">
+          <Icon name="user" :size="18" /><span>Profile</span>
+        </RouterLink>
+        <RouterLink v-if="auth.technicalUser" to="/admin" class="mobile-menu-item" role="menuitem">
+          <span class="mobile-menu-admin-icon" aria-hidden="true">↗</span><span>Switch to Admin Web</span>
+        </RouterLink>
+        <button type="button" class="mobile-menu-item" role="menuitem" @click="signOut">
+          <Icon name="logout" :size="18" /><span>Sign Out</span>
+        </button>
+      </div>
+      <RouterLink
+        :to="MOBILE_MENU[0].to"
+        class="mobile-nav-link"
+        :aria-current="route.path === '/' ? 'page' : undefined"
+      >
+        <span class="mobile-nav-icon"><Icon :name="MOBILE_MENU[0].icon" :size="21" /></span>
+        <span>Home</span>
+      </RouterLink>
+      <RouterLink
+        v-for="item in MOBILE_MENU.slice(1)"
+        :key="item.to"
+        :to="item.to"
+        class="mobile-nav-link"
+        :class="{ 'mobile-nav-link--scan': item.to === '/scan' }"
+        :aria-current="route.path === item.to || route.path.startsWith(`${item.to}/`) || (item.to === '/schedule' && route.path.startsWith('/treatment/')) ? 'page' : undefined"
+      >
+        <span class="mobile-nav-icon"><Icon :name="item.icon" :size="item.to === '/scan' ? 23 : 21" /></span>
+        <span>{{ item.label }}</span>
+      </RouterLink>
+      <button
+        ref="mobileMenuButton"
+        type="button"
+        class="mobile-nav-link mobile-nav-menu-button"
+        :aria-label="mobileMenuOpen ? 'Close account menu' : 'Open account menu'"
+        aria-haspopup="menu"
+        :aria-expanded="mobileMenuOpen"
+        :aria-controls="mobileMenuOpen ? 'mobile-account-menu' : undefined"
+        @click="toggleMobileMenu"
+      >
+        <span class="mobile-nav-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </span>
+        <span>Menu</span>
+      </button>
+    </nav>
     <DevDateBar />
   </div>
 </template>
@@ -191,33 +228,95 @@ watch(narrow, () => closeSidebar());
 .menu-out { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 0; border-radius: 10px; background: none; color: var(--forest); font: 800 15px var(--font-body); }
 .menu-out:hover { background: var(--tint); }
 .content { flex: 1; min-height: 0; overflow-y: auto; }
-.sidebar-backdrop, .topbar-hamburger { display: none; }
+.topbar-brand, .mobile-nav { display: none; }
+.menu-profile { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 10px; color: var(--forest); font: 800 15px var(--font-body); }
+.menu-profile:hover { background: var(--tint); }
 
 @media (max-width: 900px) {
   .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr; }
-  .sidebar.sidebar--narrow { position: fixed; inset: 0 auto 0 0; z-index: 50; display: flex; flex-direction: column; width: min(320px, 100vw); height: 100dvh; padding: 0 0 16px; box-shadow: 4px 0 24px rgba(5, 107, 67, .2); transform: translateX(-105%); transition: transform .25s ease; overflow: hidden; }
-  .sidebar.sidebar--narrow.sidebar--open { transform: translateX(0); }
-  .sidebar.sidebar--narrow .sidebar-brand, .sidebar.sidebar--narrow .sidebar-section, .sidebar.sidebar--narrow .sidebar-nav, .sidebar.sidebar--narrow .sidebar-signout { position: static; }
-  .sidebar.sidebar--narrow .sidebar-brand { margin: 22px 24px 24px; }
-  .sidebar.sidebar--narrow .sidebar-section { margin: 0 24px 8px; }
-  .sidebar.sidebar--narrow .sidebar-nav { width: auto; margin: 0 24px; }
-  .sidebar.sidebar--narrow .sidebar-list { gap: 2px; }
-  .sidebar.sidebar--narrow .sidebar-link { height: 46px; padding: 0 12px; }
-  .sidebar.sidebar--narrow .sidebar-signout { width: calc(100% - 48px); margin: auto 24px 0; flex: none; }
-  .sidebar-backdrop { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(5, 107, 67, .4); opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease; }
-  .sidebar-backdrop--visible { opacity: 1; visibility: visible; }
+  .sidebar { display: none; }
   .main { height: 100dvh; }
-  .topbar { height: 72px; min-height: 72px; }
-  .topbar-hamburger { display: grid; place-items: center; width: 40px; height: 40px; margin-right: auto; border: 0; border-radius: 10px; background: transparent; color: #056b43; cursor: pointer; }
-  .topbar-hamburger:hover { background: #f3f4f6; }
-  .topbar-hamburger:focus-visible { outline: 3px solid var(--leaf); outline-offset: 2px; }
-  .where h2, .pill { display: none; }
-  .avatar { cursor: pointer; }
-  .menu { display: block; position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; min-width: 200px; max-width: calc(100vw - 2 * var(--gutter)); padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(6, 40, 20, .18); }
+  .topbar { height: 64px; min-height: 64px; }
+  .topbar-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--forest); font: 800 17px var(--font-display); white-space: nowrap; }
+  .topbar-brand img { width: 30px; height: 30px; object-fit: contain; }
+  .where { display: none; }
+  .pill { display: none; }
+  .avatar { width: 40px; height: 40px; background: var(--tint); color: var(--forest); cursor: pointer; }
+  .menu { display: block; position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; min-width: 220px; max-width: calc(100vw - 2 * var(--gutter)); padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(6, 40, 20, .18); }
+  .menu-title { padding: 8px 12px 2px; color: var(--ink); font: 800 15px var(--font-display); }
+  .menu-who { padding-bottom: 10px; }
+  .menu-out { border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; }
   .tools { gap: 8px; }
+  .content { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 16px); }
+  .mobile-nav {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 35;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+    padding: 4px 12px env(safe-area-inset-bottom, 0px);
+    border-top: 1px solid var(--line);
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 -4px 16px rgba(6, 40, 20, .08);
+  }
+  .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    color: var(--ink-soft);
+    font: 700 11px/1.1 var(--font-body);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-nav-link[aria-current="page"] { color: var(--forest); }
+  .mobile-nav-icon { display: grid; place-items: center; width: 30px; height: 25px; }
+  .mobile-nav-link--scan { color: var(--forest); }
+  .mobile-nav-link--scan .mobile-nav-icon {
+    width: 48px;
+    height: 42px;
+    margin-top: -18px;
+    border: 4px solid #fff;
+    border-radius: 16px;
+    background: var(--forest);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(6, 85, 44, .25);
+  }
+  .mobile-nav-link--scan[aria-current="page"] .mobile-nav-icon { background: var(--forest-deep); }
+  .mobile-nav-link:focus-visible { outline: 3px solid var(--leaf); outline-offset: -2px; border-radius: 10px; }
+  .mobile-nav-menu-button { border: 0; background: transparent; cursor: pointer; }
+  .mobile-menu {
+    position: absolute;
+    right: 12px;
+    bottom: calc(100% + 10px);
+    min-width: 220px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(6, 40, 20, .18);
+  }
+  .mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--forest);
+    font: 800 14px var(--font-body);
+    text-align: left;
+  }
+  .mobile-menu-item:hover { background: var(--tint); }
+  .mobile-menu-admin-icon { display: grid; place-items: center; width: 18px; height: 18px; font-size: 20px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sidebar, .sidebar-backdrop, .sidebar-signout { transition: none; }
+  .sidebar-signout { transition: none; }
 }
 </style>
