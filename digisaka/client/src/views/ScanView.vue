@@ -279,9 +279,8 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
 </template>
 
 <style scoped>
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px; max-width: 720px; display: grid; gap: 12px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px; display: grid; gap: 12px; }
 h2 { font: 800 14px var(--font-display); color: var(--forest); letter-spacing: .04em; }
-.page > * { max-width: 720px; }
 .pick { display: grid; }
 .week { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
 label { display: grid; gap: 4px; font-weight: 700; color: var(--ink-soft); }
@@ -301,7 +300,7 @@ button.wide { width: 100%; padding: 14px; margin: 20px 0 8px; border-radius: 14p
 .dot.active small { color: var(--forest); font-weight: 800; }
 .conn { flex: 1; height: 2px; background: var(--line); margin: 15px 8px 0; }
 
-.frame { position: relative; aspect-ratio: 1.5; border-radius: 20px; background: linear-gradient(#08783F, #0D3D1E); display: grid; place-items: center; color: rgba(255,255,255,.15); }
+.frame { position: relative; aspect-ratio: 1.5; border-radius: 20px; background: linear-gradient(#08783F, #0D3D1E); display: grid; place-items: center; color: rgba(255,255,255,.15); max-width: 720px; margin-inline: auto; }
 .frame p { position: absolute; bottom: 18px; color: #fff; font-weight: 700; font-size: 13px; }
 .br { position: absolute; width: 28px; height: 28px; border: 0 solid var(--banana); }
 .tl { top: 14px; left: 14px; border-width: 3px 0 0 3px; } .tr { top: 14px; right: 14px; border-width: 3px 3px 0 0; }
@@ -309,7 +308,7 @@ button.wide { width: 100%; padding: 14px; margin: 20px 0 8px; border-radius: 14p
 .samples { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 13px; }
 .samples span { color: var(--ink-soft); }
 .samples button { padding: 6px 10px; font-size: 13px; }
-.capture { display: flex; justify-content: center; align-items: center; gap: 40px; margin: 20px 0 24px; }
+.capture { display: flex; justify-content: center; align-items: center; gap: 40px; margin: 20px 0 24px; max-width: 720px; margin-inline: auto; }
 .gallery { display: grid; justify-items: center; gap: 6px; border: 0; background: none; font-size: 12px; padding: 0; }
 .tile { width: 56px; height: 56px; border-radius: 16px; background: var(--beige); color: var(--banana); display: grid; place-items: center; }
 .shutter { width: 64px; height: 64px; padding: 6px; border-radius: 50%; border: 3px solid var(--forest); }
@@ -317,7 +316,7 @@ button.wide { width: 100%; padding: 14px; margin: 20px 0 8px; border-radius: 14p
 .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .count { color: var(--forest); }
 .link { border: 0; background: none; color: var(--ink-soft); font-weight: 700; padding: 0; }
-.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 720px; margin-inline: auto; }
 .thumb { position: relative; aspect-ratio: 1; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
 .pill { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: var(--forest); color: #fff; font: 800 9.5px var(--font-body); padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
