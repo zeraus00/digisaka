@@ -88,9 +88,9 @@ export function unitFacts(unit) {
   const moa = p?.mode_of_action ?? null;
   const site = moa?.multisite;
   return {
-    name: p?.label ?? unit.label ?? null,
+    name: shownName(p?.label ?? unit.label) || null,
     manufacturer: p?.manufacturer ?? null,
-    activeIngredient: p?.active_ingredient ?? null,
+    activeIngredient: p?.active_ingredient ? shownName(p.active_ingredient) : null,
     chemicalGroup: p?.chemical_group ?? null,
     frac: moa?.frac_code ?? null,
     modeOfAction: moa?.label ?? null,
