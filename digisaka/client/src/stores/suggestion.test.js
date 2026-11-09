@@ -49,3 +49,42 @@ describe('follow a scan run', () => {
     expect(await s.follow('new', wait)).toBe('failed');
   });
 });
+
+describe('record against a step', () => {
+  const err = (status, code, data) => json(status, { error: code, ...data });
+  const posts = () => fetchMock.mock.calls.filter((c) => c[1]?.method === 'POST').map((c) => JSON.parse(c[1].body));
+  const post = (...answers) => {
+    fetchMock.mockImplementation(async (url, init) => {
+      if (init?.method === 'POST') return answers.length > 1 ? answers.shift() : answers[0];
+      if (url.endsWith('/suggestion')) return json(200, sug('r1'));
+      return json(200, { line_id: 'L10', applications: [], cycles: [] });
+    });
+  };
+  it('sends step_id and partner_product_id; earlier_steps_open waits in `earlier`, skipEarlier sends it again with skip_earlier', async () => {
+    post(err(409, 'earlier_steps_open', { steps: [{ step_id: 's1', product: 'a' }] }), json(201, { application: {} }));
+    const s = useSuggestionStore(); s.lineId = 'L10';
+    expect(await s.record('P', '2026-06-05', wait, { step_id: 's2', partner_product_id: 'M' })).toBe('earlier');
+    expect(s.earlier.steps).toEqual([{ step_id: 's1', product: 'a' }]);
+    expect(posts()[0]).toMatchObject({ product_id: 'P', step_id: 's2', partner_product_id: 'M', confirmed: false });
+    expect(await s.skipEarlier(wait)).toBe('recorded');
+    expect(posts()[1]).toMatchObject({ step_id: 's2', partner_product_id: 'M', skip_earlier: true });
+    expect(s.earlier).toBeNull();
+  });
+  it('a confirmation keeps the step, the partner and skip_earlier for the resend', async () => {
+    post(err(409, 'confirmation_required', { revision: 'r1', alerts: [{ id: 'a', kind: 'off_plan' }] }), json(201, { application: {} }));
+    const s = useSuggestionStore(); s.lineId = 'L10';
+    expect(await s.record('P', '2026-06-05', wait, { step_id: 's2' })).toBe('confirm');
+    expect(s.pending).toMatchObject({ step_id: 's2', skip_earlier: false });
+    expect(await s.confirm(wait)).toBe('recorded');
+    expect(posts()[1]).toMatchObject({ step_id: 's2', confirmed: true });
+    expect(posts()[1].skip_earlier).toBeUndefined();
+  });
+  it('a plain record sends no step fields; step_not_open reads the line again and cancel clears earlier', async () => {
+    post(err(409, 'step_not_open', {}));
+    const s = useSuggestionStore(); s.lineId = 'L10';
+    expect(await s.record('P', '2026-06-05', wait)).toBe('error');
+    expect(Object.keys(posts()[0])).toEqual(['product_id', 'applied_on', 'revision', 'confirmed']);
+    s.earlier = { body: {}, steps: [] }; s.cancel();
+    expect(s.earlier).toBeNull();
+  });
+});

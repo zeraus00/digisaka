@@ -1,10 +1,13 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import '../styles/journey.css';
-import { scheduleEvents, monthGrids, STEP_KIND, MIXTURE_NOTE } from '../helpers/schedule.js';
+import { scheduleEvents, monthGrids, STEP_KIND, STATUS_LABEL, STATUS_TONE, SKIP_REASONS, canSkip, canRecord, canUndo, MIXTURE_NOTE } from '../helpers/schedule.js';
 import { todayIso } from '../helpers/today.js';
 
-const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] }, nameOf: { type: Function, default: (id) => id }, assessedWeeks: { type: Array, default: () => [] } });
+const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] }, nameOf: { type: Function, default: (id) => id }, assessedWeeks: { type: Array, default: () => [] }, busy: { type: Boolean, default: false } });
+const emit = defineEmits(['skip', 'undo', 'record', 'other']);
+// The reason picked per step; sent with the skip (none is fine).
+const reasons = ref({});
 const events = computed(() => scheduleEvents(props.days, props.applications, props.nameOf, props.assessedWeeks));
 const months = computed(() => monthGrids(events.value));
 // The month shown opens on today's month when the schedule has it, else the first.
@@ -12,9 +15,9 @@ const at = ref(0);
 watch(months, (ms) => { const i = ms.findIndex((m) => todayIso().startsWith(m.key)); at.value = Math.max(i, 0); }, { immediate: true });
 const m = computed(() => months.value[at.value]);
 const short = (iso) => `${iso.slice(8)}/${iso.slice(5, 7)}`;
-const range = (e) => (e.kind === 'application' ? `${short(e.start)} – ${short(e.end)}` : short(e.date));
+const range = (e) => ((e.kind === 'application' || e.kind === 'skipped') && e.start ? `${short(e.start)} – ${short(e.end)}` : short(e.date));
 // Suggested steps are outlined; recorded applications are filled.
-const KIND = { application: { icon: '💊', cls: 'sug' }, monitoring: { icon: '🔍', cls: 'plum' }, applied: { icon: '✓', cls: 'rec' } };
+const KIND = { application: { icon: '💊', cls: 'sug' }, monitoring: { icon: '🔍', cls: 'plum' }, applied: { icon: '✓', cls: 'rec' }, skipped: { icon: '⏭', cls: 'skip' } };
 const cellClass = (day) => (day.some((e) => e.kind === 'applied') ? 'rec' : KIND[day[0].kind].cls);
 const todayDay = computed(() => (m.value && todayIso().startsWith(m.value.key) ? Number(todayIso().slice(8)) : null));
 const count = computed(() => `${events.value.filter((e) => e.kind === 'applied').length} recorded · ${events.value.filter((e) => e.kind === 'application').length} suggested`);
@@ -52,14 +55,31 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
           <span class="node">{{ e.done ? '✓' : '' }}</span>
           <div class="date">{{ range(e) }}<small>{{ e.date.slice(0, 4) }}</small></div>
           <div class="card">
-            <h5>{{ e.label }}<small v-if="e.moa"> · FRAC {{ e.moa }}</small> <span v-if="STEP_KIND[e.step]" class="jr-pill" :class="e.step === 'multisite' ? 'warn' : 'ok'">{{ STEP_KIND[e.step] }}</span></h5>
-            <p v-if="e.kind === 'applied'">Applied on {{ e.date }}.</p>
+            <h5>{{ e.label }}<small v-if="e.moa"> · FRAC {{ e.moa }}</small> <span v-if="STEP_KIND[e.step]" class="jr-pill" :class="e.step === 'multisite' ? 'warn' : 'ok'">{{ STEP_KIND[e.step] }}</span>
+              <span v-if="e.status" class="jr-pill" :class="STATUS_TONE[e.status]">{{ STATUS_LABEL[e.status] }}</span><span v-if="e.offPlan" class="jr-pill">Off-plan</span></h5>
+            <template v-if="e.status && e.kind !== 'application'">
+              <p v-if="e.kind === 'skipped'">Skipped on {{ e.skip?.on ?? e.date }}.<template v-if="e.skip?.reason"> Reason: {{ e.skip.reason.replace('_', ' ') }}.</template></p>
+              <p v-else>Applied on {{ e.date }}.</p>
+              <p v-if="e.why" class="why">{{ e.why }}</p>
+              <p v-if="e.note" class="why">{{ e.note }}</p>
+            </template>
+            <p v-else-if="e.kind === 'applied'">Applied on {{ e.date }}.</p>
+            <div v-if="canRecord(e)" class="btns">
+              <button type="button" :disabled="busy" @click="emit('record', e)">Record</button>
+              <button type="button" class="ghost" :disabled="busy" @click="emit('other', e)">Choose something different</button>
+            </div>
+            <div v-if="canSkip(e)" class="btns">
+              <select v-model="reasons[e.stepId]" :aria-label="`Reason for skipping ${e.label}`"><option :value="undefined">Reason (optional)</option><option v-for="(t, k) in SKIP_REASONS" :key="k" :value="k">{{ t }}</option></select>
+              <button type="button" class="ghost" :disabled="busy" @click="emit('skip', e.stepId, reasons[e.stepId] ?? null)">Skip</button>
+            </div>
+            <div v-else-if="canUndo(e)" class="btns"><button type="button" class="ghost" :disabled="busy" @click="emit('undo', e.stepId)">Undo skip</button></div>
             <template v-else-if="e.kind === 'application'">
               <p>Apply between {{ e.start }} and {{ e.end }}.<template v-if="e.done"> Applied.</template></p>
               <p v-if="e.why" class="why">{{ e.why }}</p>
+              <p v-if="e.note" class="why">{{ e.note }}</p>
               <p v-if="e.partner" class="why">{{ MIXTURE_NOTE }}</p>
             </template>
-            <p v-else>Scan this line again on {{ e.date }}.<template v-if="e.after"> Follows {{ e.after }}.</template></p>
+            <p v-else-if="e.kind === 'monitoring'">Scan this line again on {{ e.date }}.<template v-if="e.after"> Follows {{ e.after }}.</template></p>
           </div>
         </li>
       </ol>
@@ -77,7 +97,7 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
 .wd { text-align: center; font: 700 12px var(--font-body); color: var(--ink-soft); }
 .cell { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 46px; border-radius: 10px; font-size: 13px; color: var(--ink-soft); }
 .cell.ev { font-weight: 800; color: var(--ink); } .cell.ev i { font-style: normal; font-size: 14px; }
-.cell.sug { background: none; border: 2px solid #D98A00; } .cell.plum { background: #EADCF0; } .cell.rec { background: var(--forest); color: #fff; }
+.cell.skip { background: #ECECEC; } .cell.sug { background: none; border: 2px solid #D98A00; } .cell.plum { background: #EADCF0; } .cell.rec { background: var(--forest); color: #fff; }
 .cell.rec b { color: #fff; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; padding: 0; list-style: none; font-size: 13px; color: var(--ink-soft); }
 .legend li { display: flex; align-items: center; gap: 6px; }
@@ -90,8 +110,10 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
 .tl li.rec .node { background: var(--forest); border-color: var(--forest); }
 .tl li { display: grid; grid-template-columns: 22px 92px 1fr; gap: 10px; align-items: start; }
 .node { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #D98A00; font-size: 12px; color: #fff; }
+.tl li.skip .node { border-color: #7a7a7a; } .tl li.skip { opacity: .75; }
 .plum .node { border-color: #8A4FA0; } .done .node { background: var(--forest); border-color: var(--forest); }
 .date { font: 800 14px var(--font-display); color: var(--forest); } .date small { display: block; font-weight: 600; color: var(--ink-soft); }
 .card h5 { font: 800 15px var(--font-display); } .card small { color: var(--ink-soft); font-weight: 600; }
 .card p { margin-top: 2px; font-size: 13.5px; color: var(--ink-soft); } .card .why { font-style: italic; }
+.btns { display: flex; gap: 8px; margin-top: 6px; } .btns select, .btns button { font-size: 13px; }
 </style>

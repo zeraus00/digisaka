@@ -65,4 +65,10 @@ describe('monthGrids', () => {
     const days = [{ date: '2026-06-29', application: { product: 'mancozeb', moa: 'M', unit_id: 'q|mz', kind: 'multisite', why: 'x', partner: null, timing_window: { start: '2026-06-29', end: '2026-07-03' } } }];
     expect(scheduleEvents(days, [{ product_id: 'mz', applied_on: '2026-07-01' }]).find((x) => x.kind === 'application').done).toBe(true);
   });
+  it('a served partnered step carries the partner id and the server marks of its partner options', () => {
+    const options = [{ product_id: 'mz', compatible: true, why: null }, { product_id: 'az', compatible: false, why: 'Tebu needs a multisite partner' }];
+    const app = { product: 'tebu', unit_id: 'q|tb', status: 'due', step_id: 's1', partner: { product: 'mancozeb', unit_id: 'q|mz' }, partner_options: options, timing_window: { start: '2026-06-29', end: '2026-07-03' } };
+    const e = scheduleEvents([{ date: '2026-06-29', application: app }]).find((x) => x.kind === 'application');
+    expect([e.partnerId, e.partnerOptions]).toEqual(['mz', options]);
+  });
 });

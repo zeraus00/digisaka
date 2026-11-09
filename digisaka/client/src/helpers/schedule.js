@@ -3,6 +3,15 @@ import { productOf } from '../stores/suggestion.js';
 
 // The kind pill of a step: the server sets the kind, these only word it.
 export const STEP_KIND = { single_site: 'Alone', single_site_with_partner: 'With partner', multisite: 'Multisite alone' };
+// The status pill of a step: the server sets the status, these only word it. Overdue is red, Applied green, the rest neutral.
+export const STATUS_LABEL = { planned: 'Planned', due: 'Due', applied: 'Applied', skipped: 'Skipped', overdue: 'Overdue' };
+export const STATUS_TONE = { applied: 'ok', overdue: 'bad', due: 'warn', skipped: '', planned: '' };
+export const SKIP_REASONS = { rain: 'Rain', no_product: 'No product', low_disease: 'Low disease', other: 'Other' };
+// The buttons follow the status: Skip on a Due or Overdue step, Undo skip on a Skipped one (the server decides the rest).
+export const canSkip = (e) => !!e.stepId && (e.status === 'due' || e.status === 'overdue');
+// A due or overdue step can be recorded against; the same steps can be skipped.
+export const canRecord = canSkip;
+export const canUndo = (e) => !!e.stepId && e.status === 'skipped';
 export const MIXTURE_NOTE = 'Mixture conditions checked; physical compatibility not assessed.';
 
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -19,11 +28,23 @@ export function isoWeek(iso) {
 // weekly assessment per day. An application is done when one is recorded for its product inside its window.
 // A weekly assessment is done once the line has a finished cycle for its week (`assessedWeeks`).
 // Every recorded application is its own `applied` event, so the calendar can show it apart from the suggested step.
+// When the server serves step status (`application.status`), it also serves the Applied, Skipped and Off-plan rows,
+// so the status is shown as served and the records list adds no events of its own.
 export function scheduleEvents(days, applications = [], nameOf = (id) => id, assessedWeeks = []) {
+  const served = (days ?? []).some((d) => d.application?.status);
   const planned = (days ?? []).flatMap((d) => {
     const out = [];
     const app = d.application;
-    if (app) {
+    if (app?.status) {
+      const partner = app.partner ?? null;
+      const { start, end } = app.timing_window?.start ? app.timing_window : { start: d.date, end: d.date };
+      out.push({
+        date: d.date, kind: app.status === 'applied' ? 'applied' : app.status === 'skipped' ? 'skipped' : 'application',
+        label: partner ? `${app.product} + ${partner.product}` : app.product, moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
+        start, end, done: app.status === 'applied', productId: app.unit_id ? productOf(app.unit_id) : null, partnerId: partner?.unit_id ? productOf(partner.unit_id) : null, partnerOptions: app.partner_options ?? [], step: app.kind ?? null, why: app.why ?? null, partner,
+        stepId: app.step_id ?? null, status: app.status, note: app.status_note ?? null, skip: app.skip ?? null, offPlan: app.off_plan === true,
+      });
+    } else if (app) {
       const { start, end } = app.timing_window ?? { start: d.date, end: d.date };
       const done = applications.some((a) => a.product_id === productOf(app.unit_id) && a.applied_on >= start && a.applied_on <= end);
       // One event per step: a partnered step is titled with both products and groups. The server sets `step` (kind) and `why`.
@@ -36,7 +57,7 @@ export function scheduleEvents(days, applications = [], nameOf = (id) => id, ass
     if (d.monitoring) out.push({ date: d.date, kind: 'monitoring', label: d.monitoring.label, after: d.reassessment?.of ?? null, done: assessedWeeks.includes(isoWeek(d.date)) });
     return out;
   });
-  const applied = applications.map((a) => ({ date: a.applied_on, kind: 'applied', label: nameOf(a.product_id), done: true }));
+  const applied = served ? [] : applications.map((a) => ({ date: a.applied_on, kind: 'applied', label: nameOf(a.product_id), done: true }));
   return [...planned, ...applied].sort((a, b) => a.date.localeCompare(b.date));
 }
 

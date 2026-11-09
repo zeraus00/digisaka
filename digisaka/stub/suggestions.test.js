@@ -212,3 +212,41 @@ test('the explanation is {text, caveat} on a ranked plan and null on a monitorin
   assert.ok(ranked.explanation.text.length > 0 && /not yet validated/.test(ranked.explanation.caveat));
   assert.equal((await suggestion('L06')).explanation, null);
 });
+
+test('a step can be skipped and the skip undone; a step that is not open is step_not_open', async () => {
+  const open = (await suggestion('L02')).schedule.map((d) => d.application).find((a) => a && ['planned', 'due', 'overdue'].includes(a.status));
+  assert.ok(open?.step_id, 'the plan has a step with a status and an id');
+  const skipped = await call('POST', `/lines/L02/steps/${open.step_id}/skip`, { reason: 'rain' });
+  assert.equal(skipped.status, 201);
+  assert.ok('reschedule' in skipped.body);
+  const mine = (await suggestion('L02')).schedule.map((d) => d.application).find((a) => a?.step_id === open.step_id);
+  assert.deepEqual([mine.status, mine.skip.reason], ['skipped', 'rain']);
+  assert.equal((await call('POST', `/lines/L02/steps/${open.step_id}/skip`)).status, 409);
+  assert.equal((await call('DELETE', `/lines/L02/steps/${open.step_id}/skip`)).status, 200);
+  const undone = await call('DELETE', `/lines/L02/steps/${open.step_id}/skip`);
+  assert.deepEqual([undone.status, undone.body.error], [409, 'step_not_open']);
+  assert.equal((await call('POST', '/lines/L02/steps/nope/skip')).body.error, 'step_not_open');
+});
+
+test('a record against a step: step_not_open, off-plan confirmation, earlier_steps_open and skip_earlier', async () => {
+  const view = await suggestion('L02');
+  const open = view.schedule.map((d) => d.application).filter((a) => a && ['planned', 'due', 'overdue'].includes(a.status));
+  assert.ok(open.length >= 2, 'the plan has two open steps');
+  const [first, second] = open;
+  const pid = (a) => a.unit_id.split('|').pop();
+  const base = { applied_on: '2026-06-05', revision: view.revision, confirmed: false };
+  assert.equal((await record('L02', { ...base, product_id: pid(first), step_id: 'nope' })).body.error, 'step_not_open');
+  assert.equal((await record('L02', { ...base, product_id: pid(first), partner_product_id: pid(second) })).status, 400);
+  const early = await record('L02', { ...base, product_id: pid(second), step_id: second.step_id });
+  assert.equal(early.body.error, 'earlier_steps_open');
+  assert.deepEqual(early.body.steps.map((s) => s.step_id), [first.step_id]);
+  // A product that is not the step's asks to confirm as off-plan; earlier steps are not asked about.
+  const other = view.groups.recommended.map((u) => u.product_id).find((p) => p !== pid(first));
+  const off = await record('L02', { ...base, product_id: other, step_id: first.step_id });
+  assert.equal(off.body.error, 'confirmation_required');
+  assert.ok(off.body.alerts.some((a) => a.kind === 'off_plan' && a.level === 'warning'));
+  const done = await record('L02', { ...base, product_id: pid(second), step_id: second.step_id, skip_earlier: true, confirmed: true });
+  assert.equal(done.status, 201);
+  const after = (await suggestion('L02')).schedule.map((d) => d.application).find((a) => a?.step_id === first.step_id);
+  assert.equal(after.status, 'skipped');
+});
