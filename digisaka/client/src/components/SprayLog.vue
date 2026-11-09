@@ -30,7 +30,7 @@ const fracTone = computed(() => (usage.value.some((g) => g.status === 'maxed') ?
             <b>{{ h.product }}</b>
             <span class="pills">
               <span v-for="m in h.plant_mobility" :key="m" class="jr-pill">{{ sentenceCase(m) }}</span>
-              <span class="jr-pill">FRAC {{ h.frac_code }}</span><span class="jr-pill">{{ trackLabel(h.track) }}</span>
+              <span class="jr-pill">FRAC {{ h.frac_code }}</span><span class="jr-pill">{{ trackLabel(h.track) }}</span><span v-if="h.off_plan" class="jr-pill">Off-plan</span>
               <span class="jr-pill" :class="sprayBadge(h, usage).tone">{{ sprayBadge(h, usage).label }}</span>
             </span>
           </li>

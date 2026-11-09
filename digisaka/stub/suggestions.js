@@ -78,6 +78,29 @@ const scheduleOf = (days) => days.map((d) => {
   return { ...d, application: { ...application, kind: multisite ? 'multisite' : 'single_site', track: multisite ? 'multisite' : 'single_site', why: multisite ? 'No single-site group can be used on this date, so the group is applied alone as a multisite step.' : 'The group is next in the rotation set; it has not been used yet.', partner: null } };
 });
 
+// Read-time step fields, as the live scheduler derives them (plan-continuity 05): Planned before the window, Due inside it,
+// Overdue after it; a recorded product inside the window applies the step. A record that fits no step is an off-plan row.
+// shortcut: no partner, skip or past plans here (the stub plans single steps); the live run is the gate for those.
+const plusDays = (iso, n) => new Date(Date.parse(`${iso}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
+const servedOf = (days, applications, day) => {
+  const used = new Set();
+  const out = days.map((d, i) => {
+    const a = d.application;
+    if (!a) return d;
+    const { start, end } = a.timing_window ?? { start: d.date, end: d.date };
+    const rec = applications.find((r) => !used.has(r) && r.product_id === productOf(a.unit_id) && r.applied_on >= start && r.applied_on <= end);
+    if (rec) used.add(rec);
+    const status = rec ? 'applied' : day < start ? 'planned' : day <= end ? 'due' : 'overdue';
+    const step = { ...a, step_id: `step-${d.date}-${i}`, status, status_note: null, applied_on: rec?.applied_on ?? null, skip: null, off_plan: false };
+    return { ...d, ...(rec ? { date: rec.applied_on } : {}), application: step };
+  });
+  const offPlan = applications.filter((r) => !used.has(r) && r.applied_on >= plusDays(day, -30)).map((r) => ({
+    date: r.applied_on, weekday: null, state: 'needs_approval',
+    application: { step_id: null, unit_id: null, product: r.product_id, moa: null, kind: 'single_site', track: 'single_site', why: null, partner: null, timing_window: null, status: 'applied', status_note: null, applied_on: r.applied_on, skip: null, off_plan: true },
+  }));
+  return [...out, ...offPlan].sort((x, y) => x.date.localeCompare(y.date));
+};
+
 // recommended: the sequencer's pick; eligible: passed but not picked; excluded: failed a check or not for the stage.
 const groupOf = (u) => (u.selectable === false || (u.checks ?? []).some((c) => c.result === 'fail') ? 'excluded' : u.excluded_from_schedule ? 'eligible' : 'recommended');
 const reasonOf = (u) => (u.selectable === false ? 'not_for_stage' : (u.checks ?? []).find((c) => c.result === 'fail')?.check ?? 'not_for_stage');
@@ -166,7 +189,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
       revision: cur.revision, trigger: cur.trigger, created_at: cur.created_at, basis: cur.basis,
       line_stage: { stage: confirmed ? 2 : null, tally: confirmed ? { 2: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
       groups, explanation: EXPLANATIONS[cur.payload] ?? null, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
-      schedule: scheduleOf(frozen?.preview.days ?? []), alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
+      schedule: servedOf(scheduleOf(frozen?.preview.days ?? []), line.applications, today()), alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
       running: runsOf(lineId).some((r) => r.status === 'running'), outcome, outcome_reason: outcome ? cycle.outcome_reason ?? null : null,
     };
   }

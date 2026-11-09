@@ -182,6 +182,7 @@
   "history": [
     {
       "applied_on": "2026-05-12",
+      "off_plan": false,
       "product_id": "u-chlorothalonil",
       "product": "Chlorothalonil",
       "mode_of_action": "Mode of action M",
@@ -196,6 +197,7 @@
     },
     {
       "applied_on": "2026-05-26",
+      "off_plan": false,
       "product_id": "u-pyrimethanil",
       "product": "Pyrimethanil",
       "mode_of_action": "Mode of action D1",
@@ -208,6 +210,7 @@
     },
     {
       "applied_on": "2026-06-02",
+      "off_plan": false,
       "product_id": "u-chlorothalonil",
       "product": "Chlorothalonil",
       "mode_of_action": "Mode of action M",
