@@ -1,6 +1,10 @@
 import { fromIso } from './today.js';
 import { productOf } from '../stores/suggestion.js';
 
+// The kind pill of a step: the server sets the kind, these only word it.
+export const STEP_KIND = { single_site: 'Alone', single_site_with_partner: 'With partner', multisite: 'Multisite alone' };
+export const MIXTURE_NOTE = 'Mixture conditions checked; physical compatibility not assessed.';
+
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 // The ISO week label ('2026-W23') of a date, as the scheduler names a line-week.
@@ -22,7 +26,12 @@ export function scheduleEvents(days, applications = [], nameOf = (id) => id, ass
     if (app) {
       const { start, end } = app.timing_window ?? { start: d.date, end: d.date };
       const done = applications.some((a) => a.product_id === productOf(app.unit_id) && a.applied_on >= start && a.applied_on <= end);
-      out.push({ date: d.date, kind: 'application', label: app.product, moa: app.moa, start, end, done, productId: productOf(app.unit_id) });
+      // One event per step: a partnered step is titled with both products and groups. The server sets `step` (kind) and `why`.
+      const partner = app.partner ?? null;
+      out.push({
+        date: d.date, kind: 'application', label: partner ? `${app.product} + ${partner.product}` : app.product, moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
+        start, end, done, productId: productOf(app.unit_id), step: app.kind ?? null, why: app.why ?? null, partner,
+      });
     }
     if (d.monitoring) out.push({ date: d.date, kind: 'monitoring', label: d.monitoring.label, after: d.reassessment?.of ?? null, done: assessedWeeks.includes(isoWeek(d.date)) });
     return out;

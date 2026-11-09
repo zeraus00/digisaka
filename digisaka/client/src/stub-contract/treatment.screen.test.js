@@ -85,9 +85,13 @@ describe('treatment screen', () => {
       const html = await show('L04', step);
       expect(html).toContain(`<h2 class="step-title" data-v-${html.match(/data-v-(\w+)/)[1]}>${title}</h2>`);
       for (const name of ['Weather', 'Fungicide History', 'Fungicides', 'Schedule']) expect(html).toContain(`aria-label="${name}"`);
-      expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
+      // the Fungicides step also has its track tabs, one of them selected
+      expect(html.match(/aria-selected="true"/g)).toHaveLength(step === 'fungicides' ? 2 : 1);
       expect(html).toContain('Treatment Suggestion');
     }
+    const options = await show('L04', 'fungicides');
+    expect(options).toMatch(/Single-site \(\d+\)/);
+    expect(options).toMatch(/Multisite \(\d+\)/);
     expect(await show('L04', 'weather')).toContain('Continue to Fungicide History');
     expect(await show('L04', 'spray')).toContain('Continue to Fungicides');
     expect(await show('L04', 'fungicides')).toContain('Continue to Schedule');

@@ -1,7 +1,7 @@
 // Display rules for a unit's checks. Built only from fields the payload already carries; the scheduler's detail text is a
 // fixed template, so each reader matches one template and anything else is shown as it came.
 export const CHECK_LABEL = {
-  stage_eligibility: 'Growth stage', rotation: 'Rotation', alternation: 'Alternation', max_consecutive: 'Repeat applications', group_cap: 'Applications per group',
+  stage_eligibility: 'Growth stage', rotation: 'Rotation', alternation: 'Alternation', max_consecutive: 'Repeat applications', group_free_period: 'Group-free period', group_cap: 'Applications per group',
   mixture: 'Mixture', resistance_risk: 'Resistance risk', label_weather: 'Label and weather', fit_of_moa_to_conditions: 'Fit to conditions',
 };
 export const checkLabel = (check) => CHECK_LABEL[check] ?? check.replace(/_/g, ' ');
@@ -97,6 +97,7 @@ export function unitFacts(unit) {
     rate: unit.facts?.application_rates?.[0]?.text ?? null,
     rainfast: unit.facts?.weather_requirement?.rainfast_period ?? null,
     interval: intervalText(unit.facts?.application_interval),
+    intervalSource: unit.facts?.application_interval?.source ?? null,
   };
 }
 
@@ -110,10 +111,12 @@ const REASON = {
 export const reasonText = (code) => (code == null ? null : REASON[code] ?? (CHECK_LABEL[code] ? `Fails: ${CHECK_LABEL[code]}` : code));
 
 // This unit's place in the schedule: the window of its application and the first monitoring day after it ("Not in this plan" when it has none).
+// A partner is in the plan on its single-site step's day: `partnerOf` then names that step's product ("Planned on X as partner of Y").
 export function planFor(days, unit) {
-  const i = (days ?? []).findIndex((d) => d.application?.unit_id === unit.unit_id);
+  const i = (days ?? []).findIndex((d) => d.application?.unit_id === unit.unit_id || d.application?.partner?.unit_id === unit.unit_id);
   if (i < 0) return null;
-  const w = days[i].application.timing_window ?? null;
+  const app = days[i].application;
+  const w = app.timing_window ?? null;
   const next = days.slice(i + 1).find((d) => d.monitoring)?.date ?? null;
-  return { window: w ? `${w.start} to ${w.end}` : null, next };
+  return { window: w ? `${w.start} to ${w.end}` : null, next, partnerOf: app.unit_id === unit.unit_id ? null : app.product };
 }

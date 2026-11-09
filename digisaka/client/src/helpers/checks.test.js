@@ -73,8 +73,10 @@ describe('unit facts and reasons', () => {
   });
   it('finds the unit in the plan, with its next assessment, or null', () => {
     const days = [{ date: 'a', application: { unit_id: 'u1', timing_window: { start: '2026-06-08', end: '2026-06-14' } } }, { date: '2026-06-15', monitoring: { label: 'x' } }];
-    expect(planFor(days, unit)).toEqual({ window: '2026-06-08 to 2026-06-14', next: '2026-06-15' });
+    expect(planFor(days, unit)).toEqual({ window: '2026-06-08 to 2026-06-14', next: '2026-06-15', partnerOf: null });
     expect(planFor(days, { unit_id: 'zz' })).toBeNull();
+    const partnered = [{ date: 'a', application: { unit_id: 'u2', product: 'propiconazole', partner: { unit_id: 'u1' }, timing_window: { start: '2026-06-08', end: '2026-06-14' } } }];
+    expect(planFor(partnered, unit)).toEqual({ window: '2026-06-08 to 2026-06-14', next: null, partnerOf: 'propiconazole' });
   });
 });
 
@@ -82,5 +84,9 @@ describe('unitFacts interval', () => {
   const iv = (min_days, max_days) => unitFacts({ unit_id: 'u', label: 'x', facts: { application_interval: { min_days, max_days } } }).interval;
   it('handles missing bounds', () => {
     expect([iv(null, null), iv(7, null), iv(null, 14), iv(7, 7)]).toEqual([null, 'At least 7 days', 'Up to 14 days', '7 days']);
+  });
+  it('carries the source label, or null', () => {
+    const src = (source) => unitFacts({ unit_id: 'u', label: 'x', facts: { application_interval: { min_days: 7, max_days: 14, source } } }).intervalSource;
+    expect([src('Volley 88 OL leaflet, Guatemala'), src(null)]).toEqual(['Volley 88 OL leaflet, Guatemala', null]);
   });
 });

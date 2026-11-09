@@ -30,6 +30,11 @@ const PRACTITIONER = 'stub-practitioner';
 const SEED_TIME = '2026-06-01T08:00:00.000Z';
 const DEFAULT = { payload: 'clean', basis: 'stage_confirmed' };
 
+// The scheduler's ranking explanation and its fixed server caveat. Only the clean plan has one: the
+// monitoring list is not ranked, so its `explanation` is null (a fallback or a dropped one is null too).
+const CAVEAT = 'A language model wrote this from product facts that are not yet validated. The checks, not this text, decide which products are allowed.';
+const EXPLANATIONS = { clean: { text: 'The triazole goes first and the strobilurin follows, so the two modes of action alternate.', caveat: CAVEAT } };
+
 // A product here is the part of a unit id after `Option|`, as the scheduler records it.
 const productOf = (unitId) => unitId.split('|').pop();
 // Only these two outcomes are served beside `suggested`; the old approval outcomes are gone.
@@ -45,7 +50,7 @@ const BASIS_TEXT = {
 // recorded `real` payload's per-product sections, matched by product name (the clean and stressed payloads have none).
 const REAL_BY_NAME = new Map(real.selection.units.map((u) => [u.product.toLowerCase(), u]));
 // shortcut: 10 to 15 days for every unit (the sample ABox's general fungicide guidance), not read per product; upgrade when the live run serves it.
-const INTERVAL = { min_days: 10, max_days: 15 };
+const INTERVAL = { min_days: 10, max_days: 15, source: null };
 const named = (xs) => xs.map(({ id, label }) => ({ id, label }));
 function factsOf(u) {
   const r = REAL_BY_NAME.get(u.product.toLowerCase());
@@ -68,7 +73,9 @@ const scheduleOf = (days) => days.map((d) => {
   if (!d.application) return d;
   const { frac, ...application } = d.application;
   if (application.weather?.status === 'ok') application.weather = { status: 'ok' };
-  return { ...d, application };
+  // The frozen payloads hold single-step days with no partner: kind, track and the step note are set as the scheduler sets them.
+  const multisite = REAL_BY_NAME.get(String(application.product).toLowerCase())?.resistance.multisite === true;
+  return { ...d, application: { ...application, kind: multisite ? 'multisite' : 'single_site', track: multisite ? 'multisite' : 'single_site', why: multisite ? 'No single-site group can be used on this date, so the group is applied alone as a multisite step.' : 'The group is next in the rotation set; it has not been used yet.', partner: null } };
 });
 
 // recommended: the sequencer's pick; eligible: passed but not picked; excluded: failed a check or not for the stage.
@@ -142,12 +149,14 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     for (const u of frozen?.selection.units ?? []) {
       const g = groupOf(u);
       const mine = alerts.filter((a) => a.unit_id === u.unit_id);
+      const facts = factsOf(u);
       const reason = g === 'excluded' ? reasonOf(u) : cur.payload === 'monitoring' ? 'monitoring_advised' : null;
       // Only the contract's fields: the scheduler's unit has a lower-case `label` and no payload extras (found in the live run).
       groups[g].push({
         unit_id: u.unit_id, product_id: productOf(u.unit_id), label: u.product.toLowerCase(), practice_id: u.practice ?? u.unit_id.split('|')[0], rank: groups[g].length + 1,
+        track: facts?.product.mode_of_action.multisite === true ? 'multisite' : 'single_site',
         checks: (u.checks ?? []).map((c) => ({ check: c.check, level: c.level, detail: c.detail ?? null, result: c.result })), alerts: mine,
-        needs_confirmation: reason !== null || mine.length > 0, reason, facts: factsOf(u),
+        needs_confirmation: reason !== null || mine.length > 0, reason, partner_for: [], facts,
       });
     }
     const basisAlert = BASIS_TEXT[cur.basis] ? [{ id: 'stage_basis', unit_id: null, kind: 'stage_basis', level: 'info', text: BASIS_TEXT[cur.basis], cause: null, blocks_approval: false }] : [];
@@ -156,7 +165,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     return {
       revision: cur.revision, trigger: cur.trigger, created_at: cur.created_at, basis: cur.basis,
       line_stage: { stage: confirmed ? 2 : null, tally: confirmed ? { 2: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
-      groups, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
+      groups, explanation: EXPLANATIONS[cur.payload] ?? null, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
       schedule: scheduleOf(frozen?.preview.days ?? []), alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
       running: runsOf(lineId).some((r) => r.status === 'running'), outcome, outcome_reason: outcome ? cycle.outcome_reason ?? null : null,
     };

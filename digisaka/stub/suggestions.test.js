@@ -24,16 +24,16 @@ const units = (s) => Object.values(s.groups).flat();
 
 test('the suggestion has the contract fields, three groups and the schedule days', async () => {
   const s = await suggestion('L02');
-  assert.deepEqual(Object.keys(s).sort(), ['alerts', 'basis', 'changes', 'created_at', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
+  assert.deepEqual(Object.keys(s).sort(), ['alerts', 'basis', 'changes', 'created_at', 'explanation', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
   assert.deepEqual([s.revision, s.trigger, s.basis, s.running, s.changes], ['c-L02-24', 'scan', 'stage_confirmed', false, null]);
   assert.deepEqual(Object.keys(s.groups), ['recommended', 'eligible', 'excluded']);
   assert.equal(s.groups.recommended.length > 0, true);
   assert.ok(s.schedule.length > 0 && s.schedule[0].date);
   assert.deepEqual(Object.keys(s.line_stage), ['stage', 'tally', 'window']);
   const u = s.groups.recommended[0];
-  for (const k of ['unit_id', 'product_id', 'label', 'practice_id', 'rank', 'checks', 'alerts', 'needs_confirmation', 'reason', 'facts']) assert.ok(k in u, k);
+  for (const k of ['unit_id', 'product_id', 'label', 'practice_id', 'rank', 'track', 'checks', 'alerts', 'needs_confirmation', 'reason', 'facts']) assert.ok(k in u, k);
   assert.equal(u.rank, 1);
-  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'facts', 'label', 'needs_confirmation', 'practice_id', 'product_id', 'rank', 'reason', 'unit_id'], 'a unit carries the contract fields only');
+  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'facts', 'label', 'needs_confirmation', 'partner_for', 'practice_id', 'product_id', 'rank', 'reason', 'track', 'unit_id'], 'a unit carries the contract fields only');
   assert.deepEqual(Object.keys(s.line_stage.window), ['from', 'to']);
 });
 
@@ -71,7 +71,7 @@ test('every unit carries facts with the decided members; unknown ones are null o
       assert.equal(f.product.label.toLowerCase(), u.label);
       assert.deepEqual([f.product.manufacturer, f.weather_requirement], [null, null]);
       assert.ok('frac_code' in f.product.mode_of_action, 'a group with no FRAC code is null, not missing');
-      assert.deepEqual(f.application_interval, { min_days: 10, max_days: 15 });
+      assert.deepEqual(f.application_interval, { min_days: 10, max_days: 15, source: null });
       assert.ok(Array.isArray(f.mixture_conditions));
     }
   }
@@ -84,6 +84,7 @@ test('alerts carry a cause, the schedule drops frac and an ok weather detail', a
   assert.ok(apps.length);
   for (const a of apps) {
     assert.equal('frac' in a, false);
+    assert.deepEqual([a.kind, a.partner, typeof a.why], [a.track === 'multisite' ? 'multisite' : 'single_site', null, 'string']);
     if (a.weather?.status === 'ok') assert.deepEqual(a.weather, { status: 'ok' });
   }
   const ok = (await suggestion('L02')).schedule.filter((d) => d.application?.weather?.status === 'ok');
@@ -203,4 +204,11 @@ test('a monitoring-advised unit answers confirmation_required with its reason an
   assert.deepEqual([refused.status, refused.body.tier, refused.body.reason], [409, 'eligible', 'monitoring_advised']);
   const done = await record('L06', { ...body, confirmed: true });
   assert.deepEqual([done.status, done.body.application.confirmation.reason], [201, 'monitoring_advised']);
+});
+
+test('the explanation is {text, caveat} on a ranked plan and null on a monitoring list', async () => {
+  const ranked = await suggestion('L02');
+  assert.deepEqual(Object.keys(ranked.explanation), ['text', 'caveat']);
+  assert.ok(ranked.explanation.text.length > 0 && /not yet validated/.test(ranked.explanation.caveat));
+  assert.equal((await suggestion('L06')).explanation, null);
 });

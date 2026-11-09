@@ -36,7 +36,7 @@ const OUTCOME = { human_review_required: 'Human Review Required', continue_monit
 const GROUPS = [['recommended', 'Recommended'], ['eligible', 'Eligible'], ['excluded', 'Excluded options']];
 const lineAlerts = computed(() => orderAlerts(sug.value?.alerts ?? []));
 
-const detailId = ref(''), optionPage = ref(1);
+const detailId = ref(''), optionPage = ref({}), optionTab = ref('single_site');
 const detail = computed(() => store.units.find((u) => u.unit_id === detailId.value) ?? null);
 const productId = ref(''), appliedOn = ref(todayIso());
 // The open step lives in `?step=`; a tab rewrites it in place so back leaves the screen.
@@ -124,11 +124,16 @@ const lastApplied = computed(() => {
           <h4>Alerts</h4>
           <ul><li v-for="a in lineAlerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
         </section>
+        <section v-if="!detail && sug.explanation" class="ack notes explanation">
+          <h4>Why this order</h4>
+          <p>{{ sug.explanation.text }}</p>
+          <p class="meta caveat">{{ sug.explanation.caveat }}</p>
+        </section>
         <template v-if="detail">
           <FungicideDetails :unit="detail" />
           <div class="btns"><button type="button" class="ghost" @click="detailId = ''">Back to options</button></div>
         </template>
-        <FungicideOptions v-else v-model:page="optionPage" @select="(u) => (detailId = u.unit_id)" />
+        <FungicideOptions v-else v-model:page="optionPage" v-model:tab="optionTab" @select="(u) => (detailId = u.unit_id)" />
         <section v-if="sug.other_guidance.length" class="ack notes guidance">
           <h4>Other guidance</h4>
           <ul><li v-for="o in sug.other_guidance" :key="o.practice_id">{{ guidanceName(o.label) }}</li></ul>
