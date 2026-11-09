@@ -187,6 +187,7 @@
       "mode_of_action": "Mode of action M",
       "frac_code": "M",
       "multisite": true,
+      "track": "multisite",
       "plant_mobility": [
         "Contact"
       ],
@@ -200,6 +201,7 @@
       "mode_of_action": "Mode of action D1",
       "frac_code": "D1",
       "multisite": false,
+      "track": "single_site",
       "plant_mobility": [],
       "source": "Sample source B",
       "response": "poor"
@@ -211,6 +213,7 @@
       "mode_of_action": "Mode of action M",
       "frac_code": "M",
       "multisite": true,
+      "track": "multisite",
       "plant_mobility": [
         "Contact"
       ],
@@ -224,38 +227,41 @@
       "mode_of_action": "Mode of action M",
       "frac_code": "M",
       "multisite": true,
+      "track": "multisite",
       "count": 2,
-      "range_min": 2.0,
-      "range_max": 4.0,
+      "range_min": null,
+      "range_max": null,
+      "period": null,
+      "source": null,
+      "status": null,
+      "alerts": []
+    },
+    {
+      "mode_of_action": "Mode of action D1",
+      "frac_code": "D1",
+      "multisite": false,
+      "track": "single_site",
+      "count": 1,
+      "range_min": 1.0,
+      "range_max": 2.0,
       "period": "crop cycle",
       "source": "Sample source B",
       "status": "discouraged",
       "alerts": [
         {
           "kind": "discouraged",
-          "text": "M: 2 recorded applications, at the discouraged level of its cap per crop cycle.",
+          "text": "D1: 1 recorded applications, at the discouraged level of its cap per crop cycle.",
           "alternatives": [
-            "D1"
+            "G2"
           ]
         }
       ]
     },
     {
-      "mode_of_action": "Mode of action D1",
-      "frac_code": "D1",
-      "multisite": false,
-      "count": 1,
-      "range_min": 3.0,
-      "range_max": 4.0,
-      "period": "crop cycle",
-      "source": null,
-      "status": "ok",
-      "alerts": []
-    },
-    {
       "mode_of_action": "Mode of action G2",
       "frac_code": "G2",
       "multisite": false,
+      "track": "single_site",
       "count": 0,
       "range_min": 2.0,
       "range_max": 3.0,

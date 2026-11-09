@@ -147,12 +147,14 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     for (const u of frozen?.selection.units ?? []) {
       const g = groupOf(u);
       const mine = alerts.filter((a) => a.unit_id === u.unit_id);
+      const facts = factsOf(u);
       const reason = g === 'excluded' ? reasonOf(u) : cur.payload === 'monitoring' ? 'monitoring_advised' : null;
       // Only the contract's fields: the scheduler's unit has a lower-case `label` and no payload extras (found in the live run).
       groups[g].push({
         unit_id: u.unit_id, product_id: productOf(u.unit_id), label: u.product.toLowerCase(), practice_id: u.practice ?? u.unit_id.split('|')[0], rank: groups[g].length + 1,
+        track: facts?.product.mode_of_action.multisite === true ? 'multisite' : 'single_site',
         checks: (u.checks ?? []).map((c) => ({ check: c.check, level: c.level, detail: c.detail ?? null, result: c.result })), alerts: mine,
-        needs_confirmation: reason !== null || mine.length > 0, reason, facts: factsOf(u),
+        needs_confirmation: reason !== null || mine.length > 0, reason, facts,
       });
     }
     const basisAlert = BASIS_TEXT[cur.basis] ? [{ id: 'stage_basis', unit_id: null, kind: 'stage_basis', level: 'info', text: BASIS_TEXT[cur.basis], cause: null, blocks_approval: false }] : [];

@@ -31,9 +31,9 @@ test('the suggestion has the contract fields, three groups and the schedule days
   assert.ok(s.schedule.length > 0 && s.schedule[0].date);
   assert.deepEqual(Object.keys(s.line_stage), ['stage', 'tally', 'window']);
   const u = s.groups.recommended[0];
-  for (const k of ['unit_id', 'product_id', 'label', 'practice_id', 'rank', 'checks', 'alerts', 'needs_confirmation', 'reason', 'facts']) assert.ok(k in u, k);
+  for (const k of ['unit_id', 'product_id', 'label', 'practice_id', 'rank', 'track', 'checks', 'alerts', 'needs_confirmation', 'reason', 'facts']) assert.ok(k in u, k);
   assert.equal(u.rank, 1);
-  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'facts', 'label', 'needs_confirmation', 'practice_id', 'product_id', 'rank', 'reason', 'unit_id'], 'a unit carries the contract fields only');
+  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'facts', 'label', 'needs_confirmation', 'practice_id', 'product_id', 'rank', 'reason', 'track', 'unit_id'], 'a unit carries the contract fields only');
   assert.deepEqual(Object.keys(s.line_stage.window), ['from', 'to']);
 });
 
