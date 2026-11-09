@@ -24,15 +24,16 @@ describe('treatment screen', () => {
     expect(options).not.toMatch(/<b><\/b>/);
     expect(options).not.toContain('Record application');
     const bare = await show('L04');
-    expect(bare).toContain('Record application');
+    expect(bare).toContain('Record another spray');
     expect(bare).not.toContain('Recommended</span>');
     for (const html of [options, bare]) for (const gone of ['Approve', 'Reject', 'Renew', 'Approval period', 'acknowledge']) expect(html).not.toContain(gone);
   });
 
-  it('lists excluded units in the record form, and shows the human review banner', async () => {
+  it('keeps the record form behind the Record another spray link while a step is open, and shows the human review banner', async () => {
     await useSuggestionStore().load('L05', wait);
     const html = await show('L05');
-    expect(html).toMatch(/<option[^>]*>[^<]*\(excluded\)<\/option>/);
+    expect(html).toContain('Record another spray');
+    expect(html).not.toContain('Product applied');
     expect(html).toContain('Human Review Required');
     expect(await show('L05', 'fungicides')).toContain('Recommendations');
   });

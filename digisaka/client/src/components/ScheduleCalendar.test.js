@@ -48,4 +48,16 @@ describe('ScheduleCalendar', () => {
     expect(skipped).toContain('Reason: rain.');
     for (const status of ['planned', 'applied']) { const html = await one(status); expect(html).not.toContain('>Skip<'); expect(html).not.toContain('Undo skip'); }
   });
+  it('a due or overdue step has Record and Choose something different; an applied one has neither', async () => {
+    const step = (status) => ({ product: 'azoxystrobin', unit_id: unit, step_id: 's1', timing_window: { start: '2026-06-12', end: '2026-06-14' }, kind: 'single_site', status });
+    for (const status of ['due', 'overdue']) {
+      const html = await render({ days: [{ date: '2026-06-12', application: step(status) }], applications: [] });
+      expect(html).toContain('>Record<');
+      expect(html).toContain('Choose something different');
+    }
+    for (const status of ['planned', 'applied']) {
+      const html = await render({ days: [{ date: '2026-06-12', application: step(status) }], applications: [] });
+      expect(html).not.toContain('Choose something different');
+    }
+  });
 });

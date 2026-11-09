@@ -1,11 +1,11 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import '../styles/journey.css';
-import { scheduleEvents, monthGrids, STEP_KIND, STATUS_LABEL, STATUS_TONE, SKIP_REASONS, canSkip, canUndo, MIXTURE_NOTE } from '../helpers/schedule.js';
+import { scheduleEvents, monthGrids, STEP_KIND, STATUS_LABEL, STATUS_TONE, SKIP_REASONS, canSkip, canRecord, canUndo, MIXTURE_NOTE } from '../helpers/schedule.js';
 import { todayIso } from '../helpers/today.js';
 
 const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] }, nameOf: { type: Function, default: (id) => id }, assessedWeeks: { type: Array, default: () => [] }, busy: { type: Boolean, default: false } });
-const emit = defineEmits(['skip', 'undo']);
+const emit = defineEmits(['skip', 'undo', 'record', 'other']);
 // The reason picked per step; sent with the skip (none is fine).
 const reasons = ref({});
 const events = computed(() => scheduleEvents(props.days, props.applications, props.nameOf, props.assessedWeeks));
@@ -64,6 +64,10 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
               <p v-if="e.note" class="why">{{ e.note }}</p>
             </template>
             <p v-else-if="e.kind === 'applied'">Applied on {{ e.date }}.</p>
+            <div v-if="canRecord(e)" class="btns">
+              <button type="button" :disabled="busy" @click="emit('record', e)">Record</button>
+              <button type="button" class="ghost" :disabled="busy" @click="emit('other', e)">Choose something different</button>
+            </div>
             <div v-if="canSkip(e)" class="btns">
               <select v-model="reasons[e.stepId]" :aria-label="`Reason for skipping ${e.label}`"><option :value="undefined">Reason (optional)</option><option v-for="(t, k) in SKIP_REASONS" :key="k" :value="k">{{ t }}</option></select>
               <button type="button" class="ghost" :disabled="busy" @click="emit('skip', e.stepId, reasons[e.stepId] ?? null)">Skip</button>

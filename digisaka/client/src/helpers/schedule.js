@@ -9,6 +9,8 @@ export const STATUS_TONE = { applied: 'ok', overdue: 'bad', due: 'warn', skipped
 export const SKIP_REASONS = { rain: 'Rain', no_product: 'No product', low_disease: 'Low disease', other: 'Other' };
 // The buttons follow the status: Skip on a Due or Overdue step, Undo skip on a Skipped one (the server decides the rest).
 export const canSkip = (e) => !!e.stepId && (e.status === 'due' || e.status === 'overdue');
+// A due or overdue step can be recorded against; the same steps can be skipped.
+export const canRecord = canSkip;
 export const canUndo = (e) => !!e.stepId && e.status === 'skipped';
 export const MIXTURE_NOTE = 'Mixture conditions checked; physical compatibility not assessed.';
 
@@ -39,7 +41,7 @@ export function scheduleEvents(days, applications = [], nameOf = (id) => id, ass
       out.push({
         date: d.date, kind: app.status === 'applied' ? 'applied' : app.status === 'skipped' ? 'skipped' : 'application',
         label: partner ? `${app.product} + ${partner.product}` : app.product, moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
-        start, end, done: app.status === 'applied', productId: app.unit_id ? productOf(app.unit_id) : null, step: app.kind ?? null, why: app.why ?? null, partner,
+        start, end, done: app.status === 'applied', productId: app.unit_id ? productOf(app.unit_id) : null, partnerId: partner?.unit_id ? productOf(partner.unit_id) : null, step: app.kind ?? null, why: app.why ?? null, partner,
         stepId: app.step_id ?? null, status: app.status, note: app.status_note ?? null, skip: app.skip ?? null, offPlan: app.off_plan === true,
       });
     } else if (app) {

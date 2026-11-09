@@ -8,15 +8,17 @@ const base = '/api/v1/scheduler';
 const e = encodeURIComponent;
 // A unit id is `Option|Product`; the scheduler records and checks the product alone.
 export const productOf = (unitId) => unitId.split('|').pop();
+const stepFields = (s) => ({ ...(s.step_id ? { step_id: s.step_id } : {}), ...(s.partner_product_id ? { partner_product_id: s.partner_product_id } : {}) });
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 // Codes that mean the line moved on under the screen: show the real state again.
 const STALE = ['application_already_recorded', 'step_not_open'];
 
 // A line's current treatment suggestion, the line's recorded applications, and recording against it.
 // phase: idle, loading, ready, notfound, error. `updating` is true while a newer run is in progress.
-// `pending` holds a record the scheduler asked to confirm: {product_id, applied_on, revision, tier, reason, alerts}.
+// `pending` holds a record the scheduler asked to confirm: {product_id, applied_on, revision, tier, reason, alerts, step_id, partner_product_id, skip_earlier}.
+// `earlier` holds a record refused as `earlier_steps_open`: {body, steps}; skipEarlier() sends it again with `skip_earlier`.
 export const useSuggestionStore = defineStore('suggestion', {
-  state: () => ({ phase: 'idle', lineId: '', suggestion: null, history: [], cycles: [], error: '', busy: false, updating: false, pending: null, tracked: '', run: 0 }),
+  state: () => ({ phase: 'idle', lineId: '', suggestion: null, history: [], cycles: [], error: '', busy: false, updating: false, pending: null, earlier: null, tracked: '', run: 0 }),
   getters: {
     groups: (s) => s.suggestion?.groups ?? { recommended: [], eligible: [], excluded: [] },
     units() { return [...this.groups.recommended, ...this.groups.eligible, ...this.groups.excluded]; },
@@ -33,7 +35,7 @@ export const useSuggestionStore = defineStore('suggestion', {
     // Read the line's suggestion; while a newer run is in progress keep reading until it is done.
     async load(lineId, wait = sleep) {
       this.run++; const run = this.run;
-      Object.assign(this, { phase: 'loading', lineId, suggestion: null, history: [], cycles: [], error: '', busy: false, updating: false, pending: null });
+      Object.assign(this, { phase: 'loading', lineId, suggestion: null, history: [], cycles: [], error: '', busy: false, updating: false, pending: null, earlier: null });
       try {
         await this._read();
         if (run !== this.run) return;
@@ -80,10 +82,13 @@ export const useSuggestionStore = defineStore('suggestion', {
       return out;
     },
     // Submit unconfirmed; a `confirmation_required` answer is not an error, it waits in `pending` for confirm() or cancel().
-    async record(productId, appliedOn, wait = sleep) { return this._submit({ product_id: productId, applied_on: appliedOn, revision: this.revision, confirmed: false }, wait); },
+    // `step` ({step_id, partner_product_id}) records against a plan step.
+    async record(productId, appliedOn, wait = sleep, step = {}) { return this._submit({ product_id: productId, applied_on: appliedOn, revision: this.revision, confirmed: false, ...stepFields(step) }, wait); },
     // Resubmit what the scheduler asked to confirm, with the revision it returned.
-    async confirm(wait = sleep) { const p = this.pending; return p ? this._submit({ product_id: p.product_id, applied_on: p.applied_on, revision: p.revision, confirmed: true }, wait) : undefined; },
-    cancel() { this.pending = null; },
+    async confirm(wait = sleep) { const p = this.pending; return p ? this._submit({ product_id: p.product_id, applied_on: p.applied_on, revision: p.revision, confirmed: true, ...stepFields(p), ...(p.skip_earlier ? { skip_earlier: true } : {}) }, wait) : undefined; },
+    // Send the record refused as `earlier_steps_open` again, skipping the earlier steps in the same request.
+    async skipEarlier(wait = sleep) { const b = this.earlier?.body; return b ? this._submit({ ...b, skip_earlier: true }, wait) : undefined; },
+    cancel() { this.pending = null; this.earlier = null; },
     // Skip a step ({reason} optional), or undo the skip: both start a run, followed like a record. `step_not_open` reads the line again.
     async skip(stepId, reason = null, wait = sleep) { return this._step('post', stepId, reason ? { reason } : undefined, wait); },
     async undoSkip(stepId, wait = sleep) { return this._step('del', stepId, undefined, wait); },
@@ -104,7 +109,7 @@ export const useSuggestionStore = defineStore('suggestion', {
     },
     async _submit(body, wait) {
       if (this.busy) return undefined;
-      this.busy = true; this.error = ''; this.pending = null; const run = this.run;
+      this.busy = true; this.error = ''; this.pending = null; this.earlier = null; const run = this.run;
       try {
         if (!body.product_id) throw Object.assign(new Error('product'), { code: 'validation_error' });
         if (!DATE.test(body.applied_on ?? '')) throw Object.assign(new Error('date'), { code: 'invalid_date' });
@@ -116,9 +121,10 @@ export const useSuggestionStore = defineStore('suggestion', {
       } catch (err) {
         if (run !== this.run) return 'error';
         if (err.code === 'confirmation_required') {
-          this.pending = { product_id: body.product_id, applied_on: body.applied_on, revision: err.data?.revision ?? body.revision, tier: err.data?.tier ?? null, reason: err.data?.reason ?? null, alerts: err.data?.alerts ?? [] };
+          this.pending = { product_id: body.product_id, applied_on: body.applied_on, revision: err.data?.revision ?? body.revision, tier: err.data?.tier ?? null, reason: err.data?.reason ?? null, alerts: err.data?.alerts ?? [], ...stepFields(body), skip_earlier: body.skip_earlier === true };
           return 'confirm';
         }
+        if (err.code === 'earlier_steps_open') { this.earlier = { body, steps: err.data?.steps ?? [] }; return 'earlier'; }
         this.error = messageFor(err);
         if (STALE.includes(err.code)) { try { await this._read(); } catch { /* keep the message */ } }
         return 'error';
