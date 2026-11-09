@@ -1,5 +1,6 @@
 <script setup>
 import { computed, watch, onBeforeUnmount } from 'vue';
+import { shownName } from '../helpers/checks.js';
 import { useInsightsStore } from '../stores/insights.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import WeekCharts from './WeekCharts.vue';
@@ -82,7 +83,7 @@ const result = computed(() => {
           </article>
           <article class="metric">
             <span>Last treatment</span>
-            <strong>{{ last?.product ?? 'None recorded' }}</strong>
+            <strong>{{ last?.product ? shownName(last.product) : 'None recorded' }}</strong>
             <small>{{ last ? `Applied ${last.applied_on}` : 'No application recorded for this line' }}</small>
           </article>
         </div>

@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useInsightsStore } from '../stores/insights.js';
 import InsightsSummary from './InsightsSummary.vue';
-import { sentenceCase } from '../helpers/checks.js';
+import { sentenceCase, shownName } from '../helpers/checks.js';
 import { trackLabel, trackSplit } from '../helpers/tracks.js';
 import { sprayBadge, dayMonth, fracHeading, shownGroups, usageLine, STATUS_LABEL } from '../helpers/insights.js';
 
@@ -27,7 +27,7 @@ const fracTone = computed(() => (usage.value.some((g) => g.status === 'maxed') ?
           <li class="ok"><span class="date">Today</span><b>Next spray decision</b></li>
           <li v-for="h in history" :key="h.applied_on + h.product_id" :class="sprayBadge(h, usage).tone">
             <span class="date">{{ dayMonth(h.applied_on) }}</span>
-            <b>{{ h.product }}</b>
+            <b>{{ shownName(h.product) }}</b>
             <span class="pills">
               <span v-for="m in h.plant_mobility" :key="m" class="jr-pill">{{ sentenceCase(m) }}</span>
               <span class="jr-pill">FRAC {{ h.frac_code }}</span><span class="jr-pill">{{ trackLabel(h.track) }}</span><span v-if="h.off_plan" class="jr-pill">Off-plan</span>

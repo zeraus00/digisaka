@@ -1,7 +1,7 @@
 <script setup>
 import { computed, watch } from 'vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
-import { unitFacts, titleCase, reasonText, checkLabel, humanDetail, stripChecks, GROUP_LABEL } from '../helpers/checks.js';
+import { unitFacts, shownName, reasonText, checkLabel, humanDetail, stripChecks, GROUP_LABEL } from '../helpers/checks.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
 import { paginate } from '../helpers/paging.js';
 import { TRACKS, trackLabel } from '../helpers/tracks.js';
@@ -21,7 +21,7 @@ const inTab = (t) => rows.value.filter((r) => r.u.track === t);
 const paged = computed(() => paginate(inTab(tab.value), page.value));
 watch(() => suggestion.units, () => { pages.value = {}; });
 // A recommended partner names the single-site steps it partners ("Partner for …"); the server sets `partner_for`.
-const partnerFor = (u) => (u.partner_for ?? []).map((id) => titleCase(suggestion.units.find((x) => x.unit_id === id)?.label ?? id)).join(', ');
+const partnerFor = (u) => (u.partner_for ?? []).map((id) => shownName(suggestion.units.find((x) => x.unit_id === id)?.label ?? id)).join(', ');
 const showDetails = (u) => emit('select', u);
 </script>
 
@@ -38,8 +38,8 @@ const showDetails = (u) => emit('select', u);
     <div class="jr-tier">
       <template v-for="({ u, g }, i) in paged.shown" :key="u.unit_id">
         <template v-if="g !== 'excluded'">
-          <button type="button" class="jr-unit combo" :aria-label="`View details for ${titleCase(u.label)}`" @click="showDetails(u)">
-            <span class="top"><b>{{ titleCase(u.label) }}</b><span v-if="g === 'recommended'" class="jr-pill ok">Recommended</span></span>
+          <button type="button" class="jr-unit combo" :aria-label="`View details for ${shownName(u.label)}`" @click="showDetails(u)">
+            <span class="top"><b>{{ shownName(u.label) }}</b><span v-if="g === 'recommended'" class="jr-pill ok">Recommended</span></span>
             <span v-if="partnerFor(u)" class="pills"><span class="jr-pill warn">Partner for {{ partnerFor(u) }}</span></span>
             <span class="pills">
               <span v-if="unitFacts(u).frac" class="jr-pill">FRAC {{ unitFacts(u).frac }}</span><span v-if="unitFacts(u).site" class="jr-pill">{{ unitFacts(u).site }}</span>
@@ -50,8 +50,8 @@ const showDetails = (u) => emit('select', u);
         </template>
         <template v-else>
           <div v-if="i === 0 || paged.shown[i - 1].g !== 'excluded'"><p class="jr-hint">Use caution</p><h3>Excluded options</h3></div>
-          <button type="button" class="jr-unit excluded" :aria-label="`View excluded product details for ${titleCase(u.label)}`" @click="showDetails(u)">
-            <span class="top"><b>{{ titleCase(u.label) }}</b><span class="jr-pill bad">{{ GROUP_LABEL.excluded }}</span></span>
+          <button type="button" class="jr-unit excluded" :aria-label="`View excluded product details for ${shownName(u.label)}`" @click="showDetails(u)">
+            <span class="top"><b>{{ shownName(u.label) }}</b><span class="jr-pill bad">{{ GROUP_LABEL.excluded }}</span></span>
             <span class="pills">
               <span v-if="unitFacts(u).frac" class="jr-pill">FRAC {{ unitFacts(u).frac }}</span><span v-if="unitFacts(u).site" class="jr-pill">{{ unitFacts(u).site }}</span>
               <span v-for="m in unitFacts(u).mobility" :key="m" class="jr-pill">{{ m }}</span><span class="jr-pill jr-off">Price: Coming soon</span>

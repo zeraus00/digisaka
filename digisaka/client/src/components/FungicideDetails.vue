@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import ProductFacts from './ProductFacts.vue';
-import { titleCase, checkLabel, humanDetail, reasonText, planFor, RESULT_LABEL, GROUP_LABEL } from '../helpers/checks.js';
+import { shownName, checkLabel, humanDetail, reasonText, planFor, RESULT_LABEL, GROUP_LABEL } from '../helpers/checks.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
 import '../styles/journey.css';
 
@@ -17,10 +17,10 @@ const checks = computed(() => (props.unit.checks ?? []).map((c) => ({ ...c, labe
   <section class="fd-layout">
     <div>
       <article class="jr-card">
-        <div class="jr-row"><div><h2>{{ titleCase(unit.label) }}</h2><span class="jr-hint">Product information</span></div><span class="jr-pill" :class="tier === 'excluded' ? 'bad' : 'ok'">{{ GROUP_LABEL[tier] }}</span></div>
+        <div class="jr-row"><div><h2>{{ shownName(unit.label) }}</h2><span class="jr-hint">Product information</span></div><span class="jr-pill" :class="tier === 'excluded' ? 'bad' : 'ok'">{{ GROUP_LABEL[tier] }}</span></div>
         <ProductFacts :unit="unit" />
         <div class="jr-rows">
-          <div v-if="plan?.partnerOf" class="jr-row"><span>Plan</span><b>Planned on {{ plan.window?.split(' to ')[0] }} as partner of {{ titleCase(plan.partnerOf) }}</b></div>
+          <div v-if="plan?.partnerOf" class="jr-row"><span>Plan</span><b>Planned on {{ plan.window?.split(' to ')[0] }} as partner of {{ shownName(plan.partnerOf) }}</b></div>
           <div class="jr-row"><span>Application window</span><b>{{ plan?.window ?? 'Not in this plan' }}</b></div>
           <div class="jr-row"><span>Next assessment</span><b>{{ plan?.next ?? 'Not in this plan' }}</b></div>
         </div>

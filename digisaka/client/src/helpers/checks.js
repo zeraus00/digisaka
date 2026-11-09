@@ -69,6 +69,8 @@ export const stripChecks = (unit) => (unit.checks ?? []).filter((c) => WORST.inc
 
 // A product name arrives as the source wrote it ("azoxystrobin"); capitalise each word, leaving the rest as written.
 export const titleCase = (s) => (s ?? '').replace(/(^|\s)(\p{L})/gu, (_, sp, c) => sp + c.toUpperCase());
+// A product name for display: an all-lowercase one is capitalized at each word start (also after - / ( +); one with a capital (a brand) is kept.
+export const shownName = (s) => (!s || s !== s.toLowerCase() ? (s ?? '') : s.replace(/(^|[\s\-/(+])(\p{L})/gu, (_, b, c) => b + c.toUpperCase()));
 export const sentenceCase = (s) => (s ?? '').charAt(0).toUpperCase() + (s ?? '').slice(1);
 
 // The facts a unit card shows, read from the unit's `facts`. An empty fact is null (or []): the component says "Unknown".
