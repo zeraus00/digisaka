@@ -9,6 +9,7 @@ const MESSAGES = {
   product_not_offered: 'That product is not part of the current suggestion.',
   invalid_date: 'Enter the date as YYYY-MM-DD.',
   application_already_recorded: 'The application was already recorded.',
+  step_not_open: 'That step is no longer open. The schedule has been read again.',
   cycle_running: 'The cycle is still running.',
   cycle_not_failed: 'Only a failed cycle can be retried.',
   cycle_slot_taken: 'Another cycle is already running for this line.',

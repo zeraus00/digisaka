@@ -10,7 +10,7 @@ const e = encodeURIComponent;
 export const productOf = (unitId) => unitId.split('|').pop();
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 // Codes that mean the line moved on under the screen: show the real state again.
-const STALE = ['application_already_recorded'];
+const STALE = ['application_already_recorded', 'step_not_open'];
 
 // A line's current treatment suggestion, the line's recorded applications, and recording against it.
 // phase: idle, loading, ready, notfound, error. `updating` is true while a newer run is in progress.
@@ -84,6 +84,24 @@ export const useSuggestionStore = defineStore('suggestion', {
     // Resubmit what the scheduler asked to confirm, with the revision it returned.
     async confirm(wait = sleep) { const p = this.pending; return p ? this._submit({ product_id: p.product_id, applied_on: p.applied_on, revision: p.revision, confirmed: true }, wait) : undefined; },
     cancel() { this.pending = null; },
+    // Skip a step ({reason} optional), or undo the skip: both start a run, followed like a record. `step_not_open` reads the line again.
+    async skip(stepId, reason = null, wait = sleep) { return this._step('post', stepId, reason ? { reason } : undefined, wait); },
+    async undoSkip(stepId, wait = sleep) { return this._step('del', stepId, undefined, wait); },
+    async _step(verb, stepId, body, wait) {
+      if (this.busy) return undefined;
+      this.busy = true; this.error = ''; const run = this.run;
+      try {
+        const out = await api[verb](`${base}/lines/${e(this.lineId)}/steps/${e(stepId)}/skip`, body);
+        if (run !== this.run) return 'done';
+        if (out.reschedule) { this.busy = false; await this.follow(out.reschedule.cycle_id, wait, run); } else await this._read();
+        return 'done';
+      } catch (err) {
+        if (run !== this.run) return 'error';
+        this.error = messageFor(err);
+        if (STALE.includes(err.code)) { try { await this._read(); } catch { /* keep the message */ } }
+        return 'error';
+      } finally { if (run === this.run) this.busy = false; }
+    },
     async _submit(body, wait) {
       if (this.busy) return undefined;
       this.busy = true; this.error = ''; this.pending = null; const run = this.run;

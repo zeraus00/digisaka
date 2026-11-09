@@ -38,4 +38,14 @@ describe('ScheduleCalendar', () => {
     expect(html).toContain('Off-plan');
     expect(html).toContain('1 recorded · 1 suggested');
   });
+  it('Due and Overdue steps get Skip, a Skipped step gets Undo skip, and Planned or Applied ones get neither', async () => {
+    const at = (status, id) => ({ date: '2026-06-12', application: { product: `p-${status}`, unit_id: unit, step_id: id, timing_window: { start: '2026-06-12', end: '2026-06-14' }, kind: 'single_site', status, skip: status === 'skipped' ? { on: '2026-06-11', reason: 'rain' } : null } });
+    const one = async (status) => render({ days: [at(status, 's1')], applications: [] });
+    expect(await one('due')).toContain('>Skip<');
+    expect(await one('overdue')).toContain('>Skip<');
+    const skipped = await one('skipped');
+    expect(skipped).toContain('Undo skip');
+    expect(skipped).toContain('Reason: rain.');
+    for (const status of ['planned', 'applied']) { const html = await one(status); expect(html).not.toContain('>Skip<'); expect(html).not.toContain('Undo skip'); }
+  });
 });

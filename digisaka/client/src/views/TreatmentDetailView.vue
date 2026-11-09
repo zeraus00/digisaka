@@ -167,7 +167,7 @@ const lastApplied = computed(() => {
         <div v-else class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy || store.updating" @click="record">Record application</button></div>
       </section>
 
-      <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" />
+      <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" :busy="store.busy || store.updating" @skip="(id, reason) => store.skip(id, reason)" @undo="(id) => store.undoSkip(id)" />
 
       <EvidenceCharts :cycle-id="sug.revision" :line="lineId" :week="week" />
         </template>

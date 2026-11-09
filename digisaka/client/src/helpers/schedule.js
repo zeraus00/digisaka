@@ -6,6 +6,10 @@ export const STEP_KIND = { single_site: 'Alone', single_site_with_partner: 'With
 // The status pill of a step: the server sets the status, these only word it. Overdue is red, Applied green, the rest neutral.
 export const STATUS_LABEL = { planned: 'Planned', due: 'Due', applied: 'Applied', skipped: 'Skipped', overdue: 'Overdue' };
 export const STATUS_TONE = { applied: 'ok', overdue: 'bad', due: 'warn', skipped: '', planned: '' };
+export const SKIP_REASONS = { rain: 'Rain', no_product: 'No product', low_disease: 'Low disease', other: 'Other' };
+// The buttons follow the status: Skip on a Due or Overdue step, Undo skip on a Skipped one (the server decides the rest).
+export const canSkip = (e) => !!e.stepId && (e.status === 'due' || e.status === 'overdue');
+export const canUndo = (e) => !!e.stepId && e.status === 'skipped';
 export const MIXTURE_NOTE = 'Mixture conditions checked; physical compatibility not assessed.';
 
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -36,7 +40,7 @@ export function scheduleEvents(days, applications = [], nameOf = (id) => id, ass
         date: d.date, kind: app.status === 'applied' ? 'applied' : app.status === 'skipped' ? 'skipped' : 'application',
         label: partner ? `${app.product} + ${partner.product}` : app.product, moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
         start, end, done: app.status === 'applied', productId: app.unit_id ? productOf(app.unit_id) : null, step: app.kind ?? null, why: app.why ?? null, partner,
-        status: app.status, note: app.status_note ?? null, skip: app.skip ?? null, offPlan: app.off_plan === true,
+        stepId: app.step_id ?? null, status: app.status, note: app.status_note ?? null, skip: app.skip ?? null, offPlan: app.off_plan === true,
       });
     } else if (app) {
       const { start, end } = app.timing_window ?? { start: d.date, end: d.date };

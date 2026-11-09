@@ -212,3 +212,18 @@ test('the explanation is {text, caveat} on a ranked plan and null on a monitorin
   assert.ok(ranked.explanation.text.length > 0 && /not yet validated/.test(ranked.explanation.caveat));
   assert.equal((await suggestion('L06')).explanation, null);
 });
+
+test('a step can be skipped and the skip undone; a step that is not open is step_not_open', async () => {
+  const open = (await suggestion('L02')).schedule.map((d) => d.application).find((a) => a && ['planned', 'due', 'overdue'].includes(a.status));
+  assert.ok(open?.step_id, 'the plan has a step with a status and an id');
+  const skipped = await call('POST', `/lines/L02/steps/${open.step_id}/skip`, { reason: 'rain' });
+  assert.equal(skipped.status, 201);
+  assert.ok('reschedule' in skipped.body);
+  const mine = (await suggestion('L02')).schedule.map((d) => d.application).find((a) => a?.step_id === open.step_id);
+  assert.deepEqual([mine.status, mine.skip.reason], ['skipped', 'rain']);
+  assert.equal((await call('POST', `/lines/L02/steps/${open.step_id}/skip`)).status, 409);
+  assert.equal((await call('DELETE', `/lines/L02/steps/${open.step_id}/skip`)).status, 200);
+  const undone = await call('DELETE', `/lines/L02/steps/${open.step_id}/skip`);
+  assert.deepEqual([undone.status, undone.body.error], [409, 'step_not_open']);
+  assert.equal((await call('POST', '/lines/L02/steps/nope/skip')).body.error, 'step_not_open');
+});

@@ -82,7 +82,7 @@ const scheduleOf = (days) => days.map((d) => {
 // Overdue after it; a recorded product inside the window applies the step. A record that fits no step is an off-plan row.
 // shortcut: no partner, skip or past plans here (the stub plans single steps); the live run is the gate for those.
 const plusDays = (iso, n) => new Date(Date.parse(`${iso}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
-const servedOf = (days, applications, day) => {
+const servedOf = (days, applications, day, skips = []) => {
   const used = new Set();
   const out = days.map((d, i) => {
     const a = d.application;
@@ -90,9 +90,11 @@ const servedOf = (days, applications, day) => {
     const { start, end } = a.timing_window ?? { start: d.date, end: d.date };
     const rec = applications.find((r) => !used.has(r) && r.product_id === productOf(a.unit_id) && r.applied_on >= start && r.applied_on <= end);
     if (rec) used.add(rec);
-    const status = rec ? 'applied' : day < start ? 'planned' : day <= end ? 'due' : 'overdue';
-    const step = { ...a, step_id: `step-${d.date}-${i}`, status, status_note: null, applied_on: rec?.applied_on ?? null, skip: null, off_plan: false };
-    return { ...d, ...(rec ? { date: rec.applied_on } : {}), application: step };
+    const stepId = `step-${d.date}-${i}`;
+    const skip = rec ? null : skips.find((k) => k.step_id === stepId) ?? null;
+    const status = rec ? 'applied' : skip ? 'skipped' : day < start ? 'planned' : day <= end ? 'due' : 'overdue';
+    const step = { ...a, step_id: stepId, status, status_note: null, applied_on: rec?.applied_on ?? null, skip: skip && { on: skip.on, reason: skip.reason }, off_plan: false };
+    return { ...d, ...(rec ? { date: rec.applied_on } : skip ? { date: skip.on } : {}), application: step };
   });
   const offPlan = applications.filter((r) => !used.has(r) && r.applied_on >= plusDays(day, -30)).map((r) => ({
     date: r.applied_on, weekday: null, state: 'needs_approval',
@@ -189,7 +191,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
       revision: cur.revision, trigger: cur.trigger, created_at: cur.created_at, basis: cur.basis,
       line_stage: { stage: confirmed ? 2 : null, tally: confirmed ? { 2: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
       groups, explanation: EXPLANATIONS[cur.payload] ?? null, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
-      schedule: servedOf(scheduleOf(frozen?.preview.days ?? []), line.applications, today()), alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
+      schedule: servedOf(scheduleOf(frozen?.preview.days ?? []), line.applications, today(), line.skips ?? []), alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
       running: runsOf(lineId).some((r) => r.status === 'running'), outcome, outcome_reason: outcome ? cycle.outcome_reason ?? null : null,
     };
   }
@@ -224,6 +226,36 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
         if (!line) return unknownLine(params.id);
         if (!currentOf(line)) return fail(404, 'unknown_cycle', `Line ${params.id} has no finished run`);
         return ok(view(params.id));
+      }),
+    },
+    {
+      // Skip and Undo skip a step of the current plan; either starts a run (trigger skip, skip_undone).
+      method: 'POST', path: `${BASE}/lines/:id/steps/:step/skip`,
+      handle: authed(({ params, body }) => {
+        settleAll();
+        const line = store.data.lines[params.id];
+        if (!line) return unknownLine(params.id);
+        if (!currentOf(line)) return fail(404, 'unknown_cycle', `Line ${params.id} has no finished run`);
+        const step = view(params.id).schedule.map((d) => d.application).find((a) => a?.step_id === params.step);
+        if (!step || !['planned', 'due', 'overdue'].includes(step.status)) return fail(409, 'step_not_open', `Step ${params.step} is not open`);
+        if (body?.reason != null && !['rain', 'no_product', 'low_disease', 'other'].includes(body.reason)) return fail(400, 'validation_error', 'reason: must be rain, no_product, low_disease or other');
+        (line.skips ??= []).push({ step_id: params.step, on: today(), reason: body?.reason ?? null });
+        const week = [...line.cycles].sort((a, b) => b.week.localeCompare(a.week)).at(0).week;
+        const run = startRun(params.id, week, 'skip');
+        return { status: 201, body: { reschedule: run && { cycle_id: run.cycle_id } } };
+      }),
+    },
+    {
+      method: 'DELETE', path: `${BASE}/lines/:id/steps/:step/skip`,
+      handle: authed(({ params }) => {
+        settleAll();
+        const line = store.data.lines[params.id];
+        if (!line) return unknownLine(params.id);
+        if (!(line.skips ?? []).some((k) => k.step_id === params.step)) return fail(409, 'step_not_open', `Step ${params.step} is not skipped`);
+        line.skips = line.skips.filter((k) => k.step_id !== params.step);
+        const week = [...line.cycles].sort((a, b) => b.week.localeCompare(a.week)).at(0).week;
+        const run = startRun(params.id, week, 'skip_undone');
+        return ok({ reschedule: run && { cycle_id: run.cycle_id } });
       }),
     },
     {
