@@ -50,7 +50,7 @@ const BASIS_TEXT = {
 // recorded `real` payload's per-product sections, matched by product name (the clean and stressed payloads have none).
 const REAL_BY_NAME = new Map(real.selection.units.map((u) => [u.product.toLowerCase(), u]));
 // shortcut: 10 to 15 days for every unit (the sample ABox's general fungicide guidance), not read per product; upgrade when the live run serves it.
-const INTERVAL = { min_days: 10, max_days: 15 };
+const INTERVAL = { min_days: 10, max_days: 15, source: null };
 const named = (xs) => xs.map(({ id, label }) => ({ id, label }));
 function factsOf(u) {
   const r = REAL_BY_NAME.get(u.product.toLowerCase());

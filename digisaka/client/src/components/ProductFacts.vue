@@ -20,6 +20,7 @@ const rows = computed(() => [
   <div class="facts">
     <div class="jr-rows">
       <div v-for="[label, value] in rows" :key="label" class="jr-row"><span>{{ label }}</span><b>{{ value ?? 'Unknown' }}</b></div>
+      <div v-if="f.intervalSource" class="jr-row"><span>Source</span><b>{{ f.intervalSource }}</b></div>
       <!-- TODO(contract): formulation, price -->
       <div class="jr-row jr-off"><span>Formulation</span><b>Coming soon</b></div>
       <div class="jr-row jr-off"><span>Price</span><b>Coming soon</b></div>

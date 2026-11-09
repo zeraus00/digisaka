@@ -97,6 +97,7 @@ export function unitFacts(unit) {
     rate: unit.facts?.application_rates?.[0]?.text ?? null,
     rainfast: unit.facts?.weather_requirement?.rainfast_period ?? null,
     interval: intervalText(unit.facts?.application_interval),
+    intervalSource: unit.facts?.application_interval?.source ?? null,
   };
 }
 
