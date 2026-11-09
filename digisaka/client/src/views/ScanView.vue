@@ -224,7 +224,6 @@ watch(() => scan.log.length, async () => { await nextTick(); if (logBox.value) l
           <b>Unvalidated / Review Required <small>({{ groups.unvalidated.length }})</small></b>
           <ul class="results"><li v-for="l in groups.unvalidated" :key="l.id"><img :src="preview(l)" :alt="`Leaf ${scan.leaves.indexOf(l) + 1}`">Leaf {{ scan.leaves.indexOf(l) + 1 }} — {{ outcomeLabel(l.outcome) }}<template v-if="l.outcome === 'referral'">: {{ REFERRAL_TEXT }}</template></li></ul>
         </div>
-        <p class="hint">This is an AI-assisted assessment and not a confirmed diagnosis. Results should be verified by an agricultural specialist before treatment decisions.</p>
       </section>
 
       <SuggestionUpdate :line="scan.line" :week="scan.week" :reschedule="reschedule" :show-done="false" />

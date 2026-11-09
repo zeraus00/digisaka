@@ -38,7 +38,6 @@ const checks = computed(() => (props.unit.checks ?? []).map((c) => ({ ...c, labe
       <div v-for="c in checks" :key="c.check" class="jr-check"><span>{{ c.label }}<template v-if="c.text"><br><small class="jr-hint">{{ c.text }}</small></template></span><span class="jr-pill" :class="c.result === 'pass' ? 'ok' : c.result === 'fail' ? 'bad' : 'warn'">{{ RESULT_LABEL[c.result] ?? c.result }}</span></div>
       <!-- TODO(contract): label and registration -->
       <div class="jr-check jr-off"><span>Label and registration</span><span class="jr-pill">Coming soon</span></div>
-      <p class="jr-hint">Verify the registered label and consult an agricultural specialist before making treatment decisions.</p>
     </aside>
   </section>
 </template>

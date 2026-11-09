@@ -238,7 +238,6 @@ const lastApplied = computed(() => {
         </template>
       </template>
     </div>
-    <p class="disclaimer">AI-assisted scheduling should be verified by an agricultural specialist before treatment decisions.</p>
   </div>
 </template>
 
@@ -250,7 +249,6 @@ const lastApplied = computed(() => {
 .banner.warn { background: #FCE7C8; color: #8A5A00; } .banner.warn .tick { background: #D98A00; }
 .btns { display: flex; gap: 10px; } .btns button { flex: 1; padding: 13px; border: 0; border-radius: 14px; background: var(--forest); color: #fff; font: 800 15px var(--font-display); }
 .btns button.ghost { background: none; border: 1px solid var(--line); color: var(--ink); } .btns button:disabled { opacity: .45; }
-.disclaimer { margin-top: 20px; font-size: 12.5px; color: var(--ink-soft); text-align: center; }
 .prop-card { padding: 18px; margin-bottom: 18px; border-radius: 20px; background: var(--card); box-shadow: var(--shadow); }
 .prop-card h3 { font: 800 20px var(--font-display); color: var(--forest); margin-bottom: 4px; }
 .prop-card .meta { color: var(--ink-soft); font-size: 14px; margin-bottom: 10px; }
