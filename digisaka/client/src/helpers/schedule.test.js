@@ -55,4 +55,14 @@ describe('monthGrids', () => {
     expect(jun.onDay[29][0].label).toBe('azoxystrobin');
     expect(jun.events).toHaveLength(1);
   });
+
+  it('makes one event per step, titled with both products and groups, with the kind, note and partner', () => {
+    const days = [{ date: '2026-06-29', application: { product: 'propiconazole', moa: '3', unit_id: unit, kind: 'single_site_with_partner', why: 'FRAC 3 is next.', partner: { unit_id: 'q|mz', product: 'mancozeb', moa: 'M' }, timing_window: { start: '2026-06-29', end: '2026-07-03' } } }];
+    const [e] = scheduleEvents(days, []);
+    expect([e.label, e.moa, e.step, e.why, e.partner.product]).toEqual(['propiconazole + mancozeb', '3 + M', 'single_site_with_partner', 'FRAC 3 is next.', 'mancozeb']);
+  });
+  it('marks a multisite-alone step done when its own product is recorded in the window', () => {
+    const days = [{ date: '2026-06-29', application: { product: 'mancozeb', moa: 'M', unit_id: 'q|mz', kind: 'multisite', why: 'x', partner: null, timing_window: { start: '2026-06-29', end: '2026-07-03' } } }];
+    expect(scheduleEvents(days, [{ product_id: 'mz', applied_on: '2026-07-01' }]).find((x) => x.kind === 'application').done).toBe(true);
+  });
 });

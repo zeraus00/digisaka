@@ -20,6 +20,8 @@ const rows = computed(() => ['recommended', 'eligible', 'excluded'].flatMap((g) 
 const inTab = (t) => rows.value.filter((r) => r.u.track === t);
 const paged = computed(() => paginate(inTab(tab.value), page.value));
 watch(() => suggestion.units, () => { pages.value = {}; });
+// A recommended partner names the single-site steps it partners ("Partner for …"); the server sets `partner_for`.
+const partnerFor = (u) => (u.partner_for ?? []).map((id) => titleCase(suggestion.units.find((x) => x.unit_id === id)?.label ?? id)).join(', ');
 const showDetails = (u) => emit('select', u);
 </script>
 
@@ -38,6 +40,7 @@ const showDetails = (u) => emit('select', u);
         <template v-if="g !== 'excluded'">
           <button type="button" class="jr-unit combo" :aria-label="`View details for ${titleCase(u.label)}`" @click="showDetails(u)">
             <span class="top"><b>{{ titleCase(u.label) }}</b><span v-if="g === 'recommended'" class="jr-pill ok">Recommended</span></span>
+            <span v-if="partnerFor(u)" class="pills"><span class="jr-pill warn">Partner for {{ partnerFor(u) }}</span></span>
             <span class="pills">
               <span v-if="unitFacts(u).frac" class="jr-pill">FRAC {{ unitFacts(u).frac }}</span><span v-if="unitFacts(u).site" class="jr-pill">{{ unitFacts(u).site }}</span>
               <span v-for="m in unitFacts(u).mobility" :key="m" class="jr-pill">{{ m }}</span>

@@ -111,10 +111,12 @@ const REASON = {
 export const reasonText = (code) => (code == null ? null : REASON[code] ?? (CHECK_LABEL[code] ? `Fails: ${CHECK_LABEL[code]}` : code));
 
 // This unit's place in the schedule: the window of its application and the first monitoring day after it ("Not in this plan" when it has none).
+// A partner is in the plan on its single-site step's day: `partnerOf` then names that step's product ("Planned on X as partner of Y").
 export function planFor(days, unit) {
-  const i = (days ?? []).findIndex((d) => d.application?.unit_id === unit.unit_id);
+  const i = (days ?? []).findIndex((d) => d.application?.unit_id === unit.unit_id || d.application?.partner?.unit_id === unit.unit_id);
   if (i < 0) return null;
-  const w = days[i].application.timing_window ?? null;
+  const app = days[i].application;
+  const w = app.timing_window ?? null;
   const next = days.slice(i + 1).find((d) => d.monitoring)?.date ?? null;
-  return { window: w ? `${w.start} to ${w.end}` : null, next };
+  return { window: w ? `${w.start} to ${w.end}` : null, next, partnerOf: app.unit_id === unit.unit_id ? null : app.product };
 }

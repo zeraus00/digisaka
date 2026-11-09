@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { scheduleEvents, monthGrids } from '../helpers/schedule.js';
+import '../styles/journey.css';
+import { scheduleEvents, monthGrids, STEP_KIND, MIXTURE_NOTE } from '../helpers/schedule.js';
 import { todayIso } from '../helpers/today.js';
 
 const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] }, nameOf: { type: Function, default: (id) => id }, assessedWeeks: { type: Array, default: () => [] } });
@@ -51,9 +52,13 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
           <span class="node">{{ e.done ? '✓' : '' }}</span>
           <div class="date">{{ range(e) }}<small>{{ e.date.slice(0, 4) }}</small></div>
           <div class="card">
-            <h5>{{ e.label }}<small v-if="e.moa"> · {{ e.moa }}</small></h5>
+            <h5>{{ e.label }}<small v-if="e.moa"> · FRAC {{ e.moa }}</small> <span v-if="STEP_KIND[e.step]" class="jr-pill" :class="e.step === 'multisite' ? 'warn' : 'ok'">{{ STEP_KIND[e.step] }}</span></h5>
             <p v-if="e.kind === 'applied'">Applied on {{ e.date }}.</p>
-            <p v-else-if="e.kind === 'application'">Apply between {{ e.start }} and {{ e.end }}.<template v-if="e.done"> Applied.</template></p>
+            <template v-else-if="e.kind === 'application'">
+              <p>Apply between {{ e.start }} and {{ e.end }}.<template v-if="e.done"> Applied.</template></p>
+              <p v-if="e.why" class="why">{{ e.why }}</p>
+              <p v-if="e.partner" class="why">{{ MIXTURE_NOTE }}</p>
+            </template>
             <p v-else>Scan this line again on {{ e.date }}.<template v-if="e.after"> Follows {{ e.after }}.</template></p>
           </div>
         </li>
@@ -88,5 +93,5 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
 .plum .node { border-color: #8A4FA0; } .done .node { background: var(--forest); border-color: var(--forest); }
 .date { font: 800 14px var(--font-display); color: var(--forest); } .date small { display: block; font-weight: 600; color: var(--ink-soft); }
 .card h5 { font: 800 15px var(--font-display); } .card small { color: var(--ink-soft); font-weight: 600; }
-.card p { margin-top: 2px; font-size: 13.5px; color: var(--ink-soft); }
+.card p { margin-top: 2px; font-size: 13.5px; color: var(--ink-soft); } .card .why { font-style: italic; }
 </style>

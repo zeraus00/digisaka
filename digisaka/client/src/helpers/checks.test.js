@@ -73,8 +73,10 @@ describe('unit facts and reasons', () => {
   });
   it('finds the unit in the plan, with its next assessment, or null', () => {
     const days = [{ date: 'a', application: { unit_id: 'u1', timing_window: { start: '2026-06-08', end: '2026-06-14' } } }, { date: '2026-06-15', monitoring: { label: 'x' } }];
-    expect(planFor(days, unit)).toEqual({ window: '2026-06-08 to 2026-06-14', next: '2026-06-15' });
+    expect(planFor(days, unit)).toEqual({ window: '2026-06-08 to 2026-06-14', next: '2026-06-15', partnerOf: null });
     expect(planFor(days, { unit_id: 'zz' })).toBeNull();
+    const partnered = [{ date: 'a', application: { unit_id: 'u2', product: 'propiconazole', partner: { unit_id: 'u1' }, timing_window: { start: '2026-06-08', end: '2026-06-14' } } }];
+    expect(planFor(partnered, unit)).toEqual({ window: '2026-06-08 to 2026-06-14', next: null, partnerOf: 'propiconazole' });
   });
 });
 

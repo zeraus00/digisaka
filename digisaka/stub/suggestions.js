@@ -73,7 +73,9 @@ const scheduleOf = (days) => days.map((d) => {
   if (!d.application) return d;
   const { frac, ...application } = d.application;
   if (application.weather?.status === 'ok') application.weather = { status: 'ok' };
-  return { ...d, application };
+  // The frozen payloads hold single-step days with no partner: kind, track and the step note are set as the scheduler sets them.
+  const multisite = REAL_BY_NAME.get(String(application.product).toLowerCase())?.resistance.multisite === true;
+  return { ...d, application: { ...application, kind: multisite ? 'multisite' : 'single_site', track: multisite ? 'multisite' : 'single_site', why: multisite ? 'No single-site group can be used on this date, so the group is applied alone as a multisite step.' : 'The group is next in the rotation set; it has not been used yet.', partner: null } };
 });
 
 // recommended: the sequencer's pick; eligible: passed but not picked; excluded: failed a check or not for the stage.
@@ -154,7 +156,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
         unit_id: u.unit_id, product_id: productOf(u.unit_id), label: u.product.toLowerCase(), practice_id: u.practice ?? u.unit_id.split('|')[0], rank: groups[g].length + 1,
         track: facts?.product.mode_of_action.multisite === true ? 'multisite' : 'single_site',
         checks: (u.checks ?? []).map((c) => ({ check: c.check, level: c.level, detail: c.detail ?? null, result: c.result })), alerts: mine,
-        needs_confirmation: reason !== null || mine.length > 0, reason, facts,
+        needs_confirmation: reason !== null || mine.length > 0, reason, partner_for: [], facts,
       });
     }
     const basisAlert = BASIS_TEXT[cur.basis] ? [{ id: 'stage_basis', unit_id: null, kind: 'stage_basis', level: 'info', text: BASIS_TEXT[cur.basis], cause: null, blocks_approval: false }] : [];

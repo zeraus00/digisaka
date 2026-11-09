@@ -20,6 +20,7 @@ const checks = computed(() => (props.unit.checks ?? []).map((c) => ({ ...c, labe
         <div class="jr-row"><div><h2>{{ titleCase(unit.label) }}</h2><span class="jr-hint">Product information</span></div><span class="jr-pill" :class="tier === 'excluded' ? 'bad' : 'ok'">{{ GROUP_LABEL[tier] }}</span></div>
         <ProductFacts :unit="unit" />
         <div class="jr-rows">
+          <div v-if="plan?.partnerOf" class="jr-row"><span>Plan</span><b>Planned on {{ plan.window?.split(' to ')[0] }} as partner of {{ titleCase(plan.partnerOf) }}</b></div>
           <div class="jr-row"><span>Application window</span><b>{{ plan?.window ?? 'Not in this plan' }}</b></div>
           <div class="jr-row"><span>Next assessment</span><b>{{ plan?.next ?? 'Not in this plan' }}</b></div>
         </div>

@@ -33,7 +33,7 @@ test('the suggestion has the contract fields, three groups and the schedule days
   const u = s.groups.recommended[0];
   for (const k of ['unit_id', 'product_id', 'label', 'practice_id', 'rank', 'track', 'checks', 'alerts', 'needs_confirmation', 'reason', 'facts']) assert.ok(k in u, k);
   assert.equal(u.rank, 1);
-  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'facts', 'label', 'needs_confirmation', 'practice_id', 'product_id', 'rank', 'reason', 'track', 'unit_id'], 'a unit carries the contract fields only');
+  assert.deepEqual(Object.keys(u).sort(), ['alerts', 'checks', 'facts', 'label', 'needs_confirmation', 'partner_for', 'practice_id', 'product_id', 'rank', 'reason', 'track', 'unit_id'], 'a unit carries the contract fields only');
   assert.deepEqual(Object.keys(s.line_stage.window), ['from', 'to']);
 });
 
@@ -84,6 +84,7 @@ test('alerts carry a cause, the schedule drops frac and an ok weather detail', a
   assert.ok(apps.length);
   for (const a of apps) {
     assert.equal('frac' in a, false);
+    assert.deepEqual([a.kind, a.partner, typeof a.why], [a.track === 'multisite' ? 'multisite' : 'single_site', null, 'string']);
     if (a.weather?.status === 'ok') assert.deepEqual(a.weather, { status: 'ok' });
   }
   const ok = (await suggestion('L02')).schedule.filter((d) => d.application?.weather?.status === 'ok');
