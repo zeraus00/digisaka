@@ -7,5 +7,6 @@ button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 a { color: inherit; text-decoration: none; }
 :focus-visible { outline: 3px solid var(--leaf); outline-offset: 2px; }
-.page { max-width: 1240px; margin: 0 auto; padding: 24px var(--gutter) calc(32px + var(--tabbar-h)); }
+.page { width: 100%; max-width: 1600px; margin-inline: auto; padding-top: 24px; padding-inline: 24px; padding-bottom: calc(32px + var(--tabbar-h)); box-sizing: border-box; }
+@media (max-width: 600px) { .page { padding-inline: 16px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

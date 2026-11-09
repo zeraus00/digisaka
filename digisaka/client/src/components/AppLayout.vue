@@ -22,7 +22,6 @@ const MENU = [
   { to: '/history', label: 'Diagnosis History', icon: 'history' },
   { to: '/schedule', label: 'Treatment Schedule', icon: 'calendar' },
   { to: '/profile', label: 'Profile', icon: 'user' },
-  { to: '/more', label: 'More Settings', icon: 'more' },
 ];
 const MOBILE_MENU = [
   { to: '/', label: 'Home', icon: 'home' },
@@ -152,7 +151,6 @@ onMounted(() => useDevClockStore().load());
             <div v-if="menuOpen" id="account-menu" class="menu">
               <p class="menu-who">{{ auth.email }}</p>
               <RouterLink to="/profile" class="menu-profile"><Icon name="user" :size="18" /><span>Profile</span></RouterLink>
-              <RouterLink to="/more" class="menu-profile"><Icon name="more" :size="18" /><span>More Settings</span></RouterLink>
             </div>
           </div>
         </div>

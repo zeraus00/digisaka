@@ -9,7 +9,7 @@ const assistant = useTokaAssistantStore();
 const open = ref(false), launcher = ref(null), position = ref(null), popoverStyle = ref();
 const dragging = ref(null), suppressClick = ref(false);
 const assistantVisible = computed(() => assistant.enabled && !assistant.expanded
-  && !['/assistant', '/more', '/profile'].includes(route.path));
+  && !['/assistant', '/profile'].includes(route.path));
 const launcherStyle = computed(() => position.value ? {
   left: `${position.value.x}px`,
   top: `${position.value.y}px`,
