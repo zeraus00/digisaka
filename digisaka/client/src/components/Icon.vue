@@ -15,6 +15,8 @@ const PATHS = {
   refresh: '<path d="M4 4v6h6M20 20v-6h-6"/><path d="M5.5 15a7 7 0 0012.9 2.5M18.5 9A7 7 0 005.6 6.5"/>',
   plus: '<path d="M12 4v16M4 12h16"/>',
   search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+  drop: '<path d="M12 2c-4.4 0-8 3.6-8 8 0 4.4 4.4 8 8 8s8-3.6 8-8c0-4.4-3.6-8-8-8Z"/><path d="M12 10V4M12 10l2 2M12 10l-2 2"/>',
+  check: '<path d="M20 6L9 17l-4-4"/>',
   upload: '<path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M5 15v4a1 1 0 001 1h12a1 1 0 001-1v-4"/>',
   folder: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
