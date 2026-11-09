@@ -79,7 +79,7 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
               <p v-if="e.note" class="why">{{ e.note }}</p>
               <p v-if="e.partner" class="why">{{ MIXTURE_NOTE }}</p>
             </template>
-            <p v-else>Scan this line again on {{ e.date }}.<template v-if="e.after"> Follows {{ e.after }}.</template></p>
+            <p v-else-if="e.kind === 'monitoring'">Scan this line again on {{ e.date }}.<template v-if="e.after"> Follows {{ e.after }}.</template></p>
           </div>
         </li>
       </ol>
