@@ -41,7 +41,7 @@ export function scheduleEvents(days, applications = [], nameOf = (id) => id, ass
       out.push({
         date: d.date, kind: app.status === 'applied' ? 'applied' : app.status === 'skipped' ? 'skipped' : 'application',
         label: partner ? `${app.product} + ${partner.product}` : app.product, moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
-        start, end, done: app.status === 'applied', productId: app.unit_id ? productOf(app.unit_id) : null, partnerId: partner?.unit_id ? productOf(partner.unit_id) : null, step: app.kind ?? null, why: app.why ?? null, partner,
+        start, end, done: app.status === 'applied', productId: app.unit_id ? productOf(app.unit_id) : null, partnerId: partner?.unit_id ? productOf(partner.unit_id) : null, partnerOptions: app.partner_options ?? [], step: app.kind ?? null, why: app.why ?? null, partner,
         stepId: app.step_id ?? null, status: app.status, note: app.status_note ?? null, skip: app.skip ?? null, offPlan: app.off_plan === true,
       });
     } else if (app) {

@@ -63,14 +63,19 @@ watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value,
 const guidanceName = (label) => label.replace(/^Prac/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
 const tierOf = (u) => GROUPS.find(([g]) => store.groups[g].includes(u))?.[0];
 // The step action in progress: Record (the step's own product) or Choose something different (any product, the same group first).
-const act = ref(null), actProduct = ref(''), actOn = ref(todayIso());
+const act = ref(null), actProduct = ref(''), actPartner = ref(''), actOn = ref(todayIso());
 const submit = async (body) => { const out = await body(); if (out === 'recorded') { productId.value = ''; act.value = null; } };
 const record = () => submit(() => store.record(productId.value, appliedOn.value));
 const confirm = () => submit(() => store.confirm());
 const skipEarlier = () => submit(() => store.skipEarlier());
-const openAct = (mode, e) => { store.cancel(); act.value = { mode, e }; actProduct.value = mode === 'record' ? e.productId : ''; actOn.value = todayIso(); };
+const openAct = (mode, e) => { store.cancel(); act.value = { mode, e }; actProduct.value = mode === 'record' ? e.productId : ''; actPartner.value = mode === 'record' ? e.partnerId ?? '' : ''; actOn.value = todayIso(); };
 const closeAct = () => { store.cancel(); act.value = null; };
-const saveAct = () => submit(() => store.record(actProduct.value, actOn.value, undefined, { step_id: act.value.e.stepId, partner_product_id: act.value.mode === 'record' ? act.value.e.partnerId : null }));
+const saveAct = () => submit(() => store.record(actProduct.value, actOn.value, undefined, { step_id: act.value.e.stepId, partner_product_id: act.value.mode === 'record' ? actPartner.value || null : null }));
+// The partner picker lists every product the server marked, the planned partner first; a mark informs and never disables.
+const partnerChoices = computed(() => {
+  const e = act.value?.e; if (!e?.partnerOptions?.length) return [];
+  return [...e.partnerOptions].sort((a, b) => Number(b.product_id === e.partnerId) - Number(a.product_id === e.partnerId));
+});
 const group = (u) => unitFacts(u).frac;
 const sameGroup = (u) => String(group(u)) === String(act.value?.e.moa).split(' ')[0];
 const choices = computed(() => [...store.units].sort((a, b) => Number(sameGroup(b)) - Number(sameGroup(a))));
@@ -165,6 +170,10 @@ const lastApplied = computed(() => {
           <select v-if="act.mode === 'other'" v-model="actProduct" aria-label="Product applied instead" :disabled="store.busy || !!store.pending || !!store.earlier">
             <option value="" disabled>Product</option>
             <option v-for="u in choices" :key="u.unit_id" :value="u.product_id">{{ u.label }}{{ sameGroup(u) ? ' (same group)' : '' }}{{ tierOf(u) === 'excluded' ? ' (excluded)' : '' }}</option>
+          </select>
+          <select v-if="partnerChoices.length" v-model="actPartner" aria-label="Partner in the same tank" :disabled="store.busy || !!store.pending || !!store.earlier">
+            <option value="">No partner</option>
+            <option v-for="o in partnerChoices" :key="o.product_id" :value="o.product_id">{{ productName(o.product_id) }}{{ o.product_id === act.e.partnerId ? ' (planned)' : '' }}{{ o.compatible ? '' : ` (not compatible: ${o.why})` }}</option>
           </select>
           <input v-model="actOn" type="date" :max="todayIso()" aria-label="Date applied" :disabled="store.busy || !!store.pending || !!store.earlier" />
         </div>
