@@ -15,7 +15,7 @@ const at = ref(0);
 watch(months, (ms) => { const i = ms.findIndex((m) => todayIso().startsWith(m.key)); at.value = Math.max(i, 0); }, { immediate: true });
 const m = computed(() => months.value[at.value]);
 const short = (iso) => `${iso.slice(8)}/${iso.slice(5, 7)}`;
-const range = (e) => (e.kind === 'application' && e.start ? `${short(e.start)} – ${short(e.end)}` : short(e.date));
+const range = (e) => ((e.kind === 'application' || e.kind === 'skipped') && e.start ? `${short(e.start)} – ${short(e.end)}` : short(e.date));
 // Suggested steps are outlined; recorded applications are filled.
 const KIND = { application: { icon: '💊', cls: 'sug' }, monitoring: { icon: '🔍', cls: 'plum' }, applied: { icon: '✓', cls: 'rec' }, skipped: { icon: '⏭', cls: 'skip' } };
 const cellClass = (day) => (day.some((e) => e.kind === 'applied') ? 'rec' : KIND[day[0].kind].cls);

@@ -94,7 +94,7 @@ const servedOf = (days, applications, day, skips = []) => {
     const skip = rec ? null : skips.find((k) => k.step_id === stepId) ?? null;
     const status = rec ? 'applied' : skip ? 'skipped' : day < start ? 'planned' : day <= end ? 'due' : 'overdue';
     const step = { ...a, step_id: stepId, status, status_note: null, applied_on: rec?.applied_on ?? null, skip: skip && { on: skip.on, reason: skip.reason }, off_plan: false };
-    return { ...d, ...(rec ? { date: rec.applied_on } : skip ? { date: skip.on } : {}), application: step };
+    return { ...d, ...(rec ? { date: rec.applied_on } : {}), application: step };
   });
   const offPlan = applications.filter((r) => !used.has(r) && r.applied_on >= plusDays(day, -30)).map((r) => ({
     date: r.applied_on, weekday: null, state: 'needs_approval',
