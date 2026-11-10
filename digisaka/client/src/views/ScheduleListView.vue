@@ -4,10 +4,12 @@ import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PageHeader from '../components/PageHeader.vue';
 import SkeletonList from '../components/SkeletonList.vue';
-import { useLinesStore } from '../stores/lines.js';
+import { useLinesStore, weekRows } from '../stores/lines.js';
 
 const router = useRouter(), lines = useLinesStore();
 onMounted(() => lines.load());
+// A line opens on its newest finished week; the treatment page always shows the line's current suggestion.
+const open = (l) => router.push(`/treatment/${encodeURIComponent(l.line_id)}/${encodeURIComponent(weekRows(l)[0].week)}`);
 </script>
 
 <template>
@@ -16,7 +18,7 @@ onMounted(() => lines.load());
     <SkeletonList v-if="lines.loading && !lines.statuses.length" />
     <p v-else-if="lines.error" class="error">{{ lines.error }}</p>
     <p v-else-if="lines.loaded && !lines.withCycles.length" class="empty">No treatments have been suggested yet. Scan a line-week to see one here.</p>
-    <button v-for="l in lines.withCycles" :key="l.line_id" class="card" type="button" @click="router.push(`/schedule/${encodeURIComponent(l.line_id)}`)">
+    <button v-for="l in lines.withCycles" :key="l.line_id" class="card" type="button" @click="open(l)">
       <span class="thumb">🌱</span>
       <span class="body"><span class="name">Line {{ lineLabel(l.line_id) }}</span><span class="sub">{{ l.human_review_required ? 'Human review required' : 'Treatment suggestions' }}</span></span>
       <span class="count">{{ l.cycles.length }} {{ l.cycles.length === 1 ? 'week' : 'weeks' }}</span>
