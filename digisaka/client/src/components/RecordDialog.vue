@@ -9,6 +9,7 @@ import { todayIso, keepIfEdited } from '../helpers/today.js';
 // (`entry`) or, with no entry, for a spray tied to no step. The confirmations the scheduler asks for show here.
 const props = defineProps({ entry: { type: Object, default: null }, productName: { type: Function, default: (id) => id } });
 const emit = defineEmits(['close']);
+const noDom = typeof document === 'undefined'; // the server renderer has no body to teleport to
 const store = useSuggestionStore();
 const e = props.entry;
 const view = ref(e ? 'planned' : 'free'); // planned | other | skip | free
@@ -45,7 +46,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
 
 <template>
   <!-- In the body, so no transformed ancestor (the page-rise animation) turns `fixed` into page-relative. The server renderer has no body. -->
-  <Teleport to="body" :disabled="typeof document === 'undefined'">
+  <Teleport to="body" :disabled="noDom">
   <div class="scrim" @click.self="close">
     <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="rd-title">
       <header>
