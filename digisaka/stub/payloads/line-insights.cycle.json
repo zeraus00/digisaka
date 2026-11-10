@@ -306,8 +306,10 @@
       },
       {
         "kind": "mechanical",
-        "active": false,
-        "options": []
+        "active": true,
+        "options": [
+          "Remove the most infected leaves"
+        ]
       },
       {
         "kind": "monitoring",
@@ -317,6 +319,6 @@
         ]
       }
     ],
-    "summary": "The data suggests favourable to infection and disease is progressing; preventive treatment, a systemic fungicide, a contact fungicide and closer monitoring are suggested."
+    "summary": "The data suggests favourable to infection and disease is progressing; preventive treatment, a systemic fungicide, a contact fungicide, removing the most infected leaves and closer monitoring are suggested."
   }
 }

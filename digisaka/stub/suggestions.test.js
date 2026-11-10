@@ -53,6 +53,16 @@ test('each line carries its basis, outcome and units', async () => {
   assert.ok(l6.groups.excluded.length && l6.groups.excluded.every((u) => u.reason === 'group_cap'));
 });
 
+test('a stage-6 line carries the stage-6 alert, advice only; a stage-5 line has none', async () => {
+  const l6 = await suggestion('L06');
+  assert.equal(l6.line_stage.stage, 6);
+  const [a] = l6.alerts.filter((x) => x.id === 'line:stage_basis:stage_6');
+  assert.deepEqual([a.kind, a.level, a.unit_id, a.blocks_approval], ['stage_basis', 'info', null, false]);
+  assert.match(a.text, /stage 6, past the point a fungicide protects them; removing the affected leaves may be advised\.$/);
+  const l3 = await suggestion('L03');
+  assert.ok(l3.line_stage.stage < 6 && !l3.alerts.some((x) => x.id === 'line:stage_basis:stage_6'));
+});
+
 test('a unit with its own alert needs confirmation and carries it', async () => {
   const s = await suggestion('L03');
   const spiro = units(s).find((u) => u.product_id === 'u-spiroxamine');
