@@ -44,6 +44,8 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
 </script>
 
 <template>
+  <!-- In the body, so no transformed ancestor (the page-rise animation) turns `fixed` into page-relative. The server renderer has no body. -->
+  <Teleport to="body" :disabled="typeof document === 'undefined'">
   <div class="scrim" @click.self="close">
     <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="rd-title">
       <header>
@@ -113,6 +115,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
       </div>
     </div>
   </div>
+  </Teleport>
 </template>
 
 <style scoped>
