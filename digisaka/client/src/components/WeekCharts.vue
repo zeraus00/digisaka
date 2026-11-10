@@ -54,8 +54,8 @@ const series = (key) => weeks.value.map((w, i) => (w[key] == null ? null : { x: 
 const ylsPts = computed(() => series('yls'));
 const yliPts = computed(() => series('yli'));
 const compared = computed(() => new Set(props.disease?.compared_weeks ?? []));
-// the YLS line again over the weeks this cycle compared, drawn darker on top
-const comparedYls = computed(() => ylsPts.value.map((p, i) => (compared.value.has(weeks.value[i].week) ? p : null)));
+// a line's points kept only on the weeks this cycle compared: drawn again, darker, on top of the line
+const over = (pts) => pts.map((p, i) => (compared.value.has(weeks.value[i].week) ? p : null));
 const ticks = computed(() => [lo.value, Math.round((lo.value + hi.value) / 2), hi.value]);
 
 // Rainfall chart.
@@ -134,6 +134,9 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
       <path class="yli dashed" :d="linePath(yliA)" />
       <path class="leaves dotted" :d="linePath(leavesA)" />
       <path class="yls" :d="linePath(ylsA)" />
+      <path class="yli dashed compared" :d="linePath(over(yliA))" />
+      <path class="leaves dotted compared" :d="linePath(over(leavesA))" />
+      <path class="yls compared" :d="linePath(over(ylsA))" />
       <template v-for="(w, i) in weeks" :key="w.week">
         <rect v-if="leavesA[i]" v-bind="sq(leavesA[i])" width="6" height="6" class="dot leaves-dot"
               @pointerenter="hoverPoint('leaves', w, 'Leaves', w.leaves, leavesA[i].x, leavesA[i].y)" @pointerleave="clearHover('leaves', `leaves-${w.week}-Leaves`)"><title>{{ w.week }} · Leaves: {{ w.leaves }}</title></rect>
@@ -164,7 +167,8 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
       </g>
       <path class="yli" :d="linePath(yliPts)" />
       <path class="yls" :d="linePath(ylsPts)" />
-      <path class="yls compared" :d="linePath(comparedYls)" />
+      <path class="yli compared" :d="linePath(over(yliPts))" />
+      <path class="yls compared" :d="linePath(over(ylsPts))" />
       <template v-for="(w, i) in weeks" :key="w.week">
         <circle v-if="ylsPts[i]" :cx="ylsPts[i].x" :cy="ylsPts[i].y" r="3" class="dot yls-dot"
                 @pointerenter="hoverPoint('disease', w, 'YLS', w.yls, ylsPts[i].x, ylsPts[i].y)"
@@ -183,7 +187,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
       </g>
     </svg>
     <p class="sr-only" aria-live="polite">{{ activePoint?.chart === 'disease' ? pointText : '' }}</p>
-    <p v-if="dCap" class="cap">{{ dCap }} <span class="soft">YLI (lighter line) is shown for context and is not part of the decision.</span> <span v-if="compared.size" class="soft">The thicker, darker part of the YLS line is the weeks compared.</span></p>
+    <p v-if="dCap" class="cap">{{ dCap }} <span class="soft">YLI (lighter line) is shown for context and is not part of the decision.</span> <span v-if="compared.size" class="soft">The thicker, darker part of a line is the weeks compared.</span></p>
     <p v-else class="cap soft">YLI (lighter line) is shown for context.</p>
   </figure>
 
@@ -198,6 +202,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
         <line :class="['refline', r.kind]" :x1="L" :x2="W - R" :y1="yL(r.value)" :y2="yL(r.value)" />
       </template>
       <path class="leaves" :d="linePath(leavesL)" />
+      <path class="leaves compared" :d="linePath(over(leavesL))" />
       <template v-for="(w, i) in weeks" :key="w.week">
         <rect v-if="leavesL[i]" v-bind="sq(leavesL[i])" width="6" height="6" class="dot leaves-dot"
               @pointerenter="hoverPoint('leaves', w, 'Leaves', w.leaves, leavesL[i].x, leavesL[i].y)" @pointerleave="clearHover('leaves', `leaves-${w.week}-Leaves`)"><title>{{ w.week }} · Leaves: {{ w.leaves }}</title></rect>
@@ -255,6 +260,8 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 /* no vertex shapes: a dot is an invisible, wider hover target */
 .dot { fill: transparent; stroke: transparent; stroke-width: 10; cursor: crosshair; }
 .yls.compared { stroke: var(--forest-deep); stroke-width: 4; }
+.yli.compared { stroke: var(--leaf); stroke-width: 3.5; }
+.leaves.compared { stroke: #5e4a12; stroke-width: 4; }
 .bar.recent { fill: var(--teal); }
 .bar.previous { fill: var(--leaf-soft); }
 .bar.other { fill: var(--line); }
