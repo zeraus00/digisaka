@@ -23,6 +23,8 @@ const PATHS = {
   weather: '<path d="M7 15a4 4 0 01-.6-7.95A5.5 5.5 0 0117 8.2 3.4 3.4 0 0117.4 15H7z"/><path d="M8.5 18l-1 2.5M12.5 18l-1 2.5M16.5 18l-1 2.5"/>',
   spray: '<path d="M7 3c2 2.8 3.6 4.8 3.6 7a3.6 3.6 0 01-7.2 0C3.4 7.8 5 5.8 7 3z"/><path d="M14 7h7M14 11h7M13 15h8M5 19h16"/>',
   fungicides: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 001.8 3h10.4a2 2 0 001.8-3l-5-9V3"/><path d="M7.4 15h9.2"/>',
+  error: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
   alert: '<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>',
 };
 const props = defineProps({ name: { type: String, required: true }, size: { type: [Number, String], default: 20 } });
@@ -32,4 +34,11 @@ const html = computed(() => PATHS[props.name] ?? '');
   <svg class="icon" viewBox="0 0 24 24" :width="size" :height="size" fill="none" stroke="currentColor" stroke-width="1.8"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" v-html="html"></svg>
 </template>
-<style>.icon { flex: none; }</style>
+<style>
+.icon { flex: none; }
+/* an alert level's icon (helpers/alerts.js LEVEL_ICON): coloured by level, set in line with the text */
+.icon.lvl { vertical-align: -3px; margin-right: 6px; }
+.icon.lvl-error { color: var(--danger); }
+.icon.lvl-warning { color: var(--warn); }
+.icon.lvl-info { color: var(--ink-soft); }
+</style>

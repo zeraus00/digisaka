@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import ProductFacts from './ProductFacts.vue';
+import Icon from './Icon.vue';
 import { shownName, checkLabel, humanDetail, reasonText, planFor, RESULT_LABEL, GROUP_LABEL } from '../helpers/checks.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
 import '../styles/journey.css';
@@ -29,7 +30,7 @@ const checks = computed(() => (props.unit.checks ?? []).map((c) => ({ ...c, labe
         <h3>Caution</h3>
         <p v-if="unit.needs_confirmation" class="jr-hint">Needs confirmation to record.</p>
         <p v-if="unit.reason">{{ reasonText(unit.reason) }}</p>
-        <ul class="jr-rows"><li v-for="a in orderAlerts(unit.alerts)" :key="a.id" class="jr-row"><span>{{ LEVEL_ICON[a.level] }} {{ a.text }}</span></li></ul>
+        <ul class="jr-rows"><li v-for="a in orderAlerts(unit.alerts)" :key="a.id" class="jr-row"><span><Icon :name="LEVEL_ICON[a.level]" :size="16" class="lvl" :class="`lvl-${a.level}`" />{{ a.text }}</span></li></ul>
       </article>
     </div>
     <aside class="jr-card" aria-label="Eligibility checks">

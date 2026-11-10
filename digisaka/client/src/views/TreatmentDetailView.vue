@@ -118,7 +118,7 @@ const lastApplied = computed(() => {
                 <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.map(shownName).join(', ') }} on {{ lastApplied.on }}.</p>
         <section v-if="lineAlerts.length" class="ack notes">
           <h4>Alerts</h4>
-          <ul><li v-for="a in lineAlerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
+          <ul><li v-for="a in lineAlerts" :key="a.id" :class="a.level"><Icon :name="LEVEL_ICON[a.level]" :size="16" class="lvl" :class="`lvl-${a.level}`" />{{ a.text }}</li></ul>
         </section>
         <section v-if="!detail && sug.explanation" class="ack notes explanation">
           <h4>Why this order</h4>
