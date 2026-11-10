@@ -53,8 +53,9 @@ const yD = (v) => {
 const series = (key) => weeks.value.map((w, i) => (w[key] == null ? null : { x: x(i), y: yD(w[key]) }));
 const ylsPts = computed(() => series('yls'));
 const yliPts = computed(() => series('yli'));
-// the compared weeks are marked only when YLS is worsening; a steady line shows no dots at all
-const compared = computed(() => new Set(props.disease?.worsening === true ? (props.disease.compared_weeks ?? []) : []));
+const compared = computed(() => new Set(props.disease?.compared_weeks ?? []));
+// the YLS line again over the weeks this cycle compared, drawn darker on top
+const comparedYls = computed(() => ylsPts.value.map((p, i) => (compared.value.has(weeks.value[i].week) ? p : null)));
 const ticks = computed(() => [lo.value, Math.round((lo.value + hi.value) / 2), hi.value]);
 
 // Rainfall chart.
@@ -163,8 +164,9 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
       </g>
       <path class="yli" :d="linePath(yliPts)" />
       <path class="yls" :d="linePath(ylsPts)" />
+      <path class="yls compared" :d="linePath(comparedYls)" />
       <template v-for="(w, i) in weeks" :key="w.week">
-        <circle v-if="ylsPts[i]" :cx="ylsPts[i].x" :cy="ylsPts[i].y" :r="compared.has(w.week) ? 5 : 3" :class="['dot', 'yls-dot', { hi: compared.has(w.week) }]"
+        <circle v-if="ylsPts[i]" :cx="ylsPts[i].x" :cy="ylsPts[i].y" r="3" class="dot yls-dot"
                 @pointerenter="hoverPoint('disease', w, 'YLS', w.yls, ylsPts[i].x, ylsPts[i].y)"
                 @pointerleave="clearHover('disease', `disease-${w.week}-YLS`)">
           <title>{{ w.week }} · YLS: {{ w.yls }}</title>
@@ -181,7 +183,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
       </g>
     </svg>
     <p class="sr-only" aria-live="polite">{{ activePoint?.chart === 'disease' ? pointText : '' }}</p>
-    <p v-if="dCap" class="cap">{{ dCap }} <span class="soft">YLI (lighter line) is shown for context and is not part of the decision.</span></p>
+    <p v-if="dCap" class="cap">{{ dCap }} <span class="soft">YLI (lighter line) is shown for context and is not part of the decision.</span> <span v-if="compared.size" class="soft">The thicker, darker part of the YLS line is the weeks compared.</span></p>
     <p v-else class="cap soft">YLI (lighter line) is shown for context.</p>
   </figure>
 
@@ -250,9 +252,9 @@ svg { width: 100%; height: auto; display: block; margin-top: 6px; }
 path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .yls { stroke: var(--forest); stroke-width: 2.5; }
 .yli { stroke: var(--leaf-soft); stroke-width: 2; }
-/* no vertex shapes: a dot is an invisible, wider hover target; only a compared week (hi) is drawn */
+/* no vertex shapes: a dot is an invisible, wider hover target */
 .dot { fill: transparent; stroke: transparent; stroke-width: 10; cursor: crosshair; }
-.dot.hi { fill: var(--warn); stroke: var(--card); stroke-width: 1.5; }
+.yls.compared { stroke: var(--forest-deep); stroke-width: 4; }
 .bar.recent { fill: var(--teal); }
 .bar.previous { fill: var(--leaf-soft); }
 .bar.other { fill: var(--line); }
