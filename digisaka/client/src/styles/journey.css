@@ -17,6 +17,7 @@
 .jr-rows { display: grid; gap: 6px; }
 .jr-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .jr-row span { color: var(--ink-soft); }
+.facts .jr-row b { text-align: right; } /* a wrapped value (description, source) hugs the right edge */
 .jr-days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; }
 .jr-days div { padding: 8px 4px; border: 1px solid var(--line); border-radius: var(--radius-sm); display: grid; gap: 2px; font-size: 13px; }
 .jr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
