@@ -16,7 +16,7 @@ describe('treatment screen', () => {
     const s = useSuggestionStore();
     await s.load('L04', wait);
     const options = await show('L04', 'fungicides');
-    expect(options).toContain('Only healthy images this week');
+    expect(options.split('Only healthy images this week').length).toBe(2); // shown once, not in the banner and again below it
     expect(options).toContain('Recommendations');
     expect(options).toContain('Recommended</span>');
     expect(options).toContain('Other guidance');

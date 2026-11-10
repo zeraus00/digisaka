@@ -86,7 +86,7 @@ const lastApplied = computed(() => {
         <span v-if="store.updating" class="updating" role="status">Updating…</span>
       </div>
       <p v-if="sug.outcome_reason" class="meta reason">{{ outcomeReasonText(sug.outcome_reason) }}</p>
-      <p v-if="sug.basis && sug.outcome !== 'human_review_required'" class="meta basis">{{ basisText(sug) }}</p>
+      <p v-if="sug.basis && OUTCOME[sug.outcome] && sug.outcome !== 'human_review_required'" class="meta basis">{{ basisText(sug) }}</p>
       <p v-if="sug.changes?.summary" class="meta changes">What changed: {{ sug.changes.summary }}</p>
 
     </template>
