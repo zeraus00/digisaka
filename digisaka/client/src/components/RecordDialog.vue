@@ -40,8 +40,10 @@ const skipEarlier = () => submit(() => store.skipEarlier(), 'recorded');
 const skip = () => submit(() => store.skip(e.stepId, reason.value || null), 'done');
 const canSave = computed(() => !!on.value && (view.value === 'planned' || !!product.value) && !store.busy && !store.updating);
 const onKey = (ev) => { if (ev.key === 'Escape') close(); };
-onMounted(() => document.addEventListener('keydown', onKey));
-onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
+// As Bootstrap's modal does: the page behind stops scrolling while the dialog is open, and it is restored after.
+let bodyOverflow = '';
+onMounted(() => { document.addEventListener('keydown', onKey); bodyOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; });
+onBeforeUnmount(() => { document.removeEventListener('keydown', onKey); document.body.style.overflow = bodyOverflow; });
 </script>
 
 <template>
@@ -120,8 +122,8 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
 </template>
 
 <style scoped>
-.scrim { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(27, 42, 34, .45); }
-.dlg { width: min(480px, 100%); max-height: calc(100dvh - 32px); overflow: auto; padding: 22px 22px 18px; border-radius: var(--radius-lg); background: var(--card); box-shadow: 0 20px 60px rgba(11, 59, 30, .25); }
+.scrim { position: fixed; inset: 0; z-index: 50; display: flex; overflow-y: auto; padding: 16px; background: rgba(27, 42, 34, .45); }
+.dlg { width: min(480px, 100%); margin: auto; padding: 22px 22px 18px; border-radius: var(--radius-lg); background: var(--card); box-shadow: 0 20px 60px rgba(11, 59, 30, .25); }
 .dlg header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
 .dlg h2 { font: 800 18px var(--font-display); color: var(--forest); } .dlg h2 small { display: block; margin-top: 2px; font: 600 13px var(--font-body); color: var(--ink-soft); }
 .x { border: 0; background: none; font-size: 22px; line-height: 1; color: var(--ink-soft); cursor: pointer; }
