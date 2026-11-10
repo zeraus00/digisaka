@@ -41,13 +41,13 @@ const ASSESSMENTS = {
     status: 'not_fired',
     conditions: [CONDITION('Possible progression (YLS)', 'not_met'), CONDITION('Infection risk', 'not_met')],
     findings: [FINDING('Aggressive progression', 'context'), FINDING('Canopy watch', 'context')],
-    note: 'The data suggests no treatment trigger this week: Possible progression (YLS) and Infection risk were not found. Aggressive progression and Canopy watch are also noted, not a treatment trigger.',
+    note: 'No treatment is suggested this week. Aggressive progression and canopy watch are worth keeping an eye on, but neither is a reason to treat yet.',
   },
   suggested: {
     status: 'fired',
     conditions: [CONDITION('Possible progression (YLS)', 'not_met'), CONDITION('Infection risk', 'met')],
     findings: [FINDING('Infection risk', 'trigger'), FINDING('Canopy watch', 'context')],
-    note: 'The data suggests treatment, because Infection risk was found. Canopy watch is also noted, not a treatment trigger.',
+    note: 'Treatment is suggested because of the infection risk.',
   },
 };
 const EXPLANATIONS = { clean: { text: 'The triazole goes first and the strobilurin follows, so the two modes of action alternate.', caveat: CAVEAT } };

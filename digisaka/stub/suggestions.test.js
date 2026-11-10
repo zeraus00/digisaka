@@ -267,7 +267,7 @@ test('the assessment joins the findings to the requirement: not fired on a monit
   assert.equal(monitoring.status, 'not_fired');
   assert.ok(monitoring.conditions.every((c) => c.result === 'not_met'));
   assert.ok(monitoring.findings.every((f) => f.role === 'context'));
-  assert.ok(monitoring.findings.every((f) => monitoring.note.includes(f.label)));
+  assert.ok(monitoring.findings.every((f) => monitoring.note.toLowerCase().includes(f.label.toLowerCase()))); // a note may lower-case a name
   const plan = (await suggestion('L02')).assessment;
   assert.equal(plan.status, 'fired');
   assert.ok(plan.findings.some((f) => f.role === 'trigger'));
