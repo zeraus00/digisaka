@@ -24,7 +24,7 @@ const units = (s) => Object.values(s.groups).flat();
 
 test('the suggestion has the contract fields, three groups and the schedule days', async () => {
   const s = await suggestion('L02');
-  assert.deepEqual(Object.keys(s).sort(), ['alerts', 'basis', 'changes', 'created_at', 'explanation', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
+  assert.deepEqual(Object.keys(s).sort(), ['alerts', 'assessment', 'basis', 'changes', 'created_at', 'explanation', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
   assert.deepEqual([s.revision, s.trigger, s.basis, s.running, s.changes], ['c-L02-24', 'scan', 'stage_confirmed', false, null]);
   assert.deepEqual(Object.keys(s.groups), ['recommended', 'eligible', 'excluded']);
   assert.equal(s.groups.recommended.length > 0, true);
@@ -259,4 +259,16 @@ test('a record against a step: step_not_open, off-plan confirmation, earlier_ste
   assert.equal(done.status, 201);
   const after = (await suggestion('L02')).schedule.map((d) => d.application).find((a) => a?.step_id === first.step_id);
   assert.equal(after.status, 'skipped');
+});
+
+test('the assessment joins the findings to the requirement: not fired on a monitoring list, fired on a plan', async () => {
+  const monitoring = (await suggestion('L06')).assessment;
+  assert.deepEqual(Object.keys(monitoring).sort(), ['caveat', 'conditions', 'findings', 'note', 'status']);
+  assert.equal(monitoring.status, 'not_fired');
+  assert.ok(monitoring.conditions.every((c) => c.result === 'not_met'));
+  assert.ok(monitoring.findings.every((f) => f.role === 'context'));
+  assert.ok(monitoring.findings.every((f) => monitoring.note.includes(f.label)));
+  const plan = (await suggestion('L02')).assessment;
+  assert.equal(plan.status, 'fired');
+  assert.ok(plan.findings.some((f) => f.role === 'trigger'));
 });

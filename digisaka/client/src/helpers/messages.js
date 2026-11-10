@@ -35,5 +35,14 @@ const OUTCOME_REASONS = {
 };
 export const outcomeReasonText = (code) => (code ? OUTCOME_REASONS[code] ?? code : '');
 
+// The scheduler's assessment note (ADR-0045) joins the fired findings to the requirement; show it as served, with its caveat.
+// A response without one (a halted run, an older scheduler) keeps the reason code's wording.
+export const reasonLine = (sug) => {
+  if (sug?.assessment) return { text: sug.assessment.note, caveat: sug.assessment.caveat };
+  return sug?.outcome_reason ? { text: outcomeReasonText(sug.outcome_reason), caveat: '' } : null;
+};
+export const ASSESSMENT_RESULT = { met: 'Found', not_met: 'Not found', cannot_check: 'Could not be checked' };
+export const ASSESSMENT_ROLE = { trigger: 'Treatment trigger', context: 'Context only, not a treatment trigger' };
+
 // Shown for a leaf whose QA outcome is `referral`; `conflict` and `not_verified` stay internal.
 export const REFERRAL_TEXT = 'The known sources do not yet support a confident answer for this leaf; refer to an expert.';
