@@ -51,11 +51,6 @@
     ],
     "checks": [
      {
-      "check": "stage_eligibility",
-      "result": "pass",
-      "level": "error"
-     },
-     {
       "check": "alternation",
       "result": "pass",
       "level": "error"
@@ -93,11 +88,6 @@
     "indicated_by": [],
     "checks": [
      {
-      "check": "stage_eligibility",
-      "result": "pass",
-      "level": "error"
-     },
-     {
       "check": "alternation",
       "result": "pass",
       "level": "error"
@@ -134,11 +124,6 @@
     "indicated_by": [],
     "checks": [
      {
-      "check": "stage_eligibility",
-      "result": "pass",
-      "level": "error"
-     },
-     {
       "check": "alternation",
       "result": "pass",
       "level": "error"
@@ -160,26 +145,6 @@
       "result": "pass",
       "level": "warning",
       "detail": "Rainfast 6 h"
-     }
-    ],
-    "cited_source": "S2 Table 3"
-   },
-   {
-    "unit_id": "u-azoxystrobin",
-    "practice": "StrobilurinAntifungalApplication",
-    "product": "Azoxystrobin",
-    "moa": "C3",
-    "frac": "C3",
-    "multisite": false,
-    "sample_fact": true,
-    "indicated_by": [],
-    "selectable": false,
-    "checks": [
-     {
-      "check": "stage_eligibility",
-      "result": "fail",
-      "level": "error",
-      "detail": "Not an option at the current stage"
      }
     ],
     "cited_source": "S2 Table 3"
