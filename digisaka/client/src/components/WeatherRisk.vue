@@ -3,17 +3,12 @@ import { computed } from 'vue';
 import { useInsightsStore } from '../stores/insights.js';
 import Icon from './Icon.vue';
 import InsightsSummary from './InsightsSummary.vue';
-import { useSuggestionStore } from '../stores/suggestion.js';
-import { ASSESSMENT_RESULT, ASSESSMENT_ROLE } from '../helpers/messages.js';
 import { rainOutlookText, conditionMark, conditionReading, weekday, dayRain } from '../helpers/insights.js';
 
 // The Weather step: recorded rainfall, the risk finding, the 5-day outlook and what drives the assessment, all as the scheduler served them.
 const props = defineProps({ line: { type: String, required: true }, week: { type: String, required: true } });
 const insights = useInsightsStore();
 const data = computed(() => insights.data);
-// The scheduler's assessment (ADR-0045): the requirement's conditions and which fired findings trigger treatment; shown as served.
-const assessment = computed(() => useSuggestionStore().suggestion?.assessment ?? null);
-const roleOf = (finding) => assessment.value?.findings.find((f) => f.label === finding)?.role ?? null;
 // The newest series entry: the week the scheduler last read, which is not the asked week.
 const thisWeek = computed(() => data.value?.series.at(-1));
 const readWeek = computed(() => Number((thisWeek.value?.week ?? props.week).split('W').pop()));
@@ -57,13 +52,7 @@ const BADGE = { fired: 'bad', not_fired: 'ok' };
             <b>{{ c.result === 'cannot_check' ? conditionMark(c.result)[1] : conditionReading(c.input, c.label) }}</b>
           </li>
         </ul>
-        <template v-if="assessment?.conditions.length">
-          <p class="jr-hint">Treatment is suggested only when the rules find one of these:</p>
-          <ul class="jr-rows">
-            <li v-for="c in assessment.conditions" :key="c.finding" class="jr-row"><span class="jr-label">{{ c.label }}</span><b>{{ ASSESSMENT_RESULT[c.result] ?? c.result }}</b></li>
-          </ul>
-        </template>
-        <div v-for="r in data.readings" :key="r.rule" class="jr-indent"><b>{{ r.finding }}</b><template v-if="roleOf(r.finding)"> <small class="jr-hint">{{ ASSESSMENT_ROLE[roleOf(r.finding)] }}</small></template><p class="jr-hint">{{ r.text }}<template v-if="r.source"> · {{ r.source }}</template></p></div>
+        <div v-for="r in data.readings" :key="r.rule" class="jr-indent"><b>{{ r.finding }}</b><p class="jr-hint">{{ r.text }}<template v-if="r.source"> · {{ r.source }}</template></p></div>
         <p v-if="!risk?.conditions?.length && !data.readings?.length" class="jr-hint">Nothing was assessed for this week.</p>
       </article>
     </div>

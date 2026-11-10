@@ -34,7 +34,6 @@ const DEFAULT = { payload: 'clean', basis: 'stage_confirmed' };
 // monitoring list is not ranked, so its `explanation` is null (a fallback or a dropped one is null too).
 const CAVEAT = 'A language model wrote this from product facts that are not yet validated. The checks, not this text, decide which products are allowed.';
 // The scheduler's assessment (ADR-0045): the requirement's conditions, the fired findings tagged trigger or context, and the note.
-const ASSESSMENT_CAVEAT = "This note joins this week's findings in plain words. The rules, not this text, decide whether treatment is suggested.";
 const CONDITION = (label, result) => ({ finding: `bsk:${label}`, label, result });
 const FINDING = (label, role) => ({ finding: `bsk:${label}`, label, role });
 const ASSESSMENTS = {
@@ -213,7 +212,7 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     return {
       revision: cur.revision, trigger: cur.trigger, created_at: cur.created_at, basis: cur.basis,
       line_stage: { stage: confirmed ? stage : null, tally: confirmed ? { [stage]: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
-      groups, explanation: EXPLANATIONS[cur.payload] ?? null, assessment: ASSESSMENTS[outcome ?? 'suggested'] ? { ...ASSESSMENTS[outcome ?? 'suggested'], caveat: ASSESSMENT_CAVEAT } : null, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
+      groups, explanation: EXPLANATIONS[cur.payload] ?? null, assessment: ASSESSMENTS[outcome ?? 'suggested'] ? { ...ASSESSMENTS[outcome ?? 'suggested'], caveat: null } : null, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
       schedule: servedOf(scheduleOf(frozen?.preview.days ?? []), line.applications, today(), line.skips ?? []), alerts: [...basisAlert, ...stage6, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
       running: runsOf(lineId).some((r) => r.status === 'running'), outcome, outcome_reason: outcome ? cycle.outcome_reason ?? null : null,
     };

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { REFERRAL_TEXT, outcomeReasonText, reasonLine, ASSESSMENT_RESULT, ASSESSMENT_ROLE } from './messages.js';
+import { REFERRAL_TEXT, outcomeReasonText, reasonLine } from './messages.js';
 
 describe('REFERRAL_TEXT', () => {
   it('uses the decided wording and none of the internal vocabulary', () => {
@@ -19,17 +19,14 @@ describe('outcomeReasonText', () => {
 });
 
 describe('reasonLine', () => {
-  const assessment = { note: 'No treatment trigger this week.', caveat: 'The rules decide.' };
-  it('shows the served assessment note and its caveat instead of the generic reason code', () => {
-    expect(reasonLine({ assessment, outcome_reason: 'requirement_not_fired' })).toEqual({ text: 'No treatment trigger this week.', caveat: 'The rules decide.' });
+  const assessment = { note: 'No treatment trigger this week.', caveat: null };
+  it('shows the served assessment note instead of the generic reason code, with a caveat only when one is served', () => {
+    expect(reasonLine({ assessment, outcome_reason: 'requirement_not_fired' })).toEqual({ text: 'No treatment trigger this week.', caveat: '' });
+    expect(reasonLine({ assessment: { ...assessment, caveat: 'Check it.' } }).caveat).toBe('Check it.');
   });
   it('keeps the reason code wording when the response has no assessment (an older scheduler, a halted run)', () => {
     expect(reasonLine({ assessment: null, outcome_reason: 'fewer_than_min_weeks' })).toEqual({ text: outcomeReasonText('fewer_than_min_weeks'), caveat: '' });
     expect(reasonLine({ outcome_reason: 'requirement_not_fired' }).text).toBe(outcomeReasonText('requirement_not_fired'));
     expect(reasonLine({ assessment: null, outcome_reason: null })).toBeNull();
-  });
-  it('words each result and role as served, never as a verdict of its own', () => {
-    expect(ASSESSMENT_RESULT).toEqual({ met: 'Found', not_met: 'Not found', cannot_check: 'Could not be checked' });
-    expect(ASSESSMENT_ROLE).toEqual({ trigger: 'Treatment trigger', context: 'Context only, not a treatment trigger' });
   });
 });
