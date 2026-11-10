@@ -53,7 +53,8 @@ const yD = (v) => {
 const series = (key) => weeks.value.map((w, i) => (w[key] == null ? null : { x: x(i), y: yD(w[key]) }));
 const ylsPts = computed(() => series('yls'));
 const yliPts = computed(() => series('yli'));
-const compared = computed(() => new Set(props.disease?.compared_weeks ?? []));
+// the compared weeks are marked only when YLS is worsening; a steady line shows no dots at all
+const compared = computed(() => new Set(props.disease?.worsening === true ? (props.disease.compared_weeks ?? []) : []));
 const ticks = computed(() => [lo.value, Math.round((lo.value + hi.value) / 2), hi.value]);
 
 // Rainfall chart.
