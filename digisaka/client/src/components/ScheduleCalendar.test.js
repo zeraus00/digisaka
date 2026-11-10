@@ -43,26 +43,26 @@ describe('ScheduleCalendar', () => {
     expect(html).toContain('Off-plan');
     expect(html).toContain('1 recorded · 1 suggested');
   });
-  it('Due and Overdue steps get Skip, a Skipped step gets Undo skip, and Planned or Applied ones get neither', async () => {
+  it('Due and Overdue steps get one Record or skip button, a Skipped step gets Undo skip, and Planned or Applied ones get neither', async () => {
     const at = (status, id) => ({ date: '2026-06-12', application: { product: `p-${status}`, unit_id: unit, step_id: id, timing_window: { start: '2026-06-12', end: '2026-06-14' }, kind: 'single_site', status, skip: status === 'skipped' ? { on: '2026-06-11', reason: 'rain' } : null } });
     const one = async (status) => render({ days: [at(status, 's1')], applications: [] });
-    expect(await one('due')).toContain('>Skip<');
-    expect(await one('overdue')).toContain('>Skip<');
+    expect(await one('due')).toContain('Record or skip');
+    expect(await one('overdue')).toContain('Record or skip');
     const skipped = await one('skipped');
     expect(skipped).toContain('Undo skip');
     expect(skipped).toContain('Reason: rain.');
-    for (const status of ['planned', 'applied']) { const html = await one(status); expect(html).not.toContain('>Skip<'); expect(html).not.toContain('Undo skip'); }
+    for (const status of ['planned', 'applied']) { const html = await one(status); expect(html).not.toContain('Record or skip'); expect(html).not.toContain('Undo skip'); }
   });
-  it('a due or overdue step has Record and Choose something different; an applied one has neither', async () => {
+  it('a due or overdue step has one Record or skip button and no inline Record, Skip or Choose; an applied one has none', async () => {
     const step = (status) => ({ product: 'azoxystrobin', unit_id: unit, step_id: 's1', timing_window: { start: '2026-06-12', end: '2026-06-14' }, kind: 'single_site', status });
     for (const status of ['due', 'overdue']) {
       const html = await render({ days: [{ date: '2026-06-12', application: step(status) }], applications: [] });
-      expect(html).toContain('>Record<');
-      expect(html).toContain('Choose something different');
+      expect(html).toContain('Record or skip');
+      for (const gone of ['>Record<', '>Skip<', 'Choose something different', 'Reason (optional)']) expect(html).not.toContain(gone);
     }
     for (const status of ['planned', 'applied']) {
       const html = await render({ days: [{ date: '2026-06-12', application: step(status) }], applications: [] });
-      expect(html).not.toContain('Choose something different');
+      expect(html).not.toContain('Record or skip');
     }
   });
 });
