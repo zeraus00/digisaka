@@ -55,7 +55,7 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
           <span class="node">{{ e.done ? '✓' : '' }}</span>
           <div class="date">{{ range(e) }}<small>{{ e.date.slice(0, 4) }}</small></div>
           <div class="card">
-            <h5>{{ e.label }}<small v-if="e.moa"> · FRAC {{ e.moa }}</small> <span v-if="STEP_KIND[e.step]" class="jr-pill" :class="e.step === 'multisite' ? 'warn' : 'ok'">{{ STEP_KIND[e.step] }}</span>
+            <h5>{{ e.label }}<small v-if="e.moa"> · Mode of action {{ e.moa }}</small> <span v-if="STEP_KIND[e.step]" class="jr-pill" :class="e.step === 'multisite' ? 'warn' : 'ok'">{{ STEP_KIND[e.step] }}</span>
               <span v-if="e.status" class="jr-pill" :class="STATUS_TONE[e.status]">{{ STATUS_LABEL[e.status] }}</span><span v-if="e.offPlan" class="jr-pill">Off-plan</span></h5>
             <template v-if="e.status && e.kind !== 'application'">
               <p v-if="e.kind === 'skipped'">Skipped on {{ e.skip?.on ?? e.date }}.<template v-if="e.skip?.reason"> Reason: {{ e.skip.reason.replace('_', ' ') }}.</template></p>
