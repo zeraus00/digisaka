@@ -11,7 +11,6 @@ const MOBILITY = ['Contact', 'Translaminar', 'Locally systemic', 'Systemic'];
 const pills = computed(() => [...MOBILITY, ...f.value.mobility.filter((m) => !MOBILITY.includes(m))]);
 const rows = computed(() => [
   ['Active ingredient', f.value.activeIngredient], ['Manufacturer', f.value.manufacturer], ['Chemical group', f.value.chemicalGroup],
-  ['FRAC code', f.value.frac], ['Mode of action', f.value.modeOfAction && explainMoa(f.value.modeOfAction)],
   ['Rate', f.value.rate], ['Rainfast period', f.value.rainfast], ['Application interval', f.value.interval],
 ]);
 </script>
@@ -20,6 +19,10 @@ const rows = computed(() => [
   <div class="facts">
     <div class="jr-rows">
       <div v-for="[label, value] in rows" :key="label" class="jr-row"><span>{{ label }}</span><b>{{ value ?? 'Unknown' }}</b></div>
+      <div class="jr-row"><span>Mode of action</span><b>{{ f.modeOfAction ? explainMoa(f.modeOfAction) : 'Unknown' }}</b></div>
+      <div class="jr-row"><span>FRAC code</span><b>{{ f.frac ?? 'Unknown' }}</b></div>
+      <div class="jr-row"><span>MoA code</span><b>{{ f.moaCode ?? 'Unknown' }}</b></div>
+      <div class="jr-row"><span>Description</span><b>{{ f.moaDescription ?? 'Unknown' }}</b></div>
       <div v-if="f.intervalSource" class="jr-row"><span>Source</span><b>{{ f.intervalSource }}</b></div>
       <!-- TODO(contract): formulation, price -->
       <div class="jr-row jr-off"><span>Formulation</span><b>Coming soon</b></div>

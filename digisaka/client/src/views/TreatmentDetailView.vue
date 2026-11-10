@@ -76,7 +76,7 @@ const partnerChoices = computed(() => {
   const e = act.value?.e; if (!e?.partnerOptions?.length) return [];
   return [...e.partnerOptions].sort((a, b) => Number(b.product_id === e.partnerId) - Number(a.product_id === e.partnerId));
 });
-const group = (u) => unitFacts(u).frac;
+const group = (u) => unitFacts(u).moaCode;
 const sameGroup = (u) => String(group(u)) === String(act.value?.e.moa).split(' ')[0];
 const choices = computed(() => [...store.units].sort((a, b) => Number(sameGroup(b)) - Number(sameGroup(a))));
 // The free selector is a secondary link; it opens by itself when no step is open.

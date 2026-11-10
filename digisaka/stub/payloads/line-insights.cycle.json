@@ -186,6 +186,7 @@
       "product_id": "u-chlorothalonil",
       "product": "Chlorothalonil",
       "mode_of_action": "Mode of action M",
+      "moa_code": "M",
       "frac_code": "M",
       "multisite": true,
       "track": "multisite",
@@ -201,7 +202,8 @@
       "product_id": "u-pyrimethanil",
       "product": "Pyrimethanil",
       "mode_of_action": "Mode of action D1",
-      "frac_code": "D1",
+      "moa_code": "D1",
+      "frac_code": 9,
       "multisite": false,
       "track": "single_site",
       "plant_mobility": [],
@@ -214,6 +216,7 @@
       "product_id": "u-chlorothalonil",
       "product": "Chlorothalonil",
       "mode_of_action": "Mode of action M",
+      "moa_code": "M",
       "frac_code": "M",
       "multisite": true,
       "track": "multisite",
@@ -228,6 +231,7 @@
   "group_usage": [
     {
       "mode_of_action": "Mode of action M",
+      "moa_code": "M",
       "frac_code": "M",
       "multisite": true,
       "track": "multisite",
@@ -241,7 +245,8 @@
     },
     {
       "mode_of_action": "Mode of action D1",
-      "frac_code": "D1",
+      "moa_code": "D1",
+      "frac_code": 9,
       "multisite": false,
       "track": "single_site",
       "count": 1,
@@ -262,7 +267,8 @@
     },
     {
       "mode_of_action": "Mode of action G2",
-      "frac_code": "G2",
+      "moa_code": "G2",
+      "frac_code": 5,
       "multisite": false,
       "track": "single_site",
       "count": 0,

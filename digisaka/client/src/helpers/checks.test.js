@@ -59,9 +59,9 @@ describe('explainMoa', () => {
 
 import { unitFacts, reasonText, planFor } from './checks.js';
 describe('unit facts and reasons', () => {
-  const unit = { unit_id: 'u1', label: 'azoxystrobin', facts: { product: { label: 'azoxystrobin', manufacturer: null, plant_mobility: ['contact'], mode_of_action: { label: 'Mode of action C3', frac_code: 'C3', multisite: false } }, application_rates: [], application_interval: { min_days: 10, max_days: 15 } } };
+  const unit = { unit_id: 'u1', label: 'azoxystrobin', facts: { product: { label: 'azoxystrobin', manufacturer: null, plant_mobility: ['contact'], mode_of_action: { label: 'Mode of action C3', moa_code: 'C3', frac_code: 11, description: 'Quinone outside inhibitors', multisite: false } }, application_rates: [], application_interval: { min_days: 10, max_days: 15 } } };
   it('reads the pills and leaves an empty fact null', () => {
-    expect(unitFacts(unit)).toMatchObject({ frac: 'C3', site: 'Single-site', mobility: ['Contact'], manufacturer: null, rate: null, interval: '10 to 15 days' });
+    expect(unitFacts(unit)).toMatchObject({ frac: 11, moaCode: 'C3', moaDescription: 'Quinone outside inhibitors', site: 'Single-site', mobility: ['Contact'], manufacturer: null, rate: null, interval: '10 to 15 days' });
     expect(unitFacts({ label: 'x' })).toMatchObject({ name: 'X', frac: null, site: null, mobility: [] });
     expect(unitFacts({ label: 'x', facts: { product: { active_ingredient: 'fenpropimorph' } } }).activeIngredient).toBe('Fenpropimorph');
     expect(unitFacts({ label: 'x' }).activeIngredient).toBeNull();

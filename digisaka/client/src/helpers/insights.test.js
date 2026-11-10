@@ -33,9 +33,9 @@ describe('insights text', () => {
     expect(conditionReading([34], 'Leaf wetness above 6 hours')).toBe('');
     expect(conditionReading([84], 'Rain over 0 mm in the last 2 weeks')).toBe('84');
     expect([dayMonth('2026-09-01'), dayMonth('2026-05-12'), dayMonth(null)]).toEqual(['1 Sep', '12 May', null]);
-    const g = (frac_code, status) => ({ frac_code, status });
-    expect(shownGroups([g('M', 'ok'), g('D1', 'discouraged'), g('3', 'maxed')]).map((x) => x.frac_code)).toEqual(['D1', '3']);
-    expect(shownGroups([g('M', 'ok'), g('D1', null)]).map((x) => x.frac_code)).toEqual(['M', 'D1']);
+    const g = (moa_code, status) => ({ moa_code, status });
+    expect(shownGroups([g('M', 'ok'), g('D1', 'discouraged'), g('3', 'maxed')]).map((x) => x.moa_code)).toEqual(['D1', '3']);
+    expect(shownGroups([g('M', 'ok'), g('D1', null)]).map((x) => x.moa_code)).toEqual(['M', 'D1']);
     expect(shownGroups(null)).toEqual([]);
   });
   it('turns the Treatment chip on for either fungicide kind', () => {
@@ -50,11 +50,11 @@ describe('insights text', () => {
     expect([dayRain({ status: 'dry' }), dayRain({ status: 'rain', precipitation_mm: 3.1 }), dayRain({ status: 'not_reported' })]).toEqual(['0 mm', '3.1 mm', '—']);
   });
   it('badges a spray from its group row and heads the FRAC card by the server status', () => {
-    const usage = [{ frac_code: 'M', status: 'discouraged' }, { frac_code: 'D1', status: 'ok' }, { frac_code: 'C', status: 'maxed' }];
-    expect(sprayBadge({ frac_code: 'M' }, usage)).toEqual({ label: 'Discouraged', tone: 'warn' });
-    expect(sprayBadge({ frac_code: 'C' }, usage).label).toBe('Maxed');
-    expect(sprayBadge({ frac_code: 'D1' }, usage).label).toBe('Applied');
-    expect(sprayBadge({ frac_code: 'Z' }, usage).label).toBe('Applied');
+    const usage = [{ moa_code: 'M', status: 'discouraged' }, { frac_code: 'D1', status: 'ok' }, { moa_code: 'C', status: 'maxed' }];
+    expect(sprayBadge({ moa_code: 'M' }, usage)).toEqual({ label: 'Discouraged', tone: 'warn' });
+    expect(sprayBadge({ moa_code: 'C' }, usage).label).toBe('Maxed');
+    expect(sprayBadge({ moa_code: 'D1' }, usage).label).toBe('Applied');
+    expect(sprayBadge({ moa_code: 'Z' }, usage).label).toBe('Applied');
     expect(fracHeading(usage)).toBe('Discouraged FRAC groups');
     expect(fracHeading([{ status: 'ok' }, { status: null }])).toBe('FRAC history');
     expect(usageLine({ count: 2, range_min: 2, range_max: 4, period: 'crop cycle' })).toBe('2 of 2 to 4 crop cycle');

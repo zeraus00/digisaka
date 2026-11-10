@@ -93,6 +93,8 @@ export function unitFacts(unit) {
     activeIngredient: p?.active_ingredient ? shownName(p.active_ingredient) : null,
     chemicalGroup: p?.chemical_group ?? null,
     frac: moa?.frac_code ?? null,
+    moaCode: moa?.moa_code ?? null,
+    moaDescription: moa?.description ?? null,
     modeOfAction: moa?.label ?? null,
     site: site == null ? null : site ? 'Multi-site' : 'Single-site',
     mobility: (p?.plant_mobility ?? []).map(sentenceCase),

@@ -45,7 +45,7 @@ export const STATUS_LABEL = { ok: 'OK', discouraged: 'Discouraged', maxed: 'Maxe
 const TONE = { discouraged: 'warn', maxed: 'bad' };
 // The badge on a recorded spray comes from the group row with the same FRAC code.
 export function sprayBadge(spray, usage) {
-  const status = (usage ?? []).find((g) => g.frac_code === spray.frac_code)?.status;
+  const status = (usage ?? []).find((g) => g.moa_code === spray.moa_code)?.status;
   return { label: STATUS_LABEL[status] && status !== 'ok' ? STATUS_LABEL[status] : 'Applied', tone: TONE[status] ?? 'ok' };
 }
 // An ISO date as 'D Mon' ('2026-09-01' -> '1 Sep'); the month names are fixed so no locale writes 'Sept'.
