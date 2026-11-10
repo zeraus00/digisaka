@@ -191,7 +191,6 @@ const lastApplied = computed(() => {
 .why-off { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--danger); }
 .apps { margin: 8px 0 0 18px; color: var(--ink-soft); font-size: 14px; }
 .spray { display: flex; justify-content: flex-end; margin-bottom: 12px; } .spray button { padding: 10px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--forest); font: 800 14px var(--font-display); cursor: pointer; }
-.link { border: 0; background: none; padding: 0; color: var(--forest); text-decoration: underline; font: 700 14px var(--font-body); cursor: pointer; }
 .row { display: flex; gap: 8px; margin-top: 10px; } .row select, .row input { flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 12px; font: 600 14px var(--font-body); }
 
 .banner.ok { background: #D5E9DB; } .banner .updating { margin-left: auto; font: 700 13px var(--font-body); }
