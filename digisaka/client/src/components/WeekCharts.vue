@@ -249,9 +249,8 @@ svg { width: 100%; height: auto; display: block; margin-top: 6px; }
 path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .yls { stroke: var(--forest); stroke-width: 2.5; }
 .yli { stroke: var(--leaf-soft); stroke-width: 2; }
-.dot { fill: var(--forest); }
-.dot { cursor: crosshair; }
-.yli-dot { fill: var(--leaf-soft); stroke: var(--forest-deep); stroke-width: .75; }
+/* no vertex shapes: a dot is an invisible, wider hover target; only a compared week (hi) is drawn */
+.dot { fill: transparent; stroke: transparent; stroke-width: 10; cursor: crosshair; }
 .dot.hi { fill: var(--warn); stroke: var(--card); stroke-width: 1.5; }
 .bar.recent { fill: var(--teal); }
 .bar.previous { fill: var(--leaf-soft); }
@@ -280,7 +279,6 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .tbtn:focus-visible { outline: 3px solid #1b6fd6; outline-offset: 2px; }
 .leaves { stroke: #8a6d1f; stroke-width: 2.5; }
 .dotted { stroke-dasharray: 1 4; }
-.leaves-dot { fill: #8a6d1f; }
 .refline { stroke-width: 1.5; }
 .refline.critical { stroke: var(--danger); stroke-dasharray: 4 3; }
 .refline.target { stroke: var(--forest); stroke-dasharray: 1.5 3; }
