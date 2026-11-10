@@ -106,5 +106,7 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
 .date { font: 800 14px var(--font-display); color: var(--forest); } .date small { display: block; font-weight: 600; color: var(--ink-soft); }
 .card h5 { font: 800 15px var(--font-display); } .card small { color: var(--ink-soft); font-weight: 600; }
 .card p { margin-top: 2px; font-size: 13.5px; color: var(--ink-soft); } .card .why { font-style: italic; }
-.btns { display: flex; gap: 8px; margin-top: 6px; } .btns select, .btns button { font-size: 13px; }
+.btns { display: flex; gap: 8px; margin-top: 8px; }
+.btns button { padding: 9px 16px; border: 0; border-radius: 12px; background: var(--forest); color: #fff; font: 800 13px var(--font-display); cursor: pointer; }
+.btns button.ghost { border: 1px solid var(--line); background: none; color: var(--ink); } .btns button:disabled { opacity: .45; }
 </style>

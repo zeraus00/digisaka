@@ -141,7 +141,7 @@ const lastApplied = computed(() => {
         </div>
         <div v-if="step === 'fungicides'" class="btns go"><button type="button" @click="open('schedule')">Continue to Schedule</button></div>
         <template v-else>
-      <p class="meta"><button type="button" class="link" @click="dialog = { entry: null }">Record a spray</button></p>
+      <div class="spray"><button type="button" @click="dialog = { entry: null }">Record a spray</button></div>
 
       <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" :busy="store.busy || store.updating" @undo="(id) => store.undoSkip(id)" @act="(e) => (dialog = { entry: e })" />
       <RecordDialog v-if="dialog || store.pending || store.earlier" :key="dialog?.entry?.stepId ?? 'free'" :entry="dialog?.entry ?? null" :product-name="productName" @close="dialog = null" />
@@ -190,6 +190,7 @@ const lastApplied = computed(() => {
 .badge { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #1F7C74; color: #fff; font: 800 12px var(--font-display); }
 .why-off { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--danger); }
 .apps { margin: 8px 0 0 18px; color: var(--ink-soft); font-size: 14px; }
+.spray { display: flex; justify-content: flex-end; margin-bottom: 12px; } .spray button { padding: 10px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--forest); font: 800 14px var(--font-display); cursor: pointer; }
 .link { border: 0; background: none; padding: 0; color: var(--forest); text-decoration: underline; font: 700 14px var(--font-body); cursor: pointer; }
 .row { display: flex; gap: 8px; margin-top: 10px; } .row select, .row input { flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 12px; font: 600 14px var(--font-body); }
 
