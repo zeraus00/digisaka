@@ -105,9 +105,9 @@ const servedOf = (days, applications, day, skips = []) => {
   return [...out, ...offPlan].sort((x, y) => x.date.localeCompare(y.date));
 };
 
-// recommended: the sequencer's pick; eligible: passed but not picked; excluded: failed a check or not for the stage.
+// recommended: the sequencer's pick; eligible: passed but not picked; excluded: failed a check or is not selectable.
 const groupOf = (u) => (u.selectable === false || (u.checks ?? []).some((c) => c.result === 'fail') ? 'excluded' : u.excluded_from_schedule ? 'eligible' : 'recommended');
-const reasonOf = (u) => (u.selectable === false ? 'not_for_stage' : (u.checks ?? []).find((c) => c.result === 'fail')?.check ?? 'not_for_stage');
+const reasonOf = (u) => ((u.checks ?? []).find((c) => c.result === 'fail')?.check ?? 'rotation');
 
 // What a payload shows, as the diff reads it: unit tiers, alert ids, the line stage and the schedule.
 const tiersOf = (name) => Object.fromEntries((name ? PAYLOADS[name].selection.units : []).map((u) => [u.unit_id, groupOf(u)]));

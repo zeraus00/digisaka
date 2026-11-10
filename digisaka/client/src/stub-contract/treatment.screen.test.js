@@ -16,7 +16,7 @@ describe('treatment screen', () => {
     const s = useSuggestionStore();
     await s.load('L04', wait);
     const options = await show('L04', 'fungicides');
-    expect(options).toContain('Based on healthy images only');
+    expect(options).toContain('Only healthy images this week');
     expect(options).toContain('Recommendations');
     expect(options).toContain('Recommended</span>');
     expect(options).toContain('Other guidance');

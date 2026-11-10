@@ -27,11 +27,11 @@ const lineId = computed(() => String(route.params.lineId));
 const week = computed(() => String(route.params.week));
 
 const sug = computed(() => store.suggestion);
-const BASIS = {
-  stage_confirmed: 'Based on the stage you confirmed from this line\'s scans',
-  all_healthy_images: 'Based on healthy images only: no stage is confirmed',
-  no_confirmed_stage: 'No stage is confirmed for this line yet',
+const BASIS_TEXT = {
+  all_healthy_images: 'Only healthy images this week',
+  no_confirmed_stage: 'No stage confirmed this week',
 };
+const basisText = (s) => (s?.basis === 'stage_confirmed' ? `A scan confirmed stage ${s.line_stage?.stage} this week` : BASIS_TEXT[s?.basis]);
 const OUTCOME = { human_review_required: 'Human Review Required', continue_monitoring: 'Continue monitoring' };
 const lineAlerts = computed(() => orderAlerts(sug.value?.alerts ?? []));
 
@@ -82,11 +82,11 @@ const lastApplied = computed(() => {
       <p v-if="store.error" class="error">{{ store.error }}</p>
       <div class="banner" :class="sug.outcome === 'human_review_required' ? 'bad' : 'ok'">
         <span class="tick">{{ sug.outcome === 'human_review_required' ? '!' : '✓' }}</span>
-        <span>{{ OUTCOME[sug.outcome] ?? BASIS[sug.basis] ?? 'Current suggestion' }}</span>
+        <span>{{ OUTCOME[sug.outcome] ?? basisText(sug) ?? 'Current suggestion' }}</span>
         <span v-if="store.updating" class="updating" role="status">Updating…</span>
       </div>
       <p v-if="sug.outcome_reason" class="meta reason">{{ outcomeReasonText(sug.outcome_reason) }}</p>
-      <p v-if="sug.basis && sug.outcome !== 'human_review_required'" class="meta basis">{{ BASIS[sug.basis] }}</p>
+      <p v-if="sug.basis && sug.outcome !== 'human_review_required'" class="meta basis">{{ basisText(sug) }}</p>
       <p v-if="sug.changes?.summary" class="meta changes">What changed: {{ sug.changes.summary }}</p>
 
     </template>

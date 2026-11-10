@@ -109,7 +109,6 @@ export function unitFacts(unit) {
 const REASON = {
   rotation: 'Fails: Rotation. Its mode of action was used too recently.',
   no_interval: 'No application interval is known for this product.',
-  not_for_stage: 'Not for the line\'s current growth stage.',
   monitoring_advised: 'The data suggests treatment is not due yet; monitoring is advised.',
 };
 export const reasonText = (code) => (code == null ? null : REASON[code] ?? (CHECK_LABEL[code] ? `Fails: ${CHECK_LABEL[code]}` : code));

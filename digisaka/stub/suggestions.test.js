@@ -45,7 +45,7 @@ test('each line carries its basis, outcome and units', async () => {
   assert.ok(units(l4).length > 10);
   const l5 = await suggestion('L05');
   assert.deepEqual([l5.basis, l5.outcome, l5.outcome_reason], ['no_confirmed_stage', 'human_review_required', 'missing_feed_value']);
-  assert.ok(l5.groups.excluded.some((u) => u.reason === 'not_for_stage' && u.needs_confirmation));
+  assert.ok(l5.groups.excluded.some((u) => u.reason === 'group_cap' && u.needs_confirmation));
   const l6 = await suggestion('L06');
   assert.equal(l6.outcome, 'continue_monitoring');
   assert.deepEqual([l6.groups.recommended.length, l6.schedule.length], [0, 0]);
