@@ -10,7 +10,7 @@ describe('REFERRAL_TEXT', () => {
 
 describe('outcomeReasonText', () => {
   it('says in plain words why too few weekly records halt a line', () => {
-    expect(outcomeReasonText('fewer_than_min_weeks')).toBe('There are not enough weekly records for the system to decide.');
+    expect(outcomeReasonText('fewer_than_min_weeks')).toBe('There are not enough weekly records for the system to decide. A warning may still show; more weeks of data are needed.');
   });
   it('shows an unknown code as recorded and nothing for no code', () => {
     expect(outcomeReasonText('something_new')).toBe('something_new');

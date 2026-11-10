@@ -31,7 +31,7 @@ const OUTCOME_REASONS = {
   missing_feed_value: 'A weather or scan value is missing from the latest week\'s data.',
   requirement_not_fired: 'Treatment not yet warranted by the latest week\'s data and the current rules.',
   data_or_expert_review_needed: 'Data is missing or an expert needs to review the latest week\'s data.',
-  fewer_than_min_weeks: 'There are not enough weekly records for the system to decide.',
+  fewer_than_min_weeks: 'There are not enough weekly records for the system to decide. A warning may still show; more weeks of data are needed.',
 };
 export const outcomeReasonText = (code) => (code ? OUTCOME_REASONS[code] ?? code : '');
 

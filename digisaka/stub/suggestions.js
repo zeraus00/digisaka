@@ -39,13 +39,13 @@ const FINDING = (label, role) => ({ finding: `bsk:${label}`, label, role });
 const ASSESSMENTS = {
   continue_monitoring: {
     status: 'not_fired',
-    conditions: [CONDITION('Possible progression (YLS)', 'not_met'), CONDITION('Infection risk', 'not_met')],
+    conditions: [CONDITION('Possible progression (spots)', 'not_met'), CONDITION('Infection risk', 'not_met')],
     findings: [FINDING('Aggressive progression', 'context'), FINDING('Canopy watch', 'context')],
     note: 'No treatment is suggested this week. Aggressive progression and canopy watch are worth keeping an eye on, but neither is a reason to treat yet.',
   },
   suggested: {
     status: 'fired',
-    conditions: [CONDITION('Possible progression (YLS)', 'not_met'), CONDITION('Infection risk', 'met')],
+    conditions: [CONDITION('Possible progression (spots)', 'not_met'), CONDITION('Infection risk', 'met')],
     findings: [FINDING('Infection risk', 'trigger'), FINDING('Canopy watch', 'context')],
     note: 'Treatment is suggested because of the infection risk.',
   },
