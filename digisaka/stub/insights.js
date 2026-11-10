@@ -20,12 +20,12 @@ function readingsFor(series, frozen) {
   if (window.length > 1) {
     const [a, b] = [window[0], window.at(-1)], span = series.indexOf(b) - series.indexOf(a);
     const yli = a.yli !== null && b.yli !== null ? `; YLI leaf ${a.yli} to leaf ${b.yli}` : '';
-    out.push({ rule: 'R1 Disease trend', finding: b.yls < a.yls ? 'Disease is progressing' : 'Disease is not progressing', text: `YLS leaf ${a.yls} to leaf ${b.yls} over ${span} weeks${yli}. A lower number means a younger leaf.`, source: null, sample_fact: false });
+    out.push({ rule: 'RuleR1', finding: b.yls < a.yls ? 'Disease is progressing' : 'Disease is not progressing', text: `YLS leaf ${a.yls} to leaf ${b.yls} over ${span} weeks${yli}. A lower number means a younger leaf.`, source: null, sample_fact: false });
   }
   const n = last.functional_leaves;
   if (n !== null && n < frozen.functional_leaves_threshold) {
-    out.push({ rule: 'R3 Functional leaves', finding: 'Few functional leaves', text: `Functional leaves ${n}, below the ${frozen.functional_leaves_threshold}-leaf threshold.`, source: null, sample_fact: false });
-    out.push({ rule: 'R7 Canopy critical', finding: 'Canopy critical', text: `Functional leaves ${n}, below the ${frozen.functional_leaves_threshold}-leaf canopy band.`, source: null, sample_fact: false });
+    out.push({ rule: 'RuleR3', finding: 'Few functional leaves', text: `Functional leaves ${n}, below the ${frozen.functional_leaves_threshold}-leaf threshold.`, source: null, sample_fact: false });
+    out.push({ rule: 'RuleCanopyCritical', finding: 'Canopy critical', text: `Functional leaves ${n}, below the ${frozen.functional_leaves_threshold}-leaf canopy band.`, source: null, sample_fact: false });
   }
   return out;
 }

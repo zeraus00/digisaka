@@ -88,7 +88,7 @@
   ],
   "readings": [
     {
-      "rule": "R1 Disease trend",
+      "rule": "RuleR1",
       "finding": "Disease is progressing",
       "text": "YLS leaf 9 to leaf 8 over 3 weeks. A lower number means a younger leaf.",
       "source": null,
