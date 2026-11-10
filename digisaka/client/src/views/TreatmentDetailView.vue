@@ -18,7 +18,7 @@ import { entryOf, showBackToScan } from '../helpers/scanEntry.js';
 import { useInsightsStore } from '../stores/insights.js';
 import { STEPS, stepOf } from '../helpers/treatmentStep.js';
 import '../styles/journey.css';
-import { reasonLine } from '../helpers/messages.js';
+import { outcomeReasonText } from '../helpers/messages.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
 import { shownName } from '../helpers/checks.js';
 
@@ -85,10 +85,7 @@ const lastApplied = computed(() => {
         <span>{{ OUTCOME[sug.outcome] ?? basisText(sug) ?? 'Current suggestion' }}</span>
         <span v-if="store.updating" class="updating" role="status">Updating…</span>
       </div>
-      <template v-if="reasonLine(sug)">
-        <p class="meta reason">{{ reasonLine(sug).text }}</p>
-        <p v-if="reasonLine(sug).caveat" class="meta caveat">{{ reasonLine(sug).caveat }}</p>
-      </template>
+      <p v-if="sug.outcome_reason" class="meta reason">{{ outcomeReasonText(sug.outcome_reason) }}</p>
       <p v-if="sug.basis && OUTCOME[sug.outcome] && sug.outcome !== 'human_review_required'" class="meta basis">{{ basisText(sug) }}</p>
       <p v-if="sug.changes?.summary" class="meta changes">What changed: {{ sug.changes.summary }}</p>
 
