@@ -1,5 +1,6 @@
 <script setup>
 import { computed, watch, onBeforeUnmount } from 'vue';
+import { shownName } from '../helpers/checks.js';
 import { useInsightsStore } from '../stores/insights.js';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import WeekCharts from './WeekCharts.vue';
@@ -82,7 +83,7 @@ const result = computed(() => {
           </article>
           <article class="metric">
             <span>Last treatment</span>
-            <strong>{{ last?.product ?? 'None recorded' }}</strong>
+            <strong>{{ last?.product ? shownName(last.product) : 'None recorded' }}</strong>
             <small>{{ last ? `Applied ${last.applied_on}` : 'No application recorded for this line' }}</small>
           </article>
         </div>
@@ -116,7 +117,6 @@ const result = computed(() => {
           <div class="reason">
             <b>Latest scheduler result</b><p>{{ result }}</p>
           </div>
-          <p class="disclaimer">These indicators are context, not a confirmed diagnosis. Verify findings with an agricultural specialist before treatment decisions.</p>
         </div>
       </div>
       <WeekCharts :weeks="chart.weeks" :leaves="chart.refs" />
@@ -143,7 +143,7 @@ svg { max-width: 420px; }
 .section-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 5px; }
 h4 { font-size: .9rem; }
 .section-title span { padding: 3px 8px; border-radius: 999px; background: #e5e7eb; color: #4b5563; font-size: .68rem; font-weight: 700; }
-.canopy p, .reason p, .disclaimer { color: var(--ink-soft); font-size: .76rem; line-height: 1.45; }
+.canopy p, .reason p { color: var(--ink-soft); font-size: .76rem; line-height: 1.45; }
 .canopy-bar { position: relative; height: 14px; margin: 12px 0 0; border-radius: 999px; background: #e5e7eb; }
 .canopy-tick { position: absolute; top: -4px; height: 22px; border-left: 2px solid; }
 .canopy-scale { position: relative; height: 20px; color: var(--ink-soft); font-size: .65rem; font-weight: 700; }
@@ -155,7 +155,6 @@ h4 { font-size: .9rem; }
 .reason:first-of-type { border-top: 0; }
 .reason b { flex: 0 0 38%; font-size: .74rem; }
 .reason p { margin: 0; }
-.disclaimer { margin-top: 8px; padding: 9px 10px; border-radius: 10px; background: #f1f1f1; }
 @media (max-width: 680px) {
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

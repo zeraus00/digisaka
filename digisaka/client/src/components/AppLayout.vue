@@ -71,6 +71,7 @@ function signOut() { closeMenu(); auth.signOut(); router.push('/login'); }
           </Transition>
         </RouterView>
       </main>
+      <footer class="disclaimer">AI-assisted guidance: it supports, and does not replace, an agricultural specialist. Verify findings and the registered label before treatment decisions.</footer>
     </div>
     <DevBar />
   </div>
@@ -109,6 +110,7 @@ nav { display: grid; gap: 4px; }
 .menu-out { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 0; border-radius: 10px; background: none; color: var(--forest); font: 800 15px var(--font-body); }
 .menu-out:hover { background: var(--tint); }
 .dot { position: absolute; top: 8px; right: 9px; width: 9px; height: 9px; border-radius: 50%; background: var(--warn); border: 2px solid #fff; }
+.disclaimer { flex: none; padding: 6px var(--gutter); background: #fff; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-soft); text-align: center; }
 .content { flex: 1; min-height: 0; overflow-y: auto; contain: paint; }
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }

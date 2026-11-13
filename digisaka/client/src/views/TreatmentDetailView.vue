@@ -19,7 +19,7 @@ import { STEPS, stepOf } from '../helpers/treatmentStep.js';
 import '../styles/journey.css';
 import { outcomeReasonText } from '../helpers/messages.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
-import { reasonText, unitFacts } from '../helpers/checks.js';
+import { reasonText, unitFacts, shownName } from '../helpers/checks.js';
 import { todayIso, keepIfEdited } from '../helpers/today.js';
 
 const route = useRoute(), router = useRouter(), store = useSuggestionStore(), insights = useInsightsStore(), scan = useScanStore();
@@ -138,7 +138,7 @@ const lastApplied = computed(() => {
         <div v-if="step === 'fungicides'" class="jr-layout">
           <div>
       <section class="prop-card">
-                <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.join(', ') }} on {{ lastApplied.on }}.</p>
+                <p v-if="lastApplied" class="meta recent">Recently applied: {{ lastApplied.names.map(shownName).join(', ') }} on {{ lastApplied.on }}.</p>
         <section v-if="lineAlerts.length" class="ack notes">
           <h4>Alerts</h4>
           <ul><li v-for="a in lineAlerts" :key="a.id" :class="a.level"><span class="icon" aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span>{{ a.text }}</li></ul>
@@ -169,24 +169,24 @@ const lastApplied = computed(() => {
         <div class="row">
           <select v-if="act.mode === 'other'" v-model="actProduct" aria-label="Product applied instead" :disabled="store.busy || !!store.pending || !!store.earlier">
             <option value="" disabled>Product</option>
-            <option v-for="u in choices" :key="u.unit_id" :value="u.product_id">{{ u.label }}{{ sameGroup(u) ? ' (same group)' : '' }}{{ tierOf(u) === 'excluded' ? ' (excluded)' : '' }}</option>
+            <option v-for="u in choices" :key="u.unit_id" :value="u.product_id">{{ shownName(u.label) }}{{ sameGroup(u) ? ' (same group)' : '' }}{{ tierOf(u) === 'excluded' ? ' (excluded)' : '' }}</option>
           </select>
           <select v-if="partnerChoices.length" v-model="actPartner" aria-label="Partner in the same tank" :disabled="store.busy || !!store.pending || !!store.earlier">
             <option value="">No partner</option>
-            <option v-for="o in partnerChoices" :key="o.product_id" :value="o.product_id">{{ productName(o.product_id) }}{{ o.product_id === act.e.partnerId ? ' (planned)' : '' }}{{ o.compatible ? '' : ` (not compatible: ${o.why})` }}</option>
+            <option v-for="o in partnerChoices" :key="o.product_id" :value="o.product_id">{{ shownName(productName(o.product_id)) }}{{ o.product_id === act.e.partnerId ? ' (planned)' : '' }}{{ o.compatible ? '' : ` (not compatible: ${o.why})` }}</option>
           </select>
           <input v-model="actOn" type="date" :max="todayIso()" aria-label="Date applied" :disabled="store.busy || !!store.pending || !!store.earlier" />
         </div>
         <div v-if="store.earlier" class="off-schedule" role="alert">
           <p>Earlier steps are still open:</p>
-          <ul><li v-for="s in store.earlier.steps" :key="s.step_id">{{ s.product }}<template v-if="s.timing_window"> ({{ s.timing_window.start }} to {{ s.timing_window.end }})</template></li></ul>
+          <ul><li v-for="s in store.earlier.steps" :key="s.step_id">{{ shownName(s.product) }}<template v-if="s.timing_window"> ({{ s.timing_window.start }} to {{ s.timing_window.end }})</template></li></ul>
           <div class="btns">
             <button type="button" :disabled="store.busy" @click="skipEarlier">Skip them all</button>
             <button type="button" class="ghost" :disabled="store.busy" @click="closeAct">Record them first</button>
           </div>
         </div>
         <div v-else-if="store.pending" class="off-schedule" role="alert">
-          <p>{{ productName(store.pending.product_id) }} needs your confirmation{{ store.pending.tier ? ` (${store.pending.tier})` : '' }}:</p>
+          <p>{{ shownName(productName(store.pending.product_id)) }} needs your confirmation{{ store.pending.tier ? ` (${store.pending.tier})` : '' }}:</p>
           <p v-if="store.pending.reason">{{ reasonText(store.pending.reason) }}</p>
           <ul><li v-for="a in store.pending.alerts" :key="a.id">{{ a.text }}</li></ul>
           <div class="btns">
@@ -206,20 +206,20 @@ const lastApplied = computed(() => {
         <div class="row">
           <select v-model="productId" aria-label="Product applied" :disabled="store.busy || !!store.pending">
             <option value="" disabled>Product</option>
-            <option v-for="u in store.units" :key="u.unit_id" :value="u.product_id">{{ u.label }}{{ tierOf(u) === 'excluded' ? ' (excluded)' : '' }}</option>
+            <option v-for="u in store.units" :key="u.unit_id" :value="u.product_id">{{ shownName(u.label) }}{{ tierOf(u) === 'excluded' ? ' (excluded)' : '' }}</option>
           </select>
           <input v-model="appliedOn" type="date" :max="todayIso()" aria-label="Date applied" :disabled="store.busy || !!store.pending" />
         </div>
         <div v-if="store.earlier" class="off-schedule" role="alert">
           <p>Earlier steps are still open:</p>
-          <ul><li v-for="s in store.earlier.steps" :key="s.step_id">{{ s.product }}</li></ul>
+          <ul><li v-for="s in store.earlier.steps" :key="s.step_id">{{ shownName(s.product) }}</li></ul>
           <div class="btns">
             <button type="button" :disabled="store.busy" @click="skipEarlier">Skip them all</button>
             <button type="button" class="ghost" :disabled="store.busy" @click="store.cancel()">Record them first</button>
           </div>
         </div>
         <div v-else-if="store.pending" class="off-schedule" role="alert">
-          <p>{{ productName(store.pending.product_id) }} needs your confirmation{{ store.pending.tier ? ` (${store.pending.tier})` : '' }}:</p>
+          <p>{{ shownName(productName(store.pending.product_id)) }} needs your confirmation{{ store.pending.tier ? ` (${store.pending.tier})` : '' }}:</p>
           <p v-if="store.pending.reason">{{ reasonText(store.pending.reason) }}</p>
           <ul><li v-for="a in store.pending.alerts" :key="a.id">{{ a.text }}</li></ul>
           <div class="btns">
@@ -238,7 +238,6 @@ const lastApplied = computed(() => {
         </template>
       </template>
     </div>
-    <p class="disclaimer">AI-assisted scheduling should be verified by an agricultural specialist before treatment decisions.</p>
   </div>
 </template>
 
@@ -250,7 +249,6 @@ const lastApplied = computed(() => {
 .banner.warn { background: #FCE7C8; color: #8A5A00; } .banner.warn .tick { background: #D98A00; }
 .btns { display: flex; gap: 10px; } .btns button { flex: 1; padding: 13px; border: 0; border-radius: 14px; background: var(--forest); color: #fff; font: 800 15px var(--font-display); }
 .btns button.ghost { background: none; border: 1px solid var(--line); color: var(--ink); } .btns button:disabled { opacity: .45; }
-.disclaimer { margin-top: 20px; font-size: 12.5px; color: var(--ink-soft); text-align: center; }
 .prop-card { padding: 18px; margin-bottom: 18px; border-radius: 20px; background: var(--card); box-shadow: var(--shadow); }
 .prop-card h3 { font: 800 20px var(--font-display); color: var(--forest); margin-bottom: 4px; }
 .prop-card .meta { color: var(--ink-soft); font-size: 14px; margin-bottom: 10px; }

@@ -12,7 +12,7 @@ describe('scheduleEvents', () => {
   it('turns an application day and an assessment day into events', () => {
     const ev = scheduleEvents(days);
     expect(ev.map((e) => [e.date, e.kind, e.label, e.done])).toEqual([
-      ['2026-06-29', 'application', 'azoxystrobin', false],
+      ['2026-06-29', 'application', 'Azoxystrobin', false],
       ['2026-07-06', 'monitoring', 'Weekly assessment', false],
     ]);
     expect(ev[1].after).toBe('planned 2026-06-29 azoxystrobin');
@@ -35,7 +35,7 @@ describe('scheduleEvents', () => {
     const ev = scheduleEvents(days, [{ product_id: 'http://x#FungicidePyrimethanil', applied_on: '2026-06-01' }], (id) => id.split('#').pop());
     expect(ev.map((e) => [e.date, e.kind, e.label, e.done])).toEqual([
       ['2026-06-01', 'applied', 'FungicidePyrimethanil', true],
-      ['2026-06-29', 'application', 'azoxystrobin', false],
+      ['2026-06-29', 'application', 'Azoxystrobin', false],
       ['2026-07-06', 'monitoring', 'Weekly assessment', false],
     ]);
   });
@@ -52,14 +52,14 @@ describe('monthGrids', () => {
     expect([jun.month, jun.year, jul.month]).toEqual(['June', 2026, 'July']);
     expect(jun.cells[0]).toBe(1); // 1 June 2026 is a Monday
     expect(jul.cells.slice(0, 3)).toEqual([null, null, 1]); // 1 July is a Wednesday
-    expect(jun.onDay[29][0].label).toBe('azoxystrobin');
+    expect(jun.onDay[29][0].label).toBe('Azoxystrobin');
     expect(jun.events).toHaveLength(1);
   });
 
   it('makes one event per step, titled with both products and groups, with the kind, note and partner', () => {
     const days = [{ date: '2026-06-29', application: { product: 'propiconazole', moa: '3', unit_id: unit, kind: 'single_site_with_partner', why: 'FRAC 3 is next.', partner: { unit_id: 'q|mz', product: 'mancozeb', moa: 'M' }, timing_window: { start: '2026-06-29', end: '2026-07-03' } } }];
     const [e] = scheduleEvents(days, []);
-    expect([e.label, e.moa, e.step, e.why, e.partner.product]).toEqual(['propiconazole + mancozeb', '3 + M', 'single_site_with_partner', 'FRAC 3 is next.', 'mancozeb']);
+    expect([e.label, e.moa, e.step, e.why, e.partner.product]).toEqual(['Propiconazole + Mancozeb', '3 + M', 'single_site_with_partner', 'FRAC 3 is next.', 'mancozeb']);
   });
   it('marks a multisite-alone step done when its own product is recorded in the window', () => {
     const days = [{ date: '2026-06-29', application: { product: 'mancozeb', moa: 'M', unit_id: 'q|mz', kind: 'multisite', why: 'x', partner: null, timing_window: { start: '2026-06-29', end: '2026-07-03' } } }];

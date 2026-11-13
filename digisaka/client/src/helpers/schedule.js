@@ -1,4 +1,5 @@
 import { fromIso } from './today.js';
+import { shownName } from './checks.js';
 import { productOf } from '../stores/suggestion.js';
 
 // The kind pill of a step: the server sets the kind, these only word it.
@@ -40,7 +41,7 @@ export function scheduleEvents(days, applications = [], nameOf = (id) => id, ass
       const { start, end } = app.timing_window?.start ? app.timing_window : { start: d.date, end: d.date };
       out.push({
         date: d.date, kind: app.status === 'applied' ? 'applied' : app.status === 'skipped' ? 'skipped' : 'application',
-        label: partner ? `${app.product} + ${partner.product}` : app.product, moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
+        label: partner ? `${shownName(app.product)} + ${shownName(partner.product)}` : shownName(app.product), moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
         start, end, done: app.status === 'applied', productId: app.unit_id ? productOf(app.unit_id) : null, partnerId: partner?.unit_id ? productOf(partner.unit_id) : null, partnerOptions: app.partner_options ?? [], step: app.kind ?? null, why: app.why ?? null, partner,
         stepId: app.step_id ?? null, status: app.status, note: app.status_note ?? null, skip: app.skip ?? null, offPlan: app.off_plan === true,
       });
@@ -50,14 +51,14 @@ export function scheduleEvents(days, applications = [], nameOf = (id) => id, ass
       // One event per step: a partnered step is titled with both products and groups. The server sets `step` (kind) and `why`.
       const partner = app.partner ?? null;
       out.push({
-        date: d.date, kind: 'application', label: partner ? `${app.product} + ${partner.product}` : app.product, moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
+        date: d.date, kind: 'application', label: partner ? `${shownName(app.product)} + ${shownName(partner.product)}` : shownName(app.product), moa: partner ? `${app.moa} + ${partner.moa}` : app.moa,
         start, end, done, productId: productOf(app.unit_id), step: app.kind ?? null, why: app.why ?? null, partner,
       });
     }
     if (d.monitoring) out.push({ date: d.date, kind: 'monitoring', label: d.monitoring.label, after: d.reassessment?.of ?? null, done: assessedWeeks.includes(isoWeek(d.date)) });
     return out;
   });
-  const applied = served ? [] : applications.map((a) => ({ date: a.applied_on, kind: 'applied', label: nameOf(a.product_id), done: true }));
+  const applied = served ? [] : applications.map((a) => ({ date: a.applied_on, kind: 'applied', label: shownName(nameOf(a.product_id)), done: true }));
   return [...planned, ...applied].sort((a, b) => a.date.localeCompare(b.date));
 }
 

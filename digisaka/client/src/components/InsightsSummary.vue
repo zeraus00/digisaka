@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { shownName } from '../helpers/checks.js';
 import { useInsightsStore } from '../stores/insights.js';
 import { progressionReading, actionChips } from '../helpers/insights.js';
 
@@ -22,10 +23,9 @@ const chips = computed(() => actionChips(data.value?.actions?.kinds));
       <!-- TODO(contract): infection risk level -->
       <div class="jr-row jr-off"><span>Infection risk</span><b>Coming soon</b></div>
       <div class="jr-row"><span>Progression</span><b>{{ progression?.finding ?? 'Not assessed' }}</b></div>
-      <div class="jr-row"><span>Last treatment</span><b>{{ last?.product ?? 'None recorded' }}</b></div>
+      <div class="jr-row"><span>Last treatment</span><b>{{ last?.product ? shownName(last.product) : 'None recorded' }}</b></div>
     </div>
     <div class="jr-chips"><span v-for="[label, on] in chips" :key="label" class="jr-pill" :class="{ on }">{{ label }}</span></div>
     <p v-if="data.actions?.summary" class="jr-hint">{{ data.actions.summary }}</p>
-    <p class="jr-hint">These indicators are context, not a confirmed diagnosis. Verify findings with an agricultural specialist before treatment decisions.</p>
   </aside>
 </template>
