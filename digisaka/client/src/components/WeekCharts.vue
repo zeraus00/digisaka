@@ -54,6 +54,8 @@ const series = (key) => weeks.value.map((w, i) => (w[key] == null ? null : { x: 
 const ylsPts = computed(() => series('yls'));
 const yliPts = computed(() => series('yli'));
 const compared = computed(() => new Set(props.disease?.compared_weeks ?? []));
+// a line's points kept only on the weeks this cycle compared: drawn again, darker, on top of the line
+const over = (pts) => pts.map((p, i) => (compared.value.has(weeks.value[i].week) ? p : null));
 const ticks = computed(() => [lo.value, Math.round((lo.value + hi.value) / 2), hi.value]);
 
 // Rainfall chart.
@@ -132,6 +134,9 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
       <path class="yli dashed" :d="linePath(yliA)" />
       <path class="leaves dotted" :d="linePath(leavesA)" />
       <path class="yls" :d="linePath(ylsA)" />
+      <path class="yli dashed compared" :d="linePath(over(yliA))" />
+      <path class="leaves dotted compared" :d="linePath(over(leavesA))" />
+      <path class="yls compared" :d="linePath(over(ylsA))" />
       <template v-for="(w, i) in weeks" :key="w.week">
         <rect v-if="leavesA[i]" v-bind="sq(leavesA[i])" width="6" height="6" class="dot leaves-dot"
               @pointerenter="hoverPoint('leaves', w, 'Leaves', w.leaves, leavesA[i].x, leavesA[i].y)" @pointerleave="clearHover('leaves', `leaves-${w.week}-Leaves`)"><title>{{ w.week }} · Leaves: {{ w.leaves }}</title></rect>
@@ -162,8 +167,10 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
       </g>
       <path class="yli" :d="linePath(yliPts)" />
       <path class="yls" :d="linePath(ylsPts)" />
+      <path class="yli compared" :d="linePath(over(yliPts))" />
+      <path class="yls compared" :d="linePath(over(ylsPts))" />
       <template v-for="(w, i) in weeks" :key="w.week">
-        <circle v-if="ylsPts[i]" :cx="ylsPts[i].x" :cy="ylsPts[i].y" :r="compared.has(w.week) ? 5 : 3" :class="['dot', 'yls-dot', { hi: compared.has(w.week) }]"
+        <circle v-if="ylsPts[i]" :cx="ylsPts[i].x" :cy="ylsPts[i].y" r="3" class="dot yls-dot"
                 @pointerenter="hoverPoint('disease', w, 'YLS', w.yls, ylsPts[i].x, ylsPts[i].y)"
                 @pointerleave="clearHover('disease', `disease-${w.week}-YLS`)">
           <title>{{ w.week }} · YLS: {{ w.yls }}</title>
@@ -180,7 +187,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
       </g>
     </svg>
     <p class="sr-only" aria-live="polite">{{ activePoint?.chart === 'disease' ? pointText : '' }}</p>
-    <p v-if="dCap" class="cap">{{ dCap }} <span class="soft">YLI (lighter line) is shown for context and is not part of the decision.</span></p>
+    <p v-if="dCap" class="cap">{{ dCap }} <span class="soft">YLI (lighter line) is shown for context and is not part of the decision.</span> <span v-if="compared.size" class="soft">The thicker, darker part of a line is the weeks compared.</span></p>
     <p v-else class="cap soft">YLI (lighter line) is shown for context.</p>
   </figure>
 
@@ -195,6 +202,7 @@ const rLabel = computed(() => rCap.value || 'Rainfall by week');
         <line :class="['refline', r.kind]" :x1="L" :x2="W - R" :y1="yL(r.value)" :y2="yL(r.value)" />
       </template>
       <path class="leaves" :d="linePath(leavesL)" />
+      <path class="leaves compared" :d="linePath(over(leavesL))" />
       <template v-for="(w, i) in weeks" :key="w.week">
         <rect v-if="leavesL[i]" v-bind="sq(leavesL[i])" width="6" height="6" class="dot leaves-dot"
               @pointerenter="hoverPoint('leaves', w, 'Leaves', w.leaves, leavesL[i].x, leavesL[i].y)" @pointerleave="clearHover('leaves', `leaves-${w.week}-Leaves`)"><title>{{ w.week }} · Leaves: {{ w.leaves }}</title></rect>
@@ -249,10 +257,11 @@ svg { width: 100%; height: auto; display: block; margin-top: 6px; }
 path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .yls { stroke: var(--forest); stroke-width: 2.5; }
 .yli { stroke: var(--leaf-soft); stroke-width: 2; }
-.dot { fill: var(--forest); }
-.dot { cursor: crosshair; }
-.yli-dot { fill: var(--leaf-soft); stroke: var(--forest-deep); stroke-width: .75; }
-.dot.hi { fill: var(--warn); stroke: var(--card); stroke-width: 1.5; }
+/* no vertex shapes: a dot is an invisible, wider hover target */
+.dot { fill: transparent; stroke: transparent; stroke-width: 10; cursor: crosshair; }
+.yls.compared { stroke: var(--forest-deep); stroke-width: 4; }
+.yli.compared { stroke: var(--leaf); stroke-width: 3.5; }
+.leaves.compared { stroke: #5e4a12; stroke-width: 4; }
 .bar.recent { fill: var(--teal); }
 .bar.previous { fill: var(--leaf-soft); }
 .bar.other { fill: var(--line); }
@@ -280,7 +289,6 @@ path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .tbtn:focus-visible { outline: 3px solid #1b6fd6; outline-offset: 2px; }
 .leaves { stroke: #8a6d1f; stroke-width: 2.5; }
 .dotted { stroke-dasharray: 1 4; }
-.leaves-dot { fill: #8a6d1f; }
 .refline { stroke-width: 1.5; }
 .refline.critical { stroke: var(--danger); stroke-dasharray: 4 3; }
 .refline.target { stroke: var(--forest); stroke-dasharray: 1.5 3; }

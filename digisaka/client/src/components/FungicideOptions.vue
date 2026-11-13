@@ -3,6 +3,7 @@ import { computed, watch } from 'vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import { unitFacts, shownName, reasonText, checkLabel, humanDetail, stripChecks, GROUP_LABEL } from '../helpers/checks.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
+import Icon from './Icon.vue';
 import { paginate } from '../helpers/paging.js';
 import { TRACKS, trackLabel } from '../helpers/tracks.js';
 import '../styles/journey.css';
@@ -58,7 +59,7 @@ const showDetails = (u) => emit('select', u);
             </span>
             <span>{{ reasonText(u.reason) }}</span>
             <ul v-if="failing(u).length"><li v-for="c in failing(u)" :key="c.label">{{ c.label }}: {{ c.text }}</li></ul>
-            <ul v-if="u.alerts.length"><li v-for="a in orderAlerts(u.alerts)" :key="a.id"><span aria-hidden="true">{{ LEVEL_ICON[a.level] }}</span> {{ a.text }}</li></ul>
+            <ul v-if="u.alerts.length"><li v-for="a in orderAlerts(u.alerts)" :key="a.id"><Icon :name="LEVEL_ICON[a.level]" :size="16" class="lvl" :class="`lvl-${a.level}`" />{{ a.text }}</li></ul>
           </button>
         </template>
       </template>

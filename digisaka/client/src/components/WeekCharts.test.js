@@ -75,4 +75,13 @@ describe('WeekCharts trend toggle', () => {
     expect(count(rain, /class="bar previous"/g)).toBe(2);
     expect(rain).toContain('Rain over the last 2 weeks: 33 mm, up from 29 mm.');
   });
+  it('draws each line again, darker, over only the compared weeks', async () => {
+    const eight = Array.from({ length: 8 }, (_, k) => ({ week: `2026-W${17 + k}`, yls: 9 - k, yli: 5 }));
+    const disease = { worsening: false, worsening_direction: 'lower', consecutive_weeks: 2, compared_weeks: ['2026-W23', '2026-W24'] };
+    const html = await render({ weeks: eight, disease, initialView: 'disease' });
+    const d = /class="yls compared" d="([^"]*)"/.exec(html)[1];
+    expect(count(d, /[ML]/g)).toBe(2); // two points, one segment
+    expect(/class="yli compared" d="M[^"]*L[^"]*"/.test(html)).toBe(true);
+    expect(await render({ weeks: eight, disease: { ...disease, compared_weeks: [] }, initialView: 'disease' })).toContain('class="yls compared" d=""');
+  });
 });
