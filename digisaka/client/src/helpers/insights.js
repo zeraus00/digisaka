@@ -43,9 +43,9 @@ export const dayRain = (d) => (d.status === 'dry' ? '0 mm' : d.status === 'rain'
 // Spray log wording. A group is "Discouraged" or "Maxed" only when the server says so; no status shows no pill.
 export const STATUS_LABEL = { ok: 'OK', discouraged: 'Discouraged', maxed: 'Maxed' };
 const TONE = { discouraged: 'warn', maxed: 'bad' };
-// The badge on a recorded spray comes from the group row with the same FRAC code.
+// The badge on a recorded spray comes from the group row with the same MoA code.
 export function sprayBadge(spray, usage) {
-  const status = (usage ?? []).find((g) => g.frac_code === spray.frac_code)?.status;
+  const status = (usage ?? []).find((g) => g.moa_code === spray.moa_code)?.status;
   return { label: STATUS_LABEL[status] && status !== 'ok' ? STATUS_LABEL[status] : 'Applied', tone: TONE[status] ?? 'ok' };
 }
 // An ISO date as 'D Mon' ('2026-09-01' -> '1 Sep'); the month names are fixed so no locale writes 'Sept'.

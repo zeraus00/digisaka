@@ -52,11 +52,13 @@ const REAL_BY_NAME = new Map(real.selection.units.map((u) => [u.product.toLowerC
 // shortcut: 10 to 15 days for every unit (the sample ABox's general fungicide guidance), not read per product; upgrade when the live run serves it.
 const INTERVAL = { min_days: 10, max_days: 15, source: null };
 const named = (xs) => xs.map(({ id, label }) => ({ id, label }));
+// The recorded payloads hold the MoA code under `frac_code`; the numeric FRAC code (CropLife Australia table) is mapped here.
+const FRAC_OF = { B1: 1, G1: 3, G2: 5, C3: 11, D1: 9, M: 'M' };
 function factsOf(u) {
   const r = REAL_BY_NAME.get(u.product.toLowerCase());
   if (!r) return null;
   const { details, resistance, efficacy_use: use } = r;
-  const moa = { id: details.mode_of_action, label: details.mode_of_action, frac_code: details.frac_code ?? null, multisite: resistance.multisite ?? null };
+  const moa = { id: details.mode_of_action, label: details.mode_of_action, moa_code: details.frac_code ?? null, frac_code: FRAC_OF[details.frac_code] ?? null, description: null, multisite: resistance.multisite ?? null };
   const carriers = r.conditions.filter((c) => c.kind === 'carrier'), excluded = r.conditions.filter((c) => c.kind === 'excluded');
   return {
     product: { id: productOf(u.unit_id), label: u.product, active_ingredient: details.active_ingredient ?? null, chemical_group: details.chemical_group ?? null, manufacturer: null, mode_of_action: moa, plant_mobility: details.plant_mobility ?? [], registrations: details.registrations ?? [], sources: [] },

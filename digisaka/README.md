@@ -155,7 +155,7 @@ client/                 Vue 3 + Vite + Vue Router + Pinia
   src/router.js          routes and the auth/admin guards
   src/stores/             auth, farm (lines), scan, cycle, lines, suggestion, useCase (admin)
   src/components/         AppLayout (sidebar, header, phone tab bar), Icon, PageHeader
-  src/views/              Login, Scan, History, ScheduleList, ScheduleLine, TreatmentDetail
+  src/views/              Login, Scan, History, ScheduleList, TreatmentDetail
   src/admin/              admin console: layout + the nine admin screens, Modal, Pill, GraphCanvas, util.js
   src/styles/             tokens.css (design tokens) + base.css; every component styles itself
                           (admin.css holds the shared `a-` building blocks for the admin screens)

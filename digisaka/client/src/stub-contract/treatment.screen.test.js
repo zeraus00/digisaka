@@ -24,16 +24,17 @@ describe('treatment screen', () => {
     expect(options).not.toMatch(/<b><\/b>/);
     expect(options).not.toContain('Record application');
     const bare = await show('L04');
-    expect(bare).toContain('Record another spray');
+    expect(bare).toContain('Record a spray');
     expect(bare).not.toContain('Recommended</span>');
     for (const html of [options, bare]) for (const gone of ['Approve', 'Reject', 'Renew', 'Approval period', 'acknowledge']) expect(html).not.toContain(gone);
   });
 
-  it('keeps the record form behind the Record another spray link while a step is open, and shows the human review banner', async () => {
+  it('keeps the record dialog behind the Record a spray link while a step is open, and shows the human review banner', async () => {
     await useSuggestionStore().load('L05', wait);
     const html = await show('L05');
-    expect(html).toContain('Record another spray');
+    expect(html).toContain('Record a spray');
     expect(html).not.toContain('Product applied');
+    expect(html).not.toContain('role="dialog"');
     expect(html).toContain('Human Review Required');
     expect(await show('L05', 'fungicides')).toContain('Recommendations');
   });
@@ -60,6 +61,7 @@ describe('treatment screen', () => {
     await s.load('L05', wait);
     await s.record(s.groups.excluded[0].product_id, '2026-06-05', wait);
     const html = await show('L05');
+    expect(html).toContain('role="dialog"');
     expect(html).toContain('Record anyway');
     expect(html).toContain('needs your confirmation (excluded)');
     expect(html).not.toContain('>Record application<');

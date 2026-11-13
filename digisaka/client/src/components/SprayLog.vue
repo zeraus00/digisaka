@@ -30,7 +30,7 @@ const fracTone = computed(() => (usage.value.some((g) => g.status === 'maxed') ?
             <b>{{ shownName(h.product) }}</b>
             <span class="pills">
               <span v-for="m in h.plant_mobility" :key="m" class="jr-pill">{{ sentenceCase(m) }}</span>
-              <span class="jr-pill">FRAC {{ h.frac_code }}</span><span class="jr-pill">{{ trackLabel(h.track) }}</span><span v-if="h.off_plan" class="jr-pill">Off-plan</span>
+              <span class="jr-pill">Mode of action {{ h.moa_code }}</span><span class="jr-pill">{{ trackLabel(h.track) }}</span><span v-if="h.off_plan" class="jr-pill">Off-plan</span>
               <span class="jr-pill" :class="sprayBadge(h, usage).tone">{{ sprayBadge(h, usage).label }}</span>
             </span>
           </li>
@@ -41,8 +41,8 @@ const fracTone = computed(() => (usage.value.some((g) => g.status === 'maxed') ?
         <h2>{{ fracHeading(usage) }}</h2>
         <p v-if="!usage.length" class="jr-hint">No FRAC group usage is recorded.</p>
         <h3 v-if="split.multisite.length">{{ trackLabel('single_site') }} groups</h3>
-        <div v-for="g in shownGroups(split.single_site)" :key="g.frac_code" class="jr-unit">
-          <div class="top"><span class="jr-pill">FRAC {{ g.frac_code }}</span><span v-if="STATUS_LABEL[g.status]" class="jr-pill" :class="g.status === 'ok' ? 'ok' : g.status === 'discouraged' ? 'warn' : 'bad'">{{ STATUS_LABEL[g.status] }}</span></div>
+        <div v-for="g in shownGroups(split.single_site)" :key="g.moa_code" class="jr-unit">
+          <div class="top"><span class="jr-pill">Mode of action {{ g.moa_code }}</span><span v-if="STATUS_LABEL[g.status]" class="jr-pill" :class="g.status === 'ok' ? 'ok' : g.status === 'discouraged' ? 'warn' : 'bad'">{{ STATUS_LABEL[g.status] }}</span></div>
           <!-- A group with alerts shows what the alerts explain; the count line only stands in when there is none. -->
           <template v-if="g.alerts?.length">
             <ul><li v-for="a in g.alerts" :key="a.text">{{ a.text }}<template v-if="a.alternatives?.length"> Alternatives: {{ a.alternatives.join(', ') }}.</template></li></ul>
@@ -53,7 +53,7 @@ const fracTone = computed(() => (usage.value.some((g) => g.status === 'maxed') ?
         <template v-if="split.multisite.length">
           <h3>{{ trackLabel('multisite') }} groups</h3>
           <p class="jr-hint">No FRAC limit on multisites; label limits apply.</p>
-          <div v-for="g in split.multisite" :key="g.frac_code" class="jr-unit"><span class="jr-pill">FRAC {{ g.frac_code }}</span> {{ g.count }} recorded<template v-if="g.source"> · {{ g.source }}</template></div>
+          <div v-for="g in split.multisite" :key="g.moa_code" class="jr-unit"><span class="jr-pill">Mode of action {{ g.moa_code }}</span> {{ g.count }} recorded<template v-if="g.source"> · {{ g.source }}</template></div>
         </template>
       </article>
       <slot />

@@ -70,7 +70,7 @@ test('every unit carries facts with the decided members; unknown ones are null o
       assert.deepEqual(Object.keys(f).sort(), ['application_interval', 'application_methods', 'application_rates', 'coverage', 'dilutions', 'mixture_conditions', 'product', 'repeat_condition', 'weather_requirement'], u.unit_id);
       assert.equal(f.product.label.toLowerCase(), u.label);
       assert.deepEqual([f.product.manufacturer, f.weather_requirement], [null, null]);
-      assert.ok('frac_code' in f.product.mode_of_action, 'a group with no FRAC code is null, not missing');
+      assert.ok('moa_code' in f.product.mode_of_action && 'frac_code' in f.product.mode_of_action, 'a missing code is null, not missing');
       assert.deepEqual(f.application_interval, { min_days: 10, max_days: 15, source: null });
       assert.ok(Array.isArray(f.mixture_conditions));
     }

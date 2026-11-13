@@ -1,13 +1,11 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import '../styles/journey.css';
-import { scheduleEvents, monthGrids, STEP_KIND, STATUS_LABEL, STATUS_TONE, SKIP_REASONS, canSkip, canRecord, canUndo, MIXTURE_NOTE } from '../helpers/schedule.js';
+import { scheduleEvents, monthGrids, STEP_KIND, STATUS_LABEL, STATUS_TONE, canRecord, canUndo, MIXTURE_NOTE } from '../helpers/schedule.js';
 import { todayIso } from '../helpers/today.js';
 
 const props = defineProps({ days: { type: Array, default: () => [] }, applications: { type: Array, default: () => [] }, nameOf: { type: Function, default: (id) => id }, assessedWeeks: { type: Array, default: () => [] }, busy: { type: Boolean, default: false } });
-const emit = defineEmits(['skip', 'undo', 'record', 'other']);
-// The reason picked per step; sent with the skip (none is fine).
-const reasons = ref({});
+const emit = defineEmits(['undo', 'act']);
 const events = computed(() => scheduleEvents(props.days, props.applications, props.nameOf, props.assessedWeeks));
 const months = computed(() => monthGrids(events.value));
 // The month shown opens on today's month when the schedule has it, else the first.
@@ -55,7 +53,7 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
           <span class="node">{{ e.done ? '✓' : '' }}</span>
           <div class="date">{{ range(e) }}<small>{{ e.date.slice(0, 4) }}</small></div>
           <div class="card">
-            <h5>{{ e.label }}<small v-if="e.moa"> · FRAC {{ e.moa }}</small> <span v-if="STEP_KIND[e.step]" class="jr-pill" :class="e.step === 'multisite' ? 'warn' : 'ok'">{{ STEP_KIND[e.step] }}</span>
+            <h5>{{ e.label }}<small v-if="e.moa"> · Mode of action {{ e.moa }}</small> <span v-if="STEP_KIND[e.step]" class="jr-pill" :class="e.step === 'multisite' ? 'warn' : 'ok'">{{ STEP_KIND[e.step] }}</span>
               <span v-if="e.status" class="jr-pill" :class="STATUS_TONE[e.status]">{{ STATUS_LABEL[e.status] }}</span><span v-if="e.offPlan" class="jr-pill">Off-plan</span></h5>
             <template v-if="e.status && e.kind !== 'application'">
               <p v-if="e.kind === 'skipped'">Skipped on {{ e.skip?.on ?? e.date }}.<template v-if="e.skip?.reason"> Reason: {{ e.skip.reason.replace('_', ' ') }}.</template></p>
@@ -64,14 +62,7 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
               <p v-if="e.note" class="why">{{ e.note }}</p>
             </template>
             <p v-else-if="e.kind === 'applied'">Applied on {{ e.date }}.</p>
-            <div v-if="canRecord(e)" class="btns">
-              <button type="button" :disabled="busy" @click="emit('record', e)">Record</button>
-              <button type="button" class="ghost" :disabled="busy" @click="emit('other', e)">Choose something different</button>
-            </div>
-            <div v-if="canSkip(e)" class="btns">
-              <select v-model="reasons[e.stepId]" :aria-label="`Reason for skipping ${e.label}`"><option :value="undefined">Reason (optional)</option><option v-for="(t, k) in SKIP_REASONS" :key="k" :value="k">{{ t }}</option></select>
-              <button type="button" class="ghost" :disabled="busy" @click="emit('skip', e.stepId, reasons[e.stepId] ?? null)">Skip</button>
-            </div>
+            <div v-if="canRecord(e)" class="btns"><button type="button" :disabled="busy" @click="emit('act', e)">Record or skip</button></div>
             <div v-else-if="canUndo(e)" class="btns"><button type="button" class="ghost" :disabled="busy" @click="emit('undo', e.stepId)">Undo skip</button></div>
             <template v-else-if="e.kind === 'application'">
               <p>Apply between {{ e.start }} and {{ e.end }}.<template v-if="e.done"> Applied.</template></p>
@@ -115,5 +106,7 @@ const count = computed(() => `${events.value.filter((e) => e.kind === 'applied')
 .date { font: 800 14px var(--font-display); color: var(--forest); } .date small { display: block; font-weight: 600; color: var(--ink-soft); }
 .card h5 { font: 800 15px var(--font-display); } .card small { color: var(--ink-soft); font-weight: 600; }
 .card p { margin-top: 2px; font-size: 13.5px; color: var(--ink-soft); } .card .why { font-style: italic; }
-.btns { display: flex; gap: 8px; margin-top: 6px; } .btns select, .btns button { font-size: 13px; }
+.btns { display: flex; gap: 8px; margin-top: 8px; }
+.btns button { padding: 9px 16px; border: 0; border-radius: 12px; background: var(--forest); color: #fff; font: 800 13px var(--font-display); cursor: pointer; }
+.btns button.ghost { border: 1px solid var(--line); background: none; color: var(--ink); } .btns button:disabled { opacity: .45; }
 </style>

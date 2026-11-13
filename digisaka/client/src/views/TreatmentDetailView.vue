@@ -11,6 +11,7 @@ import SprayLog from '../components/SprayLog.vue';
 import SuggestionUpdate from '../components/SuggestionUpdate.vue';
 import InsightsSummary from '../components/InsightsSummary.vue';
 import ScheduleCalendar from '../components/ScheduleCalendar.vue';
+import RecordDialog from '../components/RecordDialog.vue';
 import { useSuggestionStore } from '../stores/suggestion.js';
 import { useScanStore } from '../stores/scan.js';
 import { entryOf, showBackToScan } from '../helpers/scanEntry.js';
@@ -19,8 +20,7 @@ import { STEPS, stepOf } from '../helpers/treatmentStep.js';
 import '../styles/journey.css';
 import { outcomeReasonText } from '../helpers/messages.js';
 import { orderAlerts, LEVEL_ICON } from '../helpers/alerts.js';
-import { reasonText, unitFacts, shownName } from '../helpers/checks.js';
-import { todayIso, keepIfEdited } from '../helpers/today.js';
+import { shownName } from '../helpers/checks.js';
 
 const route = useRoute(), router = useRouter(), store = useSuggestionStore(), insights = useInsightsStore(), scan = useScanStore();
 const lineId = computed(() => String(route.params.lineId));
@@ -33,12 +33,10 @@ const BASIS = {
   no_confirmed_stage: 'No stage is confirmed for this line yet',
 };
 const OUTCOME = { human_review_required: 'Human Review Required', continue_monitoring: 'Continue monitoring' };
-const GROUPS = [['recommended', 'Recommended'], ['eligible', 'Eligible'], ['excluded', 'Excluded options']];
 const lineAlerts = computed(() => orderAlerts(sug.value?.alerts ?? []));
 
 const detailId = ref(''), optionPage = ref({}), optionTab = ref('single_site');
 const detail = computed(() => store.units.find((u) => u.unit_id === detailId.value) ?? null);
-const productId = ref(''), appliedOn = ref(todayIso());
 // The open step lives in `?step=`; a tab rewrites it in place so back leaves the screen.
 const step = computed(() => stepOf(route.query.step));
 const open = (id) => router.replace({ query: { ...route.query, step: id } });
@@ -50,7 +48,7 @@ const entry = computed(() => entryOf({ scan, line: lineId.value, week: week.valu
 const fromScan = computed(() => entry.value.kind === 'follow');
 const backToScan = computed(() => showBackToScan({ scan, line: lineId.value, week: week.value }));
 const load = () => {
-  productId.value = ''; detailId.value = ''; visited.value = [step.value]; insights.load(lineId.value, week.value);
+  detailId.value = ''; dialog.value = null; visited.value = [step.value]; insights.load(lineId.value, week.value);
   return fromScan.value ? store.track(lineId.value, entry.value.cycleId) : store.load(lineId.value);
 };
 onMounted(load);
@@ -58,31 +56,10 @@ watch(lineId, load);
 watch(week, () => insights.load(lineId.value, week.value));
 const heading = computed(() => (step.value === 'fungicides' && detail.value ? 'Fungicide Details' : STEPS.find((s) => s.id === step.value).title));
 onBeforeUnmount(() => store.stop());
-watch(todayIso, (next, old) => { appliedOn.value = keepIfEdited(appliedOn.value, old, next); });
 // The scheduler sends a practice id as the label (PracFungicideSpraying); read it as words.
 const guidanceName = (label) => label.replace(/^Prac/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
-const tierOf = (u) => GROUPS.find(([g]) => store.groups[g].includes(u))?.[0];
-// The step action in progress: Record (the step's own product) or Choose something different (any product, the same group first).
-const act = ref(null), actProduct = ref(''), actPartner = ref(''), actOn = ref(todayIso());
-const submit = async (body) => { const out = await body(); if (out === 'recorded') { productId.value = ''; act.value = null; } };
-const record = () => submit(() => store.record(productId.value, appliedOn.value));
-const confirm = () => submit(() => store.confirm());
-const skipEarlier = () => submit(() => store.skipEarlier());
-const openAct = (mode, e) => { store.cancel(); act.value = { mode, e }; actProduct.value = mode === 'record' ? e.productId : ''; actPartner.value = mode === 'record' ? e.partnerId ?? '' : ''; actOn.value = todayIso(); };
-const closeAct = () => { store.cancel(); act.value = null; };
-const saveAct = () => submit(() => store.record(actProduct.value, actOn.value, undefined, { step_id: act.value.e.stepId, partner_product_id: act.value.mode === 'record' ? actPartner.value || null : null }));
-// The partner picker lists every product the server marked, the planned partner first; a mark informs and never disables.
-const partnerChoices = computed(() => {
-  const e = act.value?.e; if (!e?.partnerOptions?.length) return [];
-  return [...e.partnerOptions].sort((a, b) => Number(b.product_id === e.partnerId) - Number(a.product_id === e.partnerId));
-});
-const group = (u) => unitFacts(u).frac;
-const sameGroup = (u) => String(group(u)) === String(act.value?.e.moa).split(' ')[0];
-const choices = computed(() => [...store.units].sort((a, b) => Number(sameGroup(b)) - Number(sameGroup(a))));
-// The free selector is a secondary link; it opens by itself when no step is open.
-const hasOpen = computed(() => store.days.some((d) => ['planned', 'due', 'overdue'].includes(d.application?.status)));
-const freeOpen = ref(false);
-const showFree = computed(() => !act.value && (freeOpen.value || !hasOpen.value || !!store.pending || !!store.earlier));
+// The record dialog: for a timeline step ({entry}) or for a spray tied to no step ({entry: null}). A confirmation the scheduler asks for opens it too.
+const dialog = ref(null);
 // A product in an earlier suggestion may not be a unit now: fall back to the name in its id.
 const productName = (id) => store.units.find((u) => u.product_id === id)?.label ?? id.split('#').pop().replace(/^Fungicide/, '');
 const assessedWeeks = computed(() => store.cycles.filter((c) => c.status === 'done').map((c) => c.week));
@@ -164,75 +141,10 @@ const lastApplied = computed(() => {
         </div>
         <div v-if="step === 'fungicides'" class="btns go"><button type="button" @click="open('schedule')">Continue to Schedule</button></div>
         <template v-else>
-      <section v-if="act" class="prop-card">
-        <h3>{{ act.mode === 'record' ? 'Record' : 'Choose something different for' }} {{ act.e.label }}</h3>
-        <div class="row">
-          <select v-if="act.mode === 'other'" v-model="actProduct" aria-label="Product applied instead" :disabled="store.busy || !!store.pending || !!store.earlier">
-            <option value="" disabled>Product</option>
-            <option v-for="u in choices" :key="u.unit_id" :value="u.product_id">{{ shownName(u.label) }}{{ sameGroup(u) ? ' (same group)' : '' }}{{ tierOf(u) === 'excluded' ? ' (excluded)' : '' }}</option>
-          </select>
-          <select v-if="partnerChoices.length" v-model="actPartner" aria-label="Partner in the same tank" :disabled="store.busy || !!store.pending || !!store.earlier">
-            <option value="">No partner</option>
-            <option v-for="o in partnerChoices" :key="o.product_id" :value="o.product_id">{{ shownName(productName(o.product_id)) }}{{ o.product_id === act.e.partnerId ? ' (planned)' : '' }}{{ o.compatible ? '' : ` (not compatible: ${o.why})` }}</option>
-          </select>
-          <input v-model="actOn" type="date" :max="todayIso()" aria-label="Date applied" :disabled="store.busy || !!store.pending || !!store.earlier" />
-        </div>
-        <div v-if="store.earlier" class="off-schedule" role="alert">
-          <p>Earlier steps are still open:</p>
-          <ul><li v-for="s in store.earlier.steps" :key="s.step_id">{{ shownName(s.product) }}<template v-if="s.timing_window"> ({{ s.timing_window.start }} to {{ s.timing_window.end }})</template></li></ul>
-          <div class="btns">
-            <button type="button" :disabled="store.busy" @click="skipEarlier">Skip them all</button>
-            <button type="button" class="ghost" :disabled="store.busy" @click="closeAct">Record them first</button>
-          </div>
-        </div>
-        <div v-else-if="store.pending" class="off-schedule" role="alert">
-          <p>{{ shownName(productName(store.pending.product_id)) }} needs your confirmation{{ store.pending.tier ? ` (${store.pending.tier})` : '' }}:</p>
-          <p v-if="store.pending.reason">{{ reasonText(store.pending.reason) }}</p>
-          <ul><li v-for="a in store.pending.alerts" :key="a.id">{{ a.text }}</li></ul>
-          <div class="btns">
-            <button type="button" :disabled="store.busy" @click="confirm">Record anyway</button>
-            <button type="button" class="ghost" :disabled="store.busy" @click="closeAct">Cancel</button>
-          </div>
-        </div>
-        <div v-else class="btns">
-          <button type="button" :disabled="!actProduct || !actOn || store.busy || store.updating" @click="saveAct">Save</button>
-          <button type="button" class="ghost" :disabled="store.busy" @click="closeAct">Cancel</button>
-        </div>
-      </section>
+      <div class="spray"><button type="button" @click="dialog = { entry: null }">Record a spray</button></div>
 
-      <section v-if="showFree" class="prop-card">
-        <h3>Record an application</h3>
-        <p class="meta">You can record any product; those that need confirmation ask first.</p>
-        <div class="row">
-          <select v-model="productId" aria-label="Product applied" :disabled="store.busy || !!store.pending">
-            <option value="" disabled>Product</option>
-            <option v-for="u in store.units" :key="u.unit_id" :value="u.product_id">{{ shownName(u.label) }}{{ tierOf(u) === 'excluded' ? ' (excluded)' : '' }}</option>
-          </select>
-          <input v-model="appliedOn" type="date" :max="todayIso()" aria-label="Date applied" :disabled="store.busy || !!store.pending" />
-        </div>
-        <div v-if="store.earlier" class="off-schedule" role="alert">
-          <p>Earlier steps are still open:</p>
-          <ul><li v-for="s in store.earlier.steps" :key="s.step_id">{{ shownName(s.product) }}</li></ul>
-          <div class="btns">
-            <button type="button" :disabled="store.busy" @click="skipEarlier">Skip them all</button>
-            <button type="button" class="ghost" :disabled="store.busy" @click="store.cancel()">Record them first</button>
-          </div>
-        </div>
-        <div v-else-if="store.pending" class="off-schedule" role="alert">
-          <p>{{ shownName(productName(store.pending.product_id)) }} needs your confirmation{{ store.pending.tier ? ` (${store.pending.tier})` : '' }}:</p>
-          <p v-if="store.pending.reason">{{ reasonText(store.pending.reason) }}</p>
-          <ul><li v-for="a in store.pending.alerts" :key="a.id">{{ a.text }}</li></ul>
-          <div class="btns">
-            <button type="button" :disabled="store.busy" @click="confirm">Record anyway</button>
-            <button type="button" class="ghost" :disabled="store.busy" @click="store.cancel()">Cancel</button>
-          </div>
-        </div>
-        <div v-else class="btns"><button type="button" :disabled="!productId || !appliedOn || store.busy || store.updating" @click="record">Record application</button></div>
-      </section>
-
-      <p v-else-if="!act" class="meta"><button type="button" class="link" @click="freeOpen = true">Record another spray</button></p>
-
-      <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" :busy="store.busy || store.updating" @skip="(id, reason) => store.skip(id, reason)" @undo="(id) => store.undoSkip(id)" @record="(e) => openAct('record', e)" @other="(e) => openAct('other', e)" />
+      <ScheduleCalendar :days="store.days" :applications="store.history" :name-of="productName" :assessed-weeks="assessedWeeks" :busy="store.busy || store.updating" @undo="(id) => store.undoSkip(id)" @act="(e) => (dialog = { entry: e })" />
+      <RecordDialog v-if="dialog || store.pending || store.earlier" :key="dialog?.entry?.stepId ?? 'free'" :entry="dialog?.entry ?? null" :product-name="productName" @close="dialog = null" />
 
       <EvidenceCharts :cycle-id="sug.revision" :line="lineId" :week="week" />
         </template>
@@ -278,7 +190,7 @@ const lastApplied = computed(() => {
 .badge { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #1F7C74; color: #fff; font: 800 12px var(--font-display); }
 .why-off { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--danger); }
 .apps { margin: 8px 0 0 18px; color: var(--ink-soft); font-size: 14px; }
-.link { border: 0; background: none; padding: 0; color: var(--forest); text-decoration: underline; font: 700 14px var(--font-body); cursor: pointer; }
+.spray { display: flex; justify-content: flex-end; margin-bottom: 12px; } .spray button { padding: 10px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--forest); font: 800 14px var(--font-display); cursor: pointer; }
 .row { display: flex; gap: 8px; margin-top: 10px; } .row select, .row input { flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 12px; font: 600 14px var(--font-body); }
 
 .banner.ok { background: #D5E9DB; } .banner .updating { margin-left: auto; font: 700 13px var(--font-body); }
