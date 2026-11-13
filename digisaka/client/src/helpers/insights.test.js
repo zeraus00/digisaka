@@ -5,9 +5,9 @@ describe('insights text', () => {
   it('words each canopy status, hides null and passes an unknown one through', () => {
     expect([canopyLabel('ok'), canopyLabel('watch'), canopyLabel('critical'), canopyLabel(null), canopyLabel('new')]).toEqual(['OK', 'Watch', 'Critical', null, 'new']);
   });
-  it('finds the R1 reading by its rule prefix', () => {
-    expect(progressionReading([{ rule: 'R3 Functional leaves' }, { rule: 'R1 Disease trend', finding: 'x' }]).finding).toBe('x');
-    expect(progressionReading([{ rule: 'R3 Functional leaves' }])).toBeNull();
+  it('finds the R1 reading by its exact rule id, not RuleR10 or RuleR11', () => {
+    expect(progressionReading([{ rule: 'RuleR3' }, { rule: 'RuleR10', finding: 'no' }, { rule: 'RuleR1', finding: 'x' }]).finding).toBe('x');
+    expect(progressionReading([{ rule: 'RuleR3' }, { rule: 'RuleR10' }])).toBeNull();
     expect(progressionReading(undefined)).toBeNull();
   });
   it('words the scheduler result', () => {

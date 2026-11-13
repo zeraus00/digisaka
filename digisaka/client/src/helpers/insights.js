@@ -2,9 +2,9 @@
 const CANOPY = { ok: 'OK', watch: 'Watch', critical: 'Critical' };
 export const canopyLabel = (status) => (status == null ? null : CANOPY[status] ?? status);
 
-// The disease trend is the fired reading of rule R1 (a KG rule name, so a rename shows "Not assessed" until this follows).
-export const PROGRESSION_RULE = 'R1';
-export const progressionReading = (readings) => (readings ?? []).find((r) => r.rule?.startsWith(PROGRESSION_RULE)) ?? null;
+// The disease trend is the fired reading of the KG rule RuleR1, matched by its id (an exact match: RuleR10 and RuleR11 are other rules).
+export const PROGRESSION_RULE = 'RuleR1';
+export const progressionReading = (readings) => (readings ?? []).find((r) => r.rule === PROGRESSION_RULE) ?? null;
 
 // A suggestion with no outcome is a treatment suggestion; the two served outcomes are monitoring and expert review.
 const OUTCOME = { continue_monitoring: 'Continue monitoring', human_review_required: 'Expert review suggested' };

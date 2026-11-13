@@ -88,21 +88,21 @@
   ],
   "readings": [
     {
-      "rule": "R1 Disease trend",
+      "rule": "RuleR1",
       "finding": "Disease is progressing",
       "text": "YLS leaf 8 to leaf 6 over 3 weeks; YLI leaf 5 to leaf 3. A lower number means a younger leaf.",
       "source": "Sample source A",
       "sample_fact": true
     },
     {
-      "rule": "R3 Functional leaves",
+      "rule": "RuleR3",
       "finding": "Few functional leaves",
       "text": "Functional leaves 6, below the 8-leaf threshold.",
       "source": null,
       "sample_fact": false
     },
     {
-      "rule": "R7 Canopy critical",
+      "rule": "RuleCanopyCritical",
       "finding": "Canopy critical",
       "text": "Functional leaves 6, below the 8-leaf canopy band.",
       "source": null,
