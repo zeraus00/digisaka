@@ -33,6 +33,23 @@ const DEFAULT = { payload: 'clean', basis: 'stage_confirmed' };
 // The scheduler's ranking explanation and its fixed server caveat. Only the clean plan has one: the
 // monitoring list is not ranked, so its `explanation` is null (a fallback or a dropped one is null too).
 const CAVEAT = 'A language model wrote this from product facts that are not yet validated. The checks, not this text, decide which products are allowed.';
+// The scheduler's assessment (ADR-0045): the requirement's conditions, the fired findings tagged trigger or context, and the note.
+const CONDITION = (label, result) => ({ finding: `bsk:${label}`, label, result });
+const FINDING = (label, role) => ({ finding: `bsk:${label}`, label, role });
+const ASSESSMENTS = {
+  continue_monitoring: {
+    status: 'not_fired',
+    conditions: [CONDITION('Possible progression (spots)', 'not_met'), CONDITION('Infection risk', 'not_met')],
+    findings: [FINDING('Aggressive progression', 'context'), FINDING('Canopy watch', 'context')],
+    note: 'No treatment is suggested this week. Aggressive progression and canopy watch are worth keeping an eye on, but neither is a reason to treat yet.',
+  },
+  suggested: {
+    status: 'fired',
+    conditions: [CONDITION('Possible progression (spots)', 'not_met'), CONDITION('Infection risk', 'met')],
+    findings: [FINDING('Infection risk', 'trigger'), FINDING('Canopy watch', 'context')],
+    note: 'Treatment is suggested because of the infection risk.',
+  },
+};
 const EXPLANATIONS = { clean: { text: 'The triazole goes first and the strobilurin follows, so the two modes of action alternate.', caveat: CAVEAT } };
 
 // A product here is the part of a unit id after `Option|`, as the scheduler records it.
@@ -41,6 +58,7 @@ const productOf = (unitId) => unitId.split('|').pop();
 const SERVED_OUTCOMES = ['human_review_required', 'continue_monitoring'];
 
 // The basis wording confirms rather than accuses: what the data suggests, then a way to verify.
+const STAGE_6_TEXT = 'The data suggests some of the leaves scanned this week are at stage 6, past the point a fungicide protects them; removing the affected leaves may be advised.';
 const BASIS_TEXT = {
   all_healthy_images: 'The data suggests the line is healthy, as every scanned image is healthy; a further scan is suggested to verify.',
   no_confirmed_stage: 'The data suggests no stage is confirmed for this line yet; a scan is suggested to verify.',
@@ -105,9 +123,9 @@ const servedOf = (days, applications, day, skips = []) => {
   return [...out, ...offPlan].sort((x, y) => x.date.localeCompare(y.date));
 };
 
-// recommended: the sequencer's pick; eligible: passed but not picked; excluded: failed a check or not for the stage.
+// recommended: the sequencer's pick; eligible: passed but not picked; excluded: failed a check or is not selectable.
 const groupOf = (u) => (u.selectable === false || (u.checks ?? []).some((c) => c.result === 'fail') ? 'excluded' : u.excluded_from_schedule ? 'eligible' : 'recommended');
-const reasonOf = (u) => (u.selectable === false ? 'not_for_stage' : (u.checks ?? []).find((c) => c.result === 'fail')?.check ?? 'not_for_stage');
+const reasonOf = (u) => ((u.checks ?? []).find((c) => c.result === 'fail')?.check ?? 'rotation');
 
 // What a payload shows, as the diff reads it: unit tiers, alert ids, the line stage and the schedule.
 const tiersOf = (name) => Object.fromEntries((name ? PAYLOADS[name].selection.units : []).map((u) => [u.unit_id, groupOf(u)]));
@@ -189,11 +207,13 @@ export function suggestionRoutes(store, { settleAll, startRun, runsOf, now = Dat
     const basisAlert = BASIS_TEXT[cur.basis] ? [{ id: 'stage_basis', unit_id: null, kind: 'stage_basis', level: 'info', text: BASIS_TEXT[cur.basis], cause: null, blocks_approval: false }] : [];
     const confirmed = cur.basis === 'stage_confirmed' && frozen;
     const outcome = SERVED_OUTCOMES.includes(cycle?.outcome) ? cycle.outcome : null;
+    const stage = cur.stage ?? 2;
+    const stage6 = confirmed && stage === 6 ? [{ id: 'line:stage_basis:stage_6', unit_id: null, kind: 'stage_basis', level: outcome === 'continue_monitoring' ? 'info' : 'warning', text: STAGE_6_TEXT, cause: null, blocks_approval: false }] : [];
     return {
       revision: cur.revision, trigger: cur.trigger, created_at: cur.created_at, basis: cur.basis,
-      line_stage: { stage: confirmed ? 2 : null, tally: confirmed ? { 2: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
-      groups, explanation: EXPLANATIONS[cur.payload] ?? null, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
-      schedule: servedOf(scheduleOf(frozen?.preview.days ?? []), line.applications, today(), line.skips ?? []), alerts: [...basisAlert, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
+      line_stage: { stage: confirmed ? stage : null, tally: confirmed ? { [stage]: 1 } : {}, window: { from: addDays(today(), -6), to: today() } },
+      groups, explanation: EXPLANATIONS[cur.payload] ?? null, assessment: ASSESSMENTS[outcome ?? 'suggested'] ? { ...ASSESSMENTS[outcome ?? 'suggested'], caveat: null } : null, other_guidance: frozen ? [{ practice_id: 'PracDeleafing', label: 'Remove the most infected leaves' }] : [],
+      schedule: servedOf(scheduleOf(frozen?.preview.days ?? []), line.applications, today(), line.skips ?? []), alerts: [...basisAlert, ...stage6, ...alerts.filter((a) => !a.unit_id)], changes: cur.changes,
       running: runsOf(lineId).some((r) => r.status === 'running'), outcome, outcome_reason: outcome ? cycle.outcome_reason ?? null : null,
     };
   }

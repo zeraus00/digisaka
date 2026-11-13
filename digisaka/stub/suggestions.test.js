@@ -24,7 +24,7 @@ const units = (s) => Object.values(s.groups).flat();
 
 test('the suggestion has the contract fields, three groups and the schedule days', async () => {
   const s = await suggestion('L02');
-  assert.deepEqual(Object.keys(s).sort(), ['alerts', 'basis', 'changes', 'created_at', 'explanation', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
+  assert.deepEqual(Object.keys(s).sort(), ['alerts', 'assessment', 'basis', 'changes', 'created_at', 'explanation', 'groups', 'line_stage', 'other_guidance', 'outcome', 'outcome_reason', 'revision', 'running', 'schedule', 'trigger']);
   assert.deepEqual([s.revision, s.trigger, s.basis, s.running, s.changes], ['c-L02-24', 'scan', 'stage_confirmed', false, null]);
   assert.deepEqual(Object.keys(s.groups), ['recommended', 'eligible', 'excluded']);
   assert.equal(s.groups.recommended.length > 0, true);
@@ -45,12 +45,22 @@ test('each line carries its basis, outcome and units', async () => {
   assert.ok(units(l4).length > 10);
   const l5 = await suggestion('L05');
   assert.deepEqual([l5.basis, l5.outcome, l5.outcome_reason], ['no_confirmed_stage', 'human_review_required', 'missing_feed_value']);
-  assert.ok(l5.groups.excluded.some((u) => u.reason === 'not_for_stage' && u.needs_confirmation));
+  assert.ok(l5.groups.excluded.some((u) => u.reason === 'group_cap' && u.needs_confirmation));
   const l6 = await suggestion('L06');
   assert.equal(l6.outcome, 'continue_monitoring');
   assert.deepEqual([l6.groups.recommended.length, l6.schedule.length], [0, 0]);
   assert.ok(l6.groups.eligible.length && l6.groups.eligible.every((u) => u.reason === 'monitoring_advised' && u.needs_confirmation));
   assert.ok(l6.groups.excluded.length && l6.groups.excluded.every((u) => u.reason === 'group_cap'));
+});
+
+test('a stage-6 line carries the stage-6 alert, advice only; a stage-5 line has none', async () => {
+  const l6 = await suggestion('L06');
+  assert.equal(l6.line_stage.stage, 6);
+  const [a] = l6.alerts.filter((x) => x.id === 'line:stage_basis:stage_6');
+  assert.deepEqual([a.kind, a.level, a.unit_id, a.blocks_approval], ['stage_basis', 'info', null, false]);
+  assert.match(a.text, /stage 6, past the point a fungicide protects them; removing the affected leaves may be advised\.$/);
+  const l3 = await suggestion('L03');
+  assert.ok(l3.line_stage.stage < 6 && !l3.alerts.some((x) => x.id === 'line:stage_basis:stage_6'));
 });
 
 test('a unit with its own alert needs confirmation and carries it', async () => {
@@ -249,4 +259,16 @@ test('a record against a step: step_not_open, off-plan confirmation, earlier_ste
   assert.equal(done.status, 201);
   const after = (await suggestion('L02')).schedule.map((d) => d.application).find((a) => a?.step_id === first.step_id);
   assert.equal(after.status, 'skipped');
+});
+
+test('the assessment joins the findings to the requirement: not fired on a monitoring list, fired on a plan', async () => {
+  const monitoring = (await suggestion('L06')).assessment;
+  assert.deepEqual(Object.keys(monitoring).sort(), ['caveat', 'conditions', 'findings', 'note', 'status']);
+  assert.equal(monitoring.status, 'not_fired');
+  assert.ok(monitoring.conditions.every((c) => c.result === 'not_met'));
+  assert.ok(monitoring.findings.every((f) => f.role === 'context'));
+  assert.ok(monitoring.findings.every((f) => monitoring.note.toLowerCase().includes(f.label.toLowerCase()))); // a note may lower-case a name
+  const plan = (await suggestion('L02')).assessment;
+  assert.equal(plan.status, 'fired');
+  assert.ok(plan.findings.some((f) => f.role === 'trigger'));
 });

@@ -3,12 +3,15 @@ import { computed } from 'vue';
 import { useInsightsStore } from '../stores/insights.js';
 import Icon from './Icon.vue';
 import InsightsSummary from './InsightsSummary.vue';
+import { useSuggestionStore } from '../stores/suggestion.js';
 import { rainOutlookText, conditionMark, conditionReading, weekday, dayRain } from '../helpers/insights.js';
 
 // The Weather step: recorded rainfall, the risk finding, the 5-day outlook and what drives the assessment, all as the scheduler served them.
 const props = defineProps({ line: { type: String, required: true }, week: { type: String, required: true } });
 const insights = useInsightsStore();
 const data = computed(() => insights.data);
+// The scheduler's reading of the fired findings against the treatment requirement (ADR-0045), shown as served.
+const assessment = computed(() => useSuggestionStore().suggestion?.assessment ?? null);
 // The newest series entry: the week the scheduler last read, which is not the asked week.
 const thisWeek = computed(() => data.value?.series.at(-1));
 const readWeek = computed(() => Number((thisWeek.value?.week ?? props.week).split('W').pop()));
@@ -54,6 +57,7 @@ const BADGE = { fired: 'bad', not_fired: 'ok' };
         </ul>
         <div v-for="r in data.readings" :key="r.rule" class="jr-indent"><b>{{ r.finding }}</b><p class="jr-hint">{{ r.text }}<template v-if="r.source"> · {{ r.source }}</template></p></div>
         <p v-if="!risk?.conditions?.length && !data.readings?.length" class="jr-hint">Nothing was assessed for this week.</p>
+        <p v-if="assessment" class="jr-hint"><b>{{ assessment.note }}</b><template v-if="assessment.caveat"> {{ assessment.caveat }}</template></p>
       </article>
     </div>
     <InsightsSummary />

@@ -82,7 +82,7 @@ test('a week with a cycle serves every field, with the risk, history, alerts and
   assert.ok(b.readings.some((r) => r.finding === 'Canopy critical'), 'the canopy reading matches the latest week');
   assert.match(b.actions.summary, /suggested\.$/);
   assert.equal(b.actions.status, 'assessed');
-  assert.equal(b.actions.kinds.find((k) => k.kind === 'mechanical').active, false);
+  assert.equal(b.actions.kinds.find((k) => k.kind === 'mechanical').active, true);
 });
 
 test('a week without a cycle serves the same fields, with the risk and action kinds not yet assessed', async () => {

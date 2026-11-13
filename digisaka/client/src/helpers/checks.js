@@ -1,7 +1,7 @@
 // Display rules for a unit's checks. Built only from fields the payload already carries; the scheduler's detail text is a
 // fixed template, so each reader matches one template and anything else is shown as it came.
 export const CHECK_LABEL = {
-  stage_eligibility: 'Growth stage', rotation: 'Rotation', alternation: 'Alternation', max_consecutive: 'Repeat applications', group_free_period: 'Group-free period', group_cap: 'Applications per group',
+  rotation: 'Rotation', alternation: 'Alternation', max_consecutive: 'Repeat applications', group_free_period: 'Group-free period', group_cap: 'Applications per group',
   mixture: 'Mixture', resistance_risk: 'Resistance risk', label_weather: 'Label and weather', fit_of_moa_to_conditions: 'Fit to conditions',
 };
 export const checkLabel = (check) => CHECK_LABEL[check] ?? check.replace(/_/g, ' ');
@@ -109,7 +109,6 @@ export function unitFacts(unit) {
 const REASON = {
   rotation: 'Fails: Rotation. Its mode of action was used too recently.',
   no_interval: 'No application interval is known for this product.',
-  not_for_stage: 'Not for the line\'s current growth stage.',
   monitoring_advised: 'The data suggests treatment is not due yet; monitoring is advised.',
 };
 export const reasonText = (code) => (code == null ? null : REASON[code] ?? (CHECK_LABEL[code] ? `Fails: ${CHECK_LABEL[code]}` : code));

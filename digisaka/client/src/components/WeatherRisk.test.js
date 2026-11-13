@@ -4,16 +4,18 @@ import { createPinia, setActivePinia } from 'pinia';
 import { renderToString } from 'vue/server-renderer';
 import WeatherRisk from './WeatherRisk.vue';
 import { useInsightsStore } from '../stores/insights.js';
+import { useSuggestionStore } from '../stores/suggestion.js';
 
 const series = [
   { week: '2026-W23', rainfall_mm: 10, leaf_wetness_hours: 32.4 },
   { week: '2026-W24', rainfall_mm: 12, leaf_wetness_hours: null },
 ];
 // The panel reads the newest series entry, the week the scheduler last read, not the asked week.
-const render = async (week, rows = series) => {
+const render = async (week, rows = series, { assessment } = {}) => {
   const pinia = createPinia();
   setActivePinia(pinia);
   Object.assign(useInsightsStore(), { phase: 'ready', data: { series: rows, risk: null, readings: [], rain_outlook: { days: [] } } });
+  if (assessment !== undefined) Object.assign(useSuggestionStore(), { suggestion: { assessment } });
   return renderToString(createSSRApp(WeatherRisk, { line: 'L03', week }).use(pinia));
 };
 beforeEach(() => setActivePinia(createPinia()));
@@ -31,5 +33,16 @@ describe('Weather step leaf wetness tile', () => {
     expect(html).toContain('No leaf wetness value recorded for week 24');
     expect(html).toMatch(/Humidity<\/span><strong>Coming soon/);
     expect(html).not.toMatch(/Leaf wetness<\/span><strong>Coming soon/);
+  });
+});
+
+describe('What is driving the assessment: the scheduler\'s reading of the findings', () => {
+  it('shows the served note in the card, and its caveat only when one is served', async () => {
+    const html = await render('2026-W25', series, { assessment: { note: 'No treatment trigger this week.', caveat: null } });
+    expect(html).toContain('No treatment trigger this week.');
+    expect(await render('2026-W25', series, { assessment: { note: 'n', caveat: 'Check it.' } })).toContain('Check it.');
+  });
+  it('shows nothing extra when the response has no assessment', async () => {
+    expect(await render('2026-W25', series, { assessment: null })).not.toContain('No treatment trigger');
   });
 });
